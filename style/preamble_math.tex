@@ -1,0 +1,167 @@
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath,amsthm}
+\usepackage{mathrsfs, bbm, tikz-cd}
+\usepackage{ifxetex,ifluatex}
+\usepackage{mdframed}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{multicol}
+\usepackage{caption}
+\usepackage{algorithm,algorithmic}
+\usepackage{cancel} 
+\usepackage{stackengine}
+
+
+
+\let\oldemptyset\emptyset
+\renewcommand{\emptyset}{\varnothing}
+
+% set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+
+
+\newmdenv[
+  backgroundcolor=gray!10,
+  topline=false,
+  bottomline=false,
+  rightline=false,
+  leftline=false,
+  innertopmargin=\topskip,
+  innerbottommargin=\topskip
+]{problem}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{exercise}[theorem]{Exercise}
+\newtheorem{conj}[theorem]{Conjecture}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{alg}[theorem]{Algorithm}
+\newtheorem{result}[theorem]{Result}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{notation}[theorem]{Notation}
+
+
+
+\newcommand{\eps}{\varepsilon}
+\newcommand{\xii}{x^{(i)}}
+\newcommand{\yii}{y^{(i)}}
+\newcommand{\cA}{\mathcal{A}}
+\newcommand{\cB}{\mathcal{B}}
+\newcommand{\cC}{\mathcal{C}}
+\newcommand{\cE}{\mathcal{E}}
+\newcommand{\cI}{\mathcal{I}}
+\newcommand{\cP}{\mathcal{P}}
+\newcommand{\cG}{\mathcal{G}}
+\newcommand{\cM}{\mathcal{M}}
+\newcommand{\cN}{\mathcal{N}}
+\newcommand{\cD}{\mathcal{D}}
+\newcommand{\cX}{\mathcal{X}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cQ}{\mathcal{Q}}
+\newcommand{\cU}{\mathcal{U}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\cR}{\mathcal{R}}
+\newcommand{\cF}{\mathcal{F}}
+\newcommand{\cV}{\mathcal{V}}
+\newcommand{\cW}{\mathcal{W}}
+\newcommand{\cZ}{\mathcal{Z}}
+\newcommand{\ip}[1]{\left\langle #1 \right\rangle}
+\newcommand{\SSS}{\mathbb{S}}
+\newcommand{\abs}[1]{\left| #1 \right|}
+\newcommand{\maxtwo}{\textstyle \max^{(2)}}
+
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Pat}{P\v{a}tra\c{s}cu }
+
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand\E{\mathbb{E}}
+\newcommand{\bbF}{\mathbb{F}}
+\newcommand{\bbR}{\mathbb{R}}
+\newcommand{\bbQ}{\mathbb{Q}}
+\newcommand{\bbN}{\mathbb{N}}
+\newcommand{\bbC}{\mathbb{C}}
+\newcommand{\bbZ}{\mathbb{Z}}
+
+\providecommand{\norm}[1]{\ensuremath{\left\lVert#1\right\rVert}}
+\DeclareMathOperator*{\argmin}{\mathrm{arg\,min}}
+\DeclareMathOperator*{\argmax}{\mathrm{arg\,max}}
+% KL DIVERGENCE : 
+\providecommand{\Div}[2]{\ensuremath{\mathsf{D}\left(\begin{array}{c} #1 \\ \hline  \hline  #2\end{array} \right)}}
+\renewcommand{\div}[2]{\mathsf{D}\left( #1 || #2\right)} 
+
+%\renewcommand{\cite}[1]{[#1]}
+%\def\beginrefs{\begin{list}%
+%        {[\arabic{equation}]}{\usecounter{equation}
+%         \setlength{\leftmargin}{2.0truecm}\setlength{\labelsep}{0.4truecm}%
+%         \setlength{\labelwidth}{1.6truecm}}}
+%\def\endrefs{\end{list}}
+%\def\bibentry#1{\item[\hbox{[#1]}]}
+
+
+% code from:
+% https://tex.stackexchange.com/questions/248412/how-to-write-matrices-with-dimensions-in-latex
+\stackMath
+\newlength\matfield
+\newlength\tmplength
+\def\matscale{1.}
+\newcommand\dimbox[3]{%
+  \setlength\matfield{\matscale\baselineskip}%
+  \setbox0=\hbox{\vphantom{X}\smash{#3}}%
+  \setlength{\tmplength}{#1\matfield-\ht0-\dp0}%
+  \fboxrule=1pt\fboxsep=-\fboxrule\relax%
+  \fbox{\makebox[#2\matfield]{\addstackgap[.5\tmplength]{\box0}}}%
+}
+\newcommand\raiserows[2]{%
+   \setlength\matfield{\matscale\baselineskip}%
+   \raisebox{#1\matfield}{#2}%
+}
+\newcommand\matbox[5]{
+  \stackunder{\dimbox{#1}{#2}{$#5$}}{\scriptstyle(#3\times #4)}%
+}
+
+
+% code from:
+%https://tex.stackexchange.com/questions/285578/how-to-draw-parallelepiped-and-cube-with-latex
+\tikzset{
+  annotated cuboid/.pic={
+    \tikzset{%
+      every edge quotes/.append style={midway, auto},
+      /cuboid/.cd,
+      #1
+    }
+    \draw [every edge/.append style={pic actions, densely dashed, opacity=.5}, pic actions]
+    (0,0,0) coordinate (o) -- ++(-\cubescale*\cubex,0,0) coordinate (a) -- ++(0,-\cubescale*\cubey,0) coordinate (b) edge coordinate [pos=1] (g) ++(0,0,-\cubescale*\cubez)  -- ++(\cubescale*\cubex,0,0) coordinate (c) -- cycle
+    (o) -- ++(0,0,-\cubescale*\cubez) coordinate (d) -- ++(0,-\cubescale*\cubey,0) coordinate (e) edge (g) -- (c) -- cycle
+    (o) -- (a) -- ++(0,0,-\cubescale*\cubez) coordinate (f) edge (g) -- (d) -- cycle;
+    \path [every edge/.append style={pic actions, |-|}]
+    (b) +(0,-5pt) coordinate (b1) edge ["\cubelabely"'] (b1 -| c)
+    (b) +(-5pt,0) coordinate (b2) edge ["\cubelabelx"] (b2 |- a)
+    (c) +(3.5pt,-3.5pt) coordinate (c2) edge ["\cubelabelz"'] ([xshift=3.5pt,yshift=-3.5pt]e)
+    ;
+  },
+  /cuboid/.search also={/tikz},
+  /cuboid/.cd,
+  width/.store in=\cubex,
+  height/.store in=\cubey,
+  depth/.store in=\cubez,
+  labelx/.store in=\cubelabelx,
+  labely/.store in=\cubelabely,  
+  labelz/.store in=\cubelabelz,
+  scale/.store in=\cubescale,
+  width=10,
+  height=10,
+  depth=10,
+  labelx=x,
+  labely=y,
+  labelz=z,
+  scale=.1,
+}
