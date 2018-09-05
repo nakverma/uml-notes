@@ -64,6 +64,12 @@ to chapter one files.
   we will merge your branch into the master branch.
 
 
+**Compiling LaTeX.** We recommend installing `latexmk` (often comes
+  with texlive), and running:
+
+```
+$ latexmk -pdf main.tex
+```
 
 ## Organization
 
