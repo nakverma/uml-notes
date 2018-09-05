@@ -1,0 +1,69 @@
+\section{The \emph{k}-centers problem}
+Consider the following optimization problem on an arbitrary metric
+space:
+\begin{enumerate}
+\item \underline{Input}: a set of $n$ points $x_1,....x_n \in 
+\mathcal{X}$ assuming $(X,\rho)$; a positive integer $k$ 
+\item \underline{Output}: $T \subset \mathcal{X}$ s.t. $|T| = k$
+\item \underline{Goal}: minimize the cost of $T$ where: $ cost(T)
+:= \max_{i \in \{1...n\}} \rho(x_i,T) $
+\end{enumerate}
+
+One possible solution is an exhaustive search, which has exponential
+time complexity. In fact, this problem is NP-hard, so we might look
+instead for an approximate solution. The farthest first traversal
+algorithm, which has polynomial complexity, does this.
+
+\begin{algorithm}
+\caption{Farthest First Traversal Algorithm (FFTA)}
+\begin{algorithmic} 
+\STATE Pick randomly $z\in \mathcal{X}$ and set $T = \{z\}$\;
+\WHILE{$|T| < k$}
+\STATE $z = \argmax_{x\in \mathcal{X}} \rho(x,T)$ \;
+\STATE $T = T \cup \{z\}$\;
+\ENDWHILE
+\end{algorithmic}
+\end{algorithm}
+
+\begin{example}
+To see that this is not an optimal solution to the k-center problem,
+consider the following counterexample. Define the 2-center problem
+($|T| = 2$) on the space $\mathcal{X} = \{0, \frac{1}{4}, \frac{1}{2},
+\frac{3}{4}, 1\}$, with the usual metric $\rho$. The farthest fast
+traversal algorithm might yield to  $\{0,1\}$ while the optimal
+solution is $\{\frac{1}{4},\frac{3}{4}\}$.
+\end{example}
+
+\begin{theorem}
+Let $T^*$ be the optimal solution of the k-center problem and
+$\mathrm{cost}(T^*)$ be its optimal cost. Let T be a solution given
+by FFTA. Then: 
+\[cost(T^*) \le cost(T) \le 2 * cost(T^*)\]
+Thus, FFTA is 2-optimal for the k-center problem. 
+\end{theorem} 
+
+\begin{proof}
+Let $ cost(T) = r = \max_{s \in \mathcal{X}} \rho(s,T) $. There exists
+$x_0 \in \mathcal{X}$ such that $x_0 = \argmax_{x \in\mathcal{X}}
+\rho(x,T)$. We set $T' = T \cup \{x_0\} $, and observe that $\forall
+t_i, t_j \in T', t_i \ne t_j : \rho(t_i,t_j) \ge r$, because if $x_0
+\notin T$, then during any iteration of the farthest first traversal
+algorithm, for the new center $t_i$ added to $T$ it must be true that
+$\rho(t_i, T) \geq r$, otherwise $x_0$ would be already added to $T$.
+We note that $|T'| = k+1$ and $ |T^*| = k$. Because there are $k$
+elements in $T^*$ covering $k+1$ elements in $T'$, by the pigeonhole
+principle, there exists some $t^* \in T^*$ that covers at least two
+elements $t_1,t_2 \in T'$. As $\rho(t_1,t_2) \geq r$, by the triangle
+inequality, at least one of $\rho(t_1,t^*)$ or $\rho(t_2,t^*)$ is at
+least $\frac{r}{2}$. This implies $\mathrm{cost}(T^*)\geq\frac{r}{2}$.
+\end{proof}
+
+\begin{remark}
+Obtaining an $(2 - \epsilon)$-approximation is NP-hard for general
+metric spaces.
+\end{remark}
+
+\noindent\textbf{Some related open problems:} Hardness in Euclidean
+spaces. Is k-center problem still hard in these spaces? Can we get
+better than 2-optimality? Is this the better algorithm to solve the
+problem? 
