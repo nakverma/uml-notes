@@ -1,0 +1,60 @@
+\documentclass[11pt]{book}
+\input{style/preamble_math}
+\input{style/preamble_format}
+
+
+\addbibresource{chapter_1/references}
+\addbibresource{chapter_2/references}
+\addbibresource{chapter_3/references}
+\addbibresource{chapter_4/references}
+\addbibresource{chapter_5/references}
+\addbibresource{chapter_6/references}
+\addbibresource{chapter_7/references}
+\addbibresource{chapter_8/references}
+\addbibresource{chapter_9/references}
+\addbibresource{chapter_10/references}
+\addbibresource{chapter_11/references}
+\addbibresource{chapter_12/references}
+\addbibresource{chapter_13/references}
+
+
+\title{Unsupervised Learning}
+\author{Nakul Verma}
+\date{}
+
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+
+\part{Clustering}
+
+\include{chapter_1/chapter_1}
+\include{chapter_2/chapter_2}
+\include{chapter_3/chapter_3}
+\include{chapter_4/chapter_4}
+
+
+\part{Dimensionality Reduction}
+
+\include{chapter_5/chapter_5}
+\include{chapter_6/chapter_6}
+\include{chapter_7/chapter_7}
+
+
+\part{Density Estimation}
+
+\include{chapter_8/chapter_8}
+\include{chapter_9/chapter_9}
+\include{chapter_10/chapter_10}
+
+
+\part{Advanced Techniques}
+
+\include{chapter_11/chapter_11}
+\include{chapter_12/chapter_12}
+\include{chapter_13/chapter_13}
+
+
+\end{document}
