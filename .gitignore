@@ -1,6 +1,8 @@
 ## Main file and pdfs:
 main.tex
 *.pdf
+*~
+*#
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
