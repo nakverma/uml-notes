@@ -165,7 +165,7 @@ echo "" >> main.tex
 ### Part 4
 
 if [[ include_part -eq 1 ]]; then
-    echo "\part{Advanced Techniques}" >> main.tex
+    echo "\part{Ad Hoc Techniques}" >> main.tex
     echo "" >> main.tex
 fi
 

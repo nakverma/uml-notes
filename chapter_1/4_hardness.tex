@@ -1,0 +1,296 @@
+% Contributors: Jie Li, Yadin Rozov
+\section{Hardness of \emph{k}-means}
+
+For our hardness result, an alternative definition of the $k$-means
+optimization problem will be more useful: 
+\begin{enumerate}
+\item \underline{Input}: A set of $n$ points $\mathcal{X} =
+  x_1,....x_n \in \mathbb{R^d}$ and a positive integer $k<n$. 
+\item \underline{Output}: 
+\begin{enumerate}
+\item $P_1,P_2,...P_k  \subset  \mathcal{X}$, "partitions"
+  s.t. $\cup_i P_i = \mathcal{X}$, $P_i \cap P_j = \O$
+\item $\mu_1,\mu_2,...,\mu_k$ centroids
+\end{enumerate}
+\item \underline{Goal}: minimize cost of $P$ where cost is defined
+  as:
+  \[\sum_{j=1}^{k} \ \sum_{i\in P_j} || x_i - \mu_j || ^2,\]
+  where $P_1,..., P_k$ are the clusters (specific partition of the $n$
+  points).
+\end{enumerate}
+\subsection{Observations}
+\begin{enumerate}
+\item The obvious way to find the optimal solution to k-means is
+  through exhaustive search which is untenable, as that takes a long
+  time and has exponential complexity. While there are only $O(n^k)$
+  combinations of possible choices for centroids (assuming only points
+  of $\mathcal{X}$ are admissible) there are $k^n$ possible
+  partitions, which for $k=10$ and $n=100$ equals the number of atoms
+  in the universe! 
+\item The identity $\E || X - Y ||^2 = 2 \E || X- \E X ||^2$ implies
+  that the cost function in the second definition above can be
+  re-written as:  $$\sum_{j=1}^{k} \ \sum_{i\in P_j} || x_i - \mu_j ||
+  ^2 = \sum_{j=1}^{k} \frac{1}{2 |P_j|} \sum_{i,k \in P_j} || x_i -
+  x_k || ^2 $$ 
+\item The first of these is true because (assuming $X$ and $Y$ to be
+  i.i.d.): 
+\begin{align*}
+  \E\norm{X - Y}^2 &= \E_x \E_{y} \left[\norm{X}^2 + \norm{Y}^2 - 2
+    XY \right] \\ 
+  &= \E_x \norm{X}^2 + \E_y\norm{Y}^2 -2 \E_x \E_y [ X Y ] \\
+  &= 2 \left[ \E X^2 - (\E X)^2\right] = 2 \E [ X - \E X ]^2 = 2
+  \E\norm{ X- \E X}^2 
+\end{align*}
+\item And the second of these is true because by using the first
+  identity and since $\mu_j = \E X = \frac{1}{|P_j|} \sum_{x_i \in
+    P_j} x_i$: 
+\begin{align*}
+	\sum_{j=1}^{k} \ \sum_{i\in P_j} \norm{x_i - \mu_j}^2 &=
+        \sum_{j=1}^{k}  \sum_{i\in P_j} \norm{x_i - \frac{1}{|P_j|}
+        \sum_{x_k \in P_j} x_k}^2 \\
+        & = \sum_{j=1}^{k} \frac{1}{2 |P_j|} \sum_{i,k \in P_j}
+        \norm{x_i - x_k}^2.
+\end{align*}
+\end{enumerate}
+
+\subsection{Review of NP-hard problems}
+For a more complete review of complexity and hardness please go to
+reference \cite{cor2009} chapter 34. 
+\begin{enumerate}
+\item problems that are \textbf{NP-hard} admit polynomial time
+  reductions from all other problems in NP.
+\item to carry out such a necessary reduction that proves a problem
+  ($B$ below) is \textbf{NP-hard} the following steps can used (based
+  off page 1052 from reference \cite{cor2009}): 
+\begin{enumerate}
+\item Given an instance $\alpha$ of a problem $A$ that has previously
+  been proven to be $\in NP$, use a polynomial time reduction
+  algorithm to transform it to an instance $\beta$ of problem $B$ 
+\item Run a decision algorithm for $B$ on instance $\beta$ 
+\item Use the answer for $\beta$ to get $\alpha$
+\end{enumerate} 
+\end{enumerate} 
+
+\subsection{2-means hardness}
+\begin{theorem}\label{2-means-np-hard}
+2-means clustering is an NP-hard optimization problem
+\end{theorem} 
+
+Approach to the problem is based on \cite{das2008}.  To prove this we
+will start with the known NP-hard problem of 3SAT and show a reduction
+from it to the NAE-3SAT* problem.  From that problem we will show a
+reduction to the Generalized 2-means problem and finally show a
+reduction from that to the 2-means problem.  In each reduction as
+above we need to show how an instance of the known NP-hard problem is
+polynomially modified cleverly into an instance of the problem we want
+to show is NP-hard and back (to show that the reduction maps a 'yes'
+instance of the known problem to a 'yes' instance of the new problem
+and 'no' instance of the known problem to a 'no' instance of the new
+problem).  Note since we are dealing with 'decision problems', the
+input of an instance of a problem must include the decision threshold
+for the problem.
+
+
+We'll briefly review NP-completeness, only to the extent necessary to
+set the stage for this proof.  A more thorough treatment can found in
+a computational complexity course. As a consequence of the Cook-Levin
+Theorem, which pointed to the first NP-hard problem, we know that SAT
+and variations, such as 3SAT and NAE 3-SAT, are NP-hard.
+
+\subsection{Hardness proof preliminaries}
+\begin{definition}[3SAT]
+\item \underline{Input}:  A Boolean formula in 3CNF-form: a formula of
+  $m$ clauses, each containing 3 literals, connected by `\texttt{and}'
+  operator.
+\item \underline{Output}:  $\textit{true}$ if formula is satisfiable,
+  $\textit{false}$ if not.
+\end{definition}
+
+\begin{definition}[NAE 3-SAT] \emph{NAE 3-SAT} or
+  \emph{not-all-equal-3SAT} is a 3SAT formula, with the additional
+  requirement that, in each clause at least one literal is true and at
+  least one literal is false.  This removes the case where all three
+  literals in a clause are true.   
+\end{definition}
+
+\begin{definition}[NAE 3-SAT*] 
+A boolean formula $\phi$ containing $n$ literals $x_1,...x_n$.
+Exactly 3 literals for each of $m$ clauses.  Each pair of variables
+$x_i$, $x_j$ appears in at most 2 clauses.  Once as $(x_i,x_j)$ or
+$(\neg x_i, \neg x_j)$ and once as  $(x_i,\neg x_j)$ or $(\neg x_i,
+x_j)$. 
+\end{definition}
+
+\begin{definition}[Generalized k-means]
+\item \underline{Input}:  $n \times n$ matrix, ``distance matrix''
+  with elements $D_{ij} = $ distance between object $i$ and object
+  $j$.
+\item \underline{Output}:  Partition of objects into $P_1$ and $P_2$
+\item \underline{Goal}: minimize $cost(P_1,P_2) = \sum_{j=1}^{2}
+  \frac{1}{2|p_j|} \sum_{i,j \in p_j} D_{ij}$. 
+\end{definition}
+
+
+\begin{lemma}[Hardness of NAE-3SAT*] \label{np-nae-3-sat}
+See \cite{das2008}. (??)
+\end{lemma}
+
+\subsection{Hardness of Generalized 2-means}
+
+For any instance $\phi$ of $x_1,...x_n$ of NAE-3SAT* we construct a
+$2n \times 2n$ distance matrix $D_{\alpha,\beta}$ as below where
+$\alpha,\beta \in x_1,...x_n, \neg x_1,....,\neg x_n$.  Note that
+because the definition of NAE-3SAT* requires that each pair of
+variables $x_i$, $x_j$ appears in at most 2 clauses, once as
+$(x_i,x_j)$ or $(\neg x_i, \neg x_j)$ and once as  $(x_i,\neg x_j)$ or
+$(\neg x_i, x_j)$ , the matrix is uniquely defined for a given
+$\phi$. 
+\begin{definition}[Distance matrix for generalized
+    2-means] \label{2-means-distance-matrix} Define
+  $D(\phi)$ by:
+\begin{align}
+  D_{\alpha,\beta} = \begin{cases}
+    0 & \textrm{if } \alpha = \beta\\
+    1+\Delta  & \mbox{if } \alpha = \overline{\beta} \\
+    1+\delta  & \mbox{if } \alpha \sim \beta \\
+    1 & \textrm{otherwise}.
+  \end{cases}
+\end{align}
+Where $ \alpha \sim \beta$ means that either $\alpha$ and $\beta$
+occur together in a clause or $\alpha$ and $\overline{\beta} $ occur
+together in a clause, where:
+\begin{align}
+  \Delta = \frac{5m}{5m + 2n} \quad\textrm{and}
+  \quad\delta = \frac{1}{5m  + 2n}.
+\end{align}
+\end{definition}
+Note that above implies that $0 < \delta < \Delta < 1$ and also:
+\begin{align}
+4 \delta m < \Delta \le 1 - 2 \delta n.
+\end{align}
+
+\begin{lemma} \label{generalized-2-means-cost}
+If $\phi$ is NAE-3SAT* satisfiable, then $D(\phi)$ admits to a
+generalized 2-means cost of $cost(\phi) = n - 1 + \frac{2\delta
+  m}{n}$. 
+\end{lemma}
+
+\begin{proof}
+Partition the corresponding matrix object ($2n$ object) for the
+NAE-3SAT* satisfied $\phi$ into two partitions; one for all the
+literals that are assigned \textit{true} and a second for all literals
+that are assigned \textit{false}.  Since each literal is represented
+twice we have $|P_1| = |P_2| = n$.   By definition of the NAE-3SAT*,
+each clause contributes one pair to $P_1$ and pair to $P_2$.   Also
+this leads to the fact that the distances between pairs can only be 1,
+$1+\delta$, with $m$ instances of the later and the fact that the two
+clusters have identical costs. So we get that 
+\begin{align*}
+cost(P_1,P_2) &= \sum_{j=1}^{2} \frac{1}{2|P_j|} \sum_{i,j \in P_j}
+D_{ij}\\ 
+&= \frac{1}{2n}( 2 {n \choose 2} + 2m\delta ) + \frac{1}{2n}( 2 {n
+  \choose 2} + 2m\delta ) \\ 
+&= \frac{ n (n-1) } {n} + \frac{2 m \delta}{n} \\
+&= n - 1 +  \frac{2 m \delta}{n}
+\end{align*}
+\end{proof}
+
+\begin{lemma} \label{different-partitions}
+For any partition $P_1$ and $P_2$, WLOG $P_1$ contains a variable and
+its negation, with $cost(P_1,P_2) \ge n - 1 + \frac{\Delta}{2n} > n -
+1 + \frac{2m\delta}{n} = cost(\phi).$ 
+\end{lemma}
+
+\begin{proof}
+Let $n' = |P_1|$.  Note
+\begin{align*}
+cost(P_1,P_2) &\ge \frac{1}{n'}({n' \choose 2} + \Delta ) +
+\frac{1}{2n-n'}{2n-n' \choose 2}  \\ 
+&= n - 1 + \frac{\Delta}{n'} \ge n-1 +\frac{\Delta}{2n}.
+\end{align*}
+\end{proof}
+
+
+\begin{lemma} \label{satisfiable-instance}
+If $D(\phi)$  admits a generalized 2-means cost of $cost(\phi) \le n -
+1 + \frac{2\delta m}{n}$, then $\phi$ is a satisfiable instance of
+NAE-3SAT*. 
+\end{lemma}
+
+\begin{proof}
+Let $P_1$ and $P_2$ be the partition with cost $\le n - 1 +
+\frac{2\delta m}{n}$.  First note that $P_1$ and $P_2$ do not contain
+a variable and its negation and $|P_1| = |P_2| = n$.  The cost of
+clustering $P_1$ and $P_2$ is:
+\begin{align*}
+  \frac{2}{n} \left[ {n \choose 2} + \delta \sum_{\textrm{clauses}} 
+  \begin{cases}
+    1 & \textrm{if clause is split across $P_1$ and $P_2$}\\  
+    3 & \textrm{otherwise} \\ 
+  \end{cases}\right]
+\end{align*}
+Since cost $\le n - 1 + \frac{2\delta m}{n}$, it follows that all
+clauses are split between $P_1$ and $P_2$.  That is, every clause has
+at least one literal in $P_1$ and one literal in $P_2$.  Therefore,
+the assignment that sets all of the $P_1$ to true and all of $P_2$ to
+false is a valid NAE-3SAT* assignment. 
+\end{proof}
+
+
+
+\subsection{Generalized 2-means to 2-means, embedding of $D(\phi)$}
+
+\begin{fact}
+Note that any $n \times n$ symmetric matrix $D$ can be embedded in
+$l_2^2$ iff $u^TDu  \le 0$ for all $u \in \mathbb{R}^n$ s.t. $\sum u_i
+= 0$. 
+\end{fact}
+\begin{proof}[Proof as homework exercise]
+\end{proof}
+
+\begin{fact} \label{d-phi-fact}
+For $D(\phi)$, the following holds:
+\begin{align*}
+u^TDu &= \sum_{\alpha, \beta} u_\alpha u_\beta D_{\alpha \beta}\\ 
+&=\sum_{\alpha, \beta} u_\alpha u_\beta (1 - \mathbf{1}_{(\alpha =
+  \beta)} + \Delta\mathbf{1}_{(\alpha = \bar{\beta})} + \delta
+\mathbf{1}_{(\alpha \sim \beta)})\\ 
+&=\sum_{\alpha, \beta} u_\alpha u_\beta - \sum_{\alpha} u_\alpha^2
++2\Delta (u^+ \cdot u^-) + \delta \sum_{\alpha, \beta} u_\alpha
+u_\beta \mathbf{1}_{(\alpha \sim \beta)}\\ 
+& \le (\sum u_\alpha)^2  - \norm{u}^2 + 2\Delta (u^+ \cdot u^-) +
+\delta \sum_{\alpha, \beta} |u_\alpha| |u_\beta| \text{,  and use:
+  $2ab \le a^2 + b^2$}\\  
+& \le - \norm{u}^2 + \Delta (\norm{u^+}^2  + \norm{u^-}^2) + \delta
+(\sum |u_\alpha|)^2 \\ 
+& \le -(1- \Delta) \norm{u}^2  + \delta 2n \norm{u}^2  \text{,  and
+  since $(1- \Delta) \ge \delta 2n$} \\ 
+& \le 0.
+\end{align*}
+\end{fact}
+
+
+\begin{proof}[Proof of Theorem~\ref{2-means-np-hard}]
+NAE-3SAT* is NP hard from Lemma~\ref{np-nae-3-sat}.  From
+Definition~\ref{2-means-distance-matrix} and
+Lemmas~\ref{generalized-2-means-cost}, \ref{different-partitions},
+\ref{satisfiable-instance} we have that any instance of the NAE-3SAT*,
+$\phi$ of $x_1,...x_n$ can be reduced to an instance of the (decision
+version of the) generalized 2-means problem with $D(\phi)$ and
+threshold $cost(\phi)$.  We also have from the Lemma that with these
+specific instances that NAE-3SAT* is solved, \textbf{if and only if}
+the generalized 2-means problem is solved.  This combined with the
+fact that the reduction steps take polynomial time in $n$ and
+Fact~\ref{d-phi-fact} that $D(\phi)$ can be embedded into $l_2$,
+completes the proof for 2-means. 
+\end{proof}
+
+
+
+
+
+\section{Further reading}
+For a general reference to clustering algorithms, see \cite{har75}
+or \cite{gon85}. On the hardness of $k$-means, see \cite{das2008}.
+A local search approximation is given in \cite{kan2004}. The 
+$k$-means++ algorithm is in \cite{art2007}.
