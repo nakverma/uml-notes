@@ -18,7 +18,8 @@ optimization problem will be more useful:
   where $P_1,..., P_k$ are the clusters (specific partition of the $n$
   points).
 \end{enumerate}
-\subsection{Observations}
+
+\noindent We begin with a few observations:
 \begin{enumerate}
 \item The obvious way to find the optimal solution to k-means is
   through exhaustive search which is untenable, as that takes a long
@@ -71,7 +72,7 @@ reference \cite{cor2009} chapter 34.
 \end{enumerate} 
 \end{enumerate} 
 
-\subsection{2-means hardness}
+Our goal is to show that the 2-means problem is NP hard:
 \begin{theorem}\label{2-means-np-hard}
 2-means clustering is an NP-hard optimization problem
 \end{theorem} 
@@ -135,7 +136,7 @@ x_j)$.
 See \cite{das2008}. (??)
 \end{lemma}
 
-\subsection{Hardness of Generalized 2-means}
+\subsection{Hardness of generalized 2-means}
 
 For any instance $\phi$ of $x_1,...x_n$ of NAE-3SAT* we construct a
 $2n \times 2n$ distance matrix $D_{\alpha,\beta}$ as below where
@@ -238,8 +239,9 @@ false is a valid NAE-3SAT* assignment.
 
 
 
-\subsection{Generalized 2-means to 2-means, embedding of $D(\phi)$}
-
+\subsection{Generalized 2-means to 2-means}
+We will use the hardness of generalized 2-means to show the hardness
+of 2-means by embedding $D(\phi)$.
 \begin{fact}
 Note that any $n \times n$ symmetric matrix $D$ can be embedded in
 $l_2^2$ iff $u^TDu  \le 0$ for all $u \in \mathbb{R}^n$ s.t. $\sum u_i
