@@ -1,0 +1,47 @@
+\section{Kleinberg's Impossibility}
+\begin{enumerate}
+\item \textbf{Scale-Invariance}
+
+  Choice of unit should not affect clustering
+  $$f(x,d)=f(x,\alpha\cdot d),\ \text{for any}\ \alpha>0$$
+\item \textbf{Richness}
+
+  Different $d$'s can give different partitions. All partitions are
+  possible by changing $d$.  
+\item \textbf{Consistency}
+
+  Reducing distance within clusters and increasing distance between
+  clusters won't change partition. 
+  \begin{align*}
+    \text{Suppose}\ &f(x,d)\ \textrm{gives a partition}\\ 
+    \bar{d}(i,j)&\leq
+    d(i,j)\ \text{for}\ i,j\ \textrm{in the same cluster}\\ 
+    \bar{d}(i,j)&\geq d(i,j)\ \textrm{for $i,j$ in different clusters}\\
+    f(x,\bar{d})&=f(x,d)
+  \end{align*}
+\end{enumerate}
+\begin{theorem}
+  There exists no $f$ which satisfies axiom $1,2~\&~3$.
+\end{theorem}
+
+\begin{proof}
+  Suppose there is a set of three points$\{x_1, x_2,x_3\}$. Two
+  distance function $d$ and $d'$ such that $f(x,d)$ gives a clustering
+  of $\{\{x_1\},\{x_2\},\{x_3\}\}$ and $f(x,d')$ gives a clustering of
+  $\{\{x_1,x_2\},\{x_3\}\}$.
+  
+  It can be observed that $$f(x,d)\neq f(x,d')\hspace{5em}(1)$$
+  
+  By scale-invariance, $$f(x,\alpha\cdot d') =
+  f(x,d')\hspace{5em}(2)$$
+  
+  We can find an $\alpha$ that $\alpha\cdot d'$ enlarges distance
+  between any two points. If consistency holds, it means new distance
+  function $\alpha\cdot d'$ shouldn't change partition result of
+  $f(x,d)$ because $\alpha\cdot d'$ increases all between-cluster
+  distances. However, from (1) and (2) we know that $f(x,d)\neq
+  f(x,\alpha\cdot d')$, so consistency doesn't hold for the partition
+  function $f$.
+\end{proof}
+Note that k-means algorithm is not richness because it can only have
+$k$ clusters. 
