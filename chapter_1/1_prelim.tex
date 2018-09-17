@@ -32,7 +32,7 @@ $\mathcal{X}$, there exists an underlying structure. Our learning task
 is to discover this structure given a relatively small amount of data.
 One of the most intuitive concepts of a structure is a
 cluster---groups of points that behave similarly to each other, but
-quite differently to points in other clusters.
+quite differently to points in other clusters
 
 To warm up, we can ask a few questions:
 \begin{itemize}
@@ -47,6 +47,15 @@ To warm up, we can ask a few questions:
   also used in computer vision to map from pixel space to HOG
   (histogram of oriented gradient) space to give rise to new
   features.
+\item \emph{How do we cluster?} There are three main types of
+    clustering methods. The first that we study is \textit{centroid}
+    based clustering, such as Lloyd's Algorithm, where we try to
+    identify central vectors that represent each cluster. Another 
+    type is \textit{density} based clustering, such as DBSCAN
+    where clusters are identified as areas where data points are
+    densely located. The last is \textit{proximity} based, such as
+    spectral clustering, where we first construct a graph with our
+    dataset and estimate a partition.
 \end{itemize}
 In short, clustering aims to find a meaningful way to group
 datapoints, which is especially important in exploratory data
@@ -65,8 +74,15 @@ $(\mathcal{X},\rho)$ such that $\rho$ satisfies the following:
 \item triangle inequality: $\forall x,y,z \in \mathcal{X}, \rho(x,y)
   \le \rho(x,z) + \rho(z,y)$. 
 \end{itemize}
-We call $\rho$ a \emph{metric} or a \emph{distance function}. 
+We call $\rho$ a \emph{metric} or a \emph{distance function}.
+
 \end{definition}
+
+We should be cautious about symmetry: there are instances where
+the distances are not necessarily symmetric. For example, if we are
+clustering facility locations, since there are one-way roads,
+distances between facilities need not be symmetric.
+
 Given a metric space $\mathcal{X}$, we can define the distance between
 a point and a subset $T$ of $\mathcal{X}$: 
 \begin{definition}
@@ -96,7 +112,7 @@ geodesic.
 \begin{figure}
     \centering
     \captionsetup{width=0.8\textwidth}
-    \includegraphics[scale=0.15]{chapter_1/files/geodesic.jpg}
+    \includegraphics[scale=0.3]{chapter_1/files/geodesic.jpg}
     \caption{A manifold $\mathcal{M}$ embedded in some Euclidean
     space $\mathbb{R}^n$ may have a shortest geodesic that is
     not the same as the shortest Euclidean path.}
@@ -104,11 +120,12 @@ geodesic.
 \end{figure}
 \begin{example}[Graph metric] The shortest path on graphs (for 
 example a social network graph) forms a valid distance function. The
-distance is just the smallest number of edges between two vertices.
+distance is just the smallest number of edges between two vertices, 
+and defined as $\infty$ for vertices that cannot reach each other.
 \end{example}
 \begin{remark}
 A metric space isn't always a Euclidean space. So, we cannot always
-perform Euclidean operations (ie. taking the mean) in an arbitrary
+perform Euclidean operations (i.e. taking the mean) in an arbitrary
 metric space.
 \end{remark}
 
@@ -125,8 +142,51 @@ In other words, $T$ $\epsilon$-covers $S$ if $\sup_{s\in S}
 \rho(s,T)\leq \epsilon$.
 
 \begin{exercise}
-(i) Is $S$ a cover of $S$? (ii) Give the vertices $d$-dimensional
+(i) Is $S$ a cover of $S$? (ii) Given the vertices of a $d$-dimensional
 cube $\{-1,1\}^d$ the $\ell_\infty$ distance. What is a good 1-cover?
 $\frac{1}{2}$-cover? $\frac{9}{10}$-cover?
 \end{exercise}
 
+\begin{enumerate}[(i)]
+	\item $S$ is a $\epsilon$-cover of $S$ for all $\epsilon \geq 0$,
+	as for every element $x_i \in S$, $\rho(x_i, x_i) = 0 \leq 
+	\epsilon$.
+	
+	\item It is clear that a good 1-cover for $S = \{-1, 1\}^d$ with 
+	$\rho = \ell_\infty$ would be the set $\{\vec{0}\}$. However, for 
+	an $\epsilon$-cover with $\epsilon < 1$, the smallest cover is of 
+	size $2^d$. The proof is as follows:
+	
+	\begin{proof}
+		Let $T'$ be an $\epsilon$-cover of $S$ that contains less than
+		$2^d$ elements. Then, $\exists\ x, x' \in S, t \in T$ such that 
+		both $\rho(x, t) < \epsilon$ and $\rho(x', t) < \epsilon$. We 
+		know that the distance between any two vertices of the unit 
+		hypercube is equal to 2. However, when we apply the triangle
+		inequality:
+		\begin{align*}
+			\rho(x, x') & = 2\\
+			\rho(x, t) + \rho(x', t) & \geq \rho(x, x')\\
+			& \geq 2
+		\end{align*}
+		Which implies that either $\rho(x, t) \geq 1$ or $\rho(x', t) 
+		\geq 1$, contradicting our earlier claim that both $\rho(x, t) 
+		< \epsilon$ and $\rho(x', t) < epsilon$. Thus, the smallest
+		possible $\epsilon$-cover of $S$ for $\epsilon < 1$ is of size
+		$2^d$.
+	\end{proof}
+\end{enumerate}
+
+We can generalize the result from above:
+\begin{exercise}
+For $S = [-1,1]^d$, what is the size of the smallest $\varepsilon$ cover?
+\end{exercise}
+\begin{proof}
+    The size of such a set is $\lceil\frac{1}{\varepsilon}\rceil^d$.
+    Consider a particular dimension. Each point can cover an interval
+    of length $2\varepsilon$, so we need at least
+    $\frac{2}{2\epsilon}$ different points to cover the entire
+    interval $[-1, 1]$. We can extend this reasoning to each of the
+    $d$ dimensions, concluding that there should be at least 
+    $\lceil\frac{1}{\varepsilon}\rceil^d$ different points.
+\end{proof}
