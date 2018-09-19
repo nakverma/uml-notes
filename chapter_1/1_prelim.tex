@@ -177,16 +177,8 @@ $\frac{1}{2}$-cover? $\frac{9}{10}$-cover?
 	\end{proof}
 \end{enumerate}
 
-We can generalize the result from above:
 \begin{exercise}
-For $S = [-1,1]^d$, what is the size of the smallest $\varepsilon$ cover?
+	Let $D=[0,1]^d$ with the Euclidean metric and let $N_\epsilon(d)$ be the smallest number of
+	points required to form an $\epsilon$-cover of $D$. What is the asymptotic behavior of $N_\epsilon(d)$ in the variable $d$? 
+	Hint: consider filling $D$ with d-dimensional balls.
 \end{exercise}
-\begin{proof}
-    The size of such a set is $\lceil\frac{1}{\varepsilon}\rceil^d$.
-    Consider a particular dimension. Each point can cover an interval
-    of length $2\varepsilon$, so we need at least
-    $\frac{2}{2\epsilon}$ different points to cover the entire
-    interval $[-1, 1]$. We can extend this reasoning to each of the
-    $d$ dimensions, concluding that there should be at least 
-    $\lceil\frac{1}{\varepsilon}\rceil^d$ different points.
-\end{proof}

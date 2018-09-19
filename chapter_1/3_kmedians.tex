@@ -1,0 +1,81 @@
+\section{The \emph{k}-medians problem}
+The \emph{k}-medians problem is a variant of the k-centers problem 
+which penalizes the sum over all distances, and not just the maximum distance
+as in the k-centers problem.
+
+\begin{enumerate}
+\item \underline{Input}: a set $S$ of $n$ points $x_1,....x_n \in 
+\mathcal{X}$ assuming $(X,\rho)$; a positive integer $k$ 
+\item \underline{Output}: $T \subset \mathcal{S}$ s.t. $|T| = k$
+\item \underline{Goal}: minimize the cost of $T$ where: $ cost(T)
+:= \sum_{i \in \{1...n\}} \rho(x_i,T) $
+\end{enumerate}
+
+The problem is very similar in structure to the \emph{k}-centers problem,
+but in the k-medians setting, the set of possible centers $T$ is restricted to the set of data points $S$,
+and the cost function is a sum of distances over all data points instead of simply considering the maximum distance. 
+
+\begin{remark}
+The fact that k-medians considers a sum over all distances makes solutions to
+this problem somewhat more robust to outliers than the \emph{k}-centers problem,
+since a single outlier does not necessarily dominate the cost.
+\end{remark}
+
+\noindent\textbf{Relaxed Linear Programming Techniques:} Because the objective function for this problem is linear in the choice of
+centers in $T\subset S$, it is susceptible to a modified linear programming strategy.\\
+
+Let $0< i\leq |S|$ and $0 < j\leq |S|$ index the set $S$. Then define two
+binary variables $y_j$ and $x_{ij}$ such that
+
+$$y_j = \mathbbm{1}\left[j^\text{th}\text{ datapoint is in } T\right]$$
+and
+$$x_{ij} = \mathbbm{1}\left[i^\text{th} \text{ point is assigned to the cluster centered at the }j^\text{th} \text{ point}\right]$$
+
+In other words, $y_j$ is a binary variable that asks if the 
+$j^\text{th}$ point is a cluster center (i.e. an element of $T$), 
+and $x_{ij}$ is a binary variable that asks if the nearest center to
+the $i^\text{th}$ data point is the $j^\text{th}$ data point.
+
+\begin{example}
+	For example, consider three datapoints $S=\{0, 2, 3\}$ and
+	$T=\{0, 2\}$. In this case, 0 is assigned to 0, 2 is assigned to 2, and 3 is assigned to 2,
+	so $x_{00} = 1, x_{11}=1, x_{12}=1$ and all others are 0. $y_0$ and $y_1$ are 1, and $y_2$ is 0.
+\end{example}
+
+With these definitions, we can reformulate the k-medians problem as 
+an integer programming problem minimizing the objective function
+
+$$\min_{(x_{ij}, y_j)_{i, j \in \{1...n\}}} \sum_{ij} x_{ij}\rho(x_i, x_j)$$
+
+subject to the constraints that
+\begin{align}
+	& \forall i \in \{1...n\}, \quad\sum_j x_{ij} = 1 \notag \\
+	& \sum_j y_j = k \notag \\ 
+	& \forall i, j \in \{1...n\},  \quad x_{ij} \leq y_j \notag \\
+	& \forall i, j \in \{1...n\},  \quad x_{ij}\in \{0, 1\}, y_j\in\{0, 1\} \notag
+\end{align}
+
+This objective, while superficially different, is equivalent to the original problem, 
+since the objective is minimizing the sum of indicator variables which reduces
+to the original sum over the assigned centers. The first constraint requires that 
+each datapoint be assigned to one and only one cluster center, while the second 
+constraint requires that $|T|=k$. The third constraint forces the $i^\text{th}$ 
+datapoint be assigned to the $j^\text{th}$ datapoint if and only if $x_j$ is in fact
+a cluster center. The last constraints enforce the conditions that $y_j$ and $x_{ij}$
+are binary variables. 
+
+The first 3 constraints are linear in $y_j$ and $x_{ij}$, but problematically, the last constraint is not. 
+It is in fact an integer constraint, making this an integer program. These problems are known to be NP-complete, making the problem intractable in general. However, that sole integer
+constraint can be relaxed into a linear constraint by requiring only that
+
+$$\forall i, j \in \{1...n\}, x_{ij}, y_j \in[0, 1]$$
+
+This problem is now linear (in $n^2 + n$ variables) and can be solved with a typical linear program solver.\\
+
+\noindent\textbf{Converting from the Relaxed Solution to an Exact Solution:} While this is a solution to the relaxed problem, this solution can clearly violate the original k-medians criterion 
+since fractional assignments may occur. To remedy this, randomized rounding can be used to round $x_{ij}$ and $y_j$ to
+integer values, which preserve approximate optimality and approximate adherence to the
+original constraints. For example, suppose that we find that the value of $x_{i,j} = 0.6.$ Then, we can specify that the algorithm will have probability of 0.6 of rounding the value to 1. With this method, we can prove further that the values assigned from this method will be very close to the optimal assignment.\\
+
+\noindent\textbf{Some related problems:} Asymmetric k-medians where the symmetry condition
+on the metric is relaxed. This is known to be $\log^*n - \Omega(1)$ hard to approximate
