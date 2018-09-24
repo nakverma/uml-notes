@@ -1,31 +1,28 @@
 % Contributors: Jie Li, Yadin Rozov
+% Contributors: Kevin Wu, Emily Jin
 \section{Hardness of \emph{k}-means}
 
 For our hardness result, an alternative definition of the $k$-means
 optimization problem will be more useful: 
 \begin{enumerate}
-\item \underline{Input}: A set of $n$ points $\mathcal{X} =
-  x_1,....x_n \in \mathbb{R^d}$ and a positive integer $k<n$. 
+\item \underline{Input}: A set of $n$ points $\mathcal{S} =
+  x_1,....x_n \in \mathbb{R}^d$ and a positive integer $k<n$. 
 \item \underline{Output}: 
 \begin{enumerate}
-\item $P_1,P_2,...P_k  \subset  \mathcal{X}$, "partitions"
-  s.t. $\cup_i P_i = \mathcal{X}$, $P_i \cap P_j = \O$
-\item $\mu_1,\mu_2,...,\mu_k$ centroids
+\item A partition of size $k$ of $\mathcal{S}$, $P_1,P_2,...P_k$. 
+\begin{itemize}
+\item (By definition of a partition, $\cup_i P_i = \mathcal{S}$,  and $P_i \cap P_j = \emptyset \ \forall \ i, j$))
+\end{itemize}
+\item $k$ centroids $\mu_1,\mu_2,...,\mu_k$
 \end{enumerate}
-\item \underline{Goal}: minimize cost of $P$ where cost is defined
-  as:
-  \[\sum_{j=1}^{k} \ \sum_{i\in P_j} || x_i - \mu_j || ^2,\]
-  where $P_1,..., P_k$ are the clusters (specific partition of the $n$
-  points).
-\end{enumerate}
+\item \underline{Goal}: minimize ``cost'' of $P$ where $cost(P) 
+:=  \sum_{j=1}^{k} \ \sum_{i\in P_j} || x_i - \mu_j || ^2 $
+ \end{enumerate}
 
 \noindent We begin with a few observations:
 \begin{enumerate}
-\item The obvious way to find the optimal solution to k-means is
-  through exhaustive search which is untenable, as that takes a long
-  time and has exponential complexity. While there are only $O(n^k)$
-  combinations of possible choices for centroids (assuming only points
-  of $\mathcal{X}$ are admissible) there are $k^n$ possible
+\item One obvious way to find the optimal solution to $k$-means is
+  through an exhaustive search with exponential complexity. Note that there are $k^n$ possible
   partitions, which for $k=10$ and $n=100$ equals the number of atoms
   in the universe! 
 \item The identity $\E || X - Y ||^2 = 2 \E || X- \E X ||^2$ implies
@@ -55,24 +52,23 @@ optimization problem will be more useful:
 \end{enumerate}
 
 \subsection{Review of NP-hard problems}
-For a more complete review of complexity and hardness please go to
-reference \cite{cor2009} chapter 34. 
 \begin{enumerate}
-\item problems that are \textbf{NP-hard} admit polynomial time
+\item Problems that are NP-hard admit polynomial time
   reductions from all other problems in NP.
-\item to carry out such a necessary reduction that proves a problem
-  ($B$ below) is \textbf{NP-hard} the following steps can used (based
-  off page 1052 from reference \cite{cor2009}): 
+\item To carry out such a necessary reduction that proves a problem is NP-hard, the following steps can used (\cite{cor2009}): 
 \begin{enumerate}
 \item Given an instance $\alpha$ of a problem $A$ that has previously
-  been proven to be $\in NP$, use a polynomial time reduction
-  algorithm to transform it to an instance $\beta$ of problem $B$ 
+  been proven to be NP-hard ($A \in NP$), use a polynomial time algorithm to transform it to an instance $\beta$ of problem $B$ .
 \item Run a decision algorithm for $B$ on instance $\beta$ 
 \item Use the answer for $\beta$ to get $\alpha$
 \end{enumerate} 
 \end{enumerate} 
 
+For a more complete review of complexity and hardness please go to
+reference \cite{cor2009} chapter 34. \\
+
 Our goal is to show that the 2-means problem is NP hard:
+
 \begin{theorem}\label{2-means-np-hard}
 2-means clustering is an NP-hard optimization problem
 \end{theorem} 
@@ -81,16 +77,15 @@ Approach to the problem is based on \cite{das2008}.  To prove this we
 will start with the known NP-hard problem of 3SAT and show a reduction
 from it to the NAE-3SAT* problem.  From that problem we will show a
 reduction to the Generalized 2-means problem and finally show a
-reduction from that to the 2-means problem.  In each reduction as
-above we need to show how an instance of the known NP-hard problem is
-polynomially modified cleverly into an instance of the problem we want
-to show is NP-hard and back (to show that the reduction maps a 'yes'
+reduction from that to the 2-means problem. \\
+
+In each reduction  we need to show how an instance of the known NP-hard problem can be modified in polynomial time into an instance of the problem we want
+to show is NP-hard, and vice versa. In other words, we must show that the reduction maps a 'yes'
 instance of the known problem to a 'yes' instance of the new problem
 and 'no' instance of the known problem to a 'no' instance of the new
-problem).  Note since we are dealing with 'decision problems', the
+problem. Note since the set NP is a set of \emph{decision problems}, the
 input of an instance of a problem must include the decision threshold
 for the problem.
-
 
 We'll briefly review NP-completeness, only to the extent necessary to
 set the stage for this proof.  A more thorough treatment can found in
@@ -100,11 +95,12 @@ and variations, such as 3SAT and NAE 3-SAT, are NP-hard.
 
 \subsection{Hardness proof preliminaries}
 \begin{definition}[3SAT]
-\item \underline{Input}:  A Boolean formula in 3CNF-form: a formula of
-  $m$ clauses, each containing 3 literals, connected by `\texttt{and}'
-  operator.
-\item \underline{Output}:  $\textit{true}$ if formula is satisfiable,
-  $\textit{false}$ if not.
+\item \underline{Input}:  A 3-CNF Boolean formula over $n$ literals. 
+\begin{itemize}
+\item 3-CNF (3-Conjunctive Normal Form): A Boolean formula that can be expressed as an \emph{AND} over
+  $m$ clauses, each of which is an \emph{OR} over exactly 3 literals.
+\end{itemize}
+\item \underline{Output}: \emph{True} if there exists, \emph{False} if not.
 \end{definition}
 
 \begin{definition}[NAE 3-SAT] \emph{NAE 3-SAT} or
