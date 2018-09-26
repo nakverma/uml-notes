@@ -116,25 +116,57 @@ However, the con of relaxation is that the LP solution is fractional, so it is n
 \includegraphics[width=0.7\textwidth]{chapter_1/files/kmedians_polytime_algo}
 \caption{Visualize the deterministic poly-time algorithm. }
 \end{figure}
-
 \subsection*{Claim 1: COST(T) $\leq 4$ OPT$_{\text{LP}}$}
 \subsubsection*{Observation:}
 Pick any $q \in S$ and suppose $i$ is the first point selected in $T$  for which $q \in A_i$.
 
 \begin{enumerate}
-  \item $c_i \leq c_q$
-  \item $\rho(q, i) \leq 4 c_q$
+	\item $c_i \leq c_q$
+	\item $\rho(q, i) \leq 4 c_q$
 \end{enumerate}
 
-\noindent Proof: $\exists p \in S, \rho(q, i) \leq \rho(q,p)+\rho(p, i)\leq 2c_q+2c_i \leq 4c_q$. \\
+\noindent\textbf{Proof:} \\
+$$\exists p \in S, \rho(q, i) \leq \rho(q,p)+\rho(p, i)\leq 2c_q+2c_i \leq 4c_q$$ \\
 
 \noindent Summing up both sides of the inequality over $q$, we get $COST(T) \leq 4 OPT_{LP}$.
 
-\subsection*{Claim 2: $\mid$T$\mid$ $\leq 2k$} ~\\
+\subsection*{Claim 2: $\mid$T$\mid$ $\leq 2k$} 
+\subsubsection*{Observation:}
+\noindent Pick any $i \in T$, we have:
+$$k \geq \sum_{j \in \text{Ball}(i, 2c_i)}y_j \geq \sum_{j \in \text{Ball}(i, 2c_i)}x_{ij} \geq \frac{1}{2}$$
 
-Pick any $i \in T$, we have:
-$$k \geq \sum_{j \in \text{Ball}(i, 2c_i)}y_i \geq \sum_{j \in \text{Ball}(i, 2c_i)}x_{ij} \geq \frac{1}{2}$$
+\noindent\textbf{Proof:} \\
 
-\noindent The two claims above can be generalized to $\forall \epsilon > 0$, COST(T)$\leq2(1+\frac{1}{\epsilon})$OPT$_\text{LP}$ and $\mid $T$\mid$ $\leq (1+\epsilon)k$. \\
+\noindent Recall constraints when defining our linear program for $k$-median: \\
+$$ k \geq \sum\limits_{j} y_j$$ (There are at most $k$ centers.)\\
+$$ y_{j} \geq x_{ij}$$ (If $j$ is not a center then $x_{ij}$ cannot be associated with it.) \\ \\
 
-\noindent\textbf{Some related problems:} Asymmetric k-medians where the symmetry condition on the metric is relaxed. This is known to be $\log^*n - \Omega(1)$ hard to approximate.
+\noindent $$ y_{j} \geq x_{ij} \implies \sum_{j \in \text{Ball}(i, 2c_i)}y_i \geq \sum_{j \in \text{Ball}(i, 2c_i)}x_{ij} $$
+$$ k \geq \sum\limits_{j} y_j \implies k \geq \sum_{j \in \text{Ball}(i, 2c_i)}y_i $$ \\
+\noindent\textbf{Recall Markov Inequality:} \\
+
+\noindent Let $z$ be a non-negative random variable. \\
+$$ \Pr[z > a] < \frac{\E[z]}{a} $$ \\ 
+
+\noindent Take a closer look at the following expression: \\
+$$ \forall i, \sum\limits_{j}x_{ij} = 1 $$ \\
+\noindent It resembles a point mass probability distribution. And \\
+
+\noindent $$ c_i = \sum\limits_{j}x_{ij}\rho(i,j) $$ \\
+\noindent resembles a weighted average over probability induced by $x_i$.  \\ Therefore, $c_i$ can be rewritten as the following expression: \\
+
+\noindent $$ c_i = \displaystyle \mathop{\mathbb{E}}_{x_i}\rho(i,j) $$ \\
+
+\noindent $$ \sum\limits_{j \in B(i, 2c_i)}x_{ij} = \Pr [z\leq 2c_i] $$
+$$ = \Pr [z\leq 2\E\rho(i,j)] $$
+$$ = \Pr [z\leq 2\E[z]] $$
+$$ = 1 - \Pr [z> 2\E[z]] $$ 
+Apply Markov Inequality: \\
+
+\noindent $$ \Pr [z> 2\E[z]] < \frac{\E[z]}{2\E[z]} = \frac{1}{2} $$ \\
+$$ 1 - \Pr [z > 2\E[z]] \geq \frac{1}{2} $$ \\
+$$ \sum\limits_{j \in B(i, 2c_i)}x_{ij} \geq \frac{1}{2} $$ \\
+
+\noindent \textbf{Claim 1} and \textbf{Claim 2} above can be generalized to $\forall \epsilon > 0$, COST(T)$\leq2(1+\frac{1}{\epsilon})$OPT$_\text{LP}$ and $\mid $T$\mid$ $\leq (1+\epsilon)k$. \\
+
+\noindent\textbf{Some related problems:} Asymmetric k-medians where the symmetry condition on the metric is relaxed. This is known to be $\log^*n - \Omega(1)$ hard to approximate. \\
