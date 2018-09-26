@@ -18,6 +18,8 @@ optimization problem will be more useful:
 \item \underline{Goal}: minimize ``cost'' of $P$ where $cost(P) 
 :=  \sum_{j=1}^{k} \ \sum_{i\in P_j} || x_i - \mu_j || ^2 $
  \end{enumerate}
+ 
+Note that for a given partition $j$, the inner sum, $ \sum_{i\in P_j} || x_i - \mu_j || $, is a convex function in $\mu_j$ that is minimized at $\mu_j = \frac{1}{|P_j|} \sum_{i \in P_j} x_i $, the mean of the points in partition $j$.\\ 
 
 \noindent We begin with a few observations:
 \begin{enumerate}

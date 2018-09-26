@@ -18,6 +18,8 @@ time complexity. If we want some solution in polynomial time, however, we
 must settle for an approximation, as $k$-means is also an NP-hard
 optimization problem. \\
 
+(The statement regarding NP-hardness of $k$-means assumes that $d$ in $\mathbb{R}^d$ must be greater than or equal to 2; when $d = 1$, the problem is actually solvable in polynomial time using dynamic programming).\\
+
 One approximate solution is Lloyd's method for $k$-means, which alternates between optimizing cluster assignments and cluster centers until some stopping criterion (i.e. convergence of cluster centers $\vec{\mu}$).
 
 \begin{algorithm}
@@ -63,11 +65,11 @@ optimal solution.
 \end{example}
 
 \begin{remark}
-Call $cost(T^*)$ the cost of the optimal k-means solution, and $cost(T^{LLOYD})$ the cost the approximate solution returned by k-means. $cost(T^{LLOYD})$ may be \emph{arbitrarily bad} compared to $cost(T^*)$.
+$cost(T^{LLOYD})$ is unbounded and may be \emph{arbitrarily bad} compared to the optimal solution depending on the initialization of cluster means.
 \end{remark}
 
 \begin{example} 
-Insert example from class today (9/24). 
+Insert example from 9/24 class.  
 \end{example}
 
 
