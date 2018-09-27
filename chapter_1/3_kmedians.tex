@@ -129,7 +129,6 @@ Pick any $q \in S$ and suppose $i$ is the first point selected in $T$  for which
 $$\exists p \in S, \rho(q, i) \leq \rho(q,p)+\rho(p, i)\leq 2c_q+2c_i \leq 4c_q$$ \\
 
 \noindent Summing up both sides of the inequality over $q$, we get $COST(T) \leq 4 OPT_{LP}$.
-
 \subsection*{Claim 2: $\mid$T$\mid$ $\leq 2k$} 
 \subsubsection*{Observation:}
 \noindent Pick any $i \in T$, we have:
@@ -139,9 +138,10 @@ $$k \geq \sum_{j \in \text{Ball}(i, 2c_i)}y_j \geq \sum_{j \in \text{Ball}(i, 2c
 
 \noindent Recall constraints when defining our linear program for $k$-median: \\
 $$ k \geq \sum\limits_{j} y_j$$ (There are at most $k$ centers.)\\
-$$ y_{j} \geq x_{ij}$$ (If $j$ is not a center then $x_{ij}$ cannot be associated with it.) \\ \\
+$$ y_{j} \geq x_{ij}$$ (If $j$ is not a center, then $x_{ij}$ cannot be associated with it.) \\ \\
 
 \noindent $$ y_{j} \geq x_{ij} \implies \sum_{j \in \text{Ball}(i, 2c_i)}y_i \geq \sum_{j \in \text{Ball}(i, 2c_i)}x_{ij} $$
+$$ \sum\limits_{j}y_j \geq \sum\limits_{j \in B(i, 2c_i)}y_j $$ 
 $$ k \geq \sum\limits_{j} y_j \implies k \geq \sum_{j \in \text{Ball}(i, 2c_i)}y_i $$ \\
 \noindent\textbf{Recall Markov Inequality:} \\
 
@@ -156,16 +156,35 @@ $$ \forall i, \sum\limits_{j}x_{ij} = 1 $$ \\
 \noindent resembles a weighted average over probability induced by $x_i$.  \\ Therefore, $c_i$ can be rewritten as the following expression: \\
 
 \noindent $$ c_i = \displaystyle \mathop{\mathbb{E}}_{x_i}\rho(i,j) $$ \\
+Define random variable $z_i$ as follows: \\
+$z_i$ takes value $\rho(i,j)$ with probability $x_{ij}$ and \sum\limits_{j}x_{ij} = 1 $$.\\
 
-\noindent $$ \sum\limits_{j \in B(i, 2c_i)}x_{ij} = \Pr [z\leq 2c_i] $$
-$$ = \Pr [z\leq 2\E\rho(i,j)] $$
-$$ = \Pr [z\leq 2\E[z]] $$
-$$ = 1 - \Pr [z> 2\E[z]] $$ 
+\noindent Then think of the following expression: 
+$$ \sum\limits_{j \in B(i, 2c_i)}x_{ij} $$ 
+as a quanity measuring how much probability falls into the metric ball $B(i, c_i)$, i.e. a sum of the probabilities included in the ball. This sum is exactly the probability of $z_i$ falling in the metric ball $B(i,c_i)$ or the sum of probabilities of every $\rho(i,j) \leq 2c_i$. \\
+
+\noindent $$ \therefore \sum\limits_{j \in B(i, 2c_i)}x_{ij} = \Pr [z_i \leq 2c_i] $$
+$$ = \Pr [z_i \leq 2\displaystyle \mathop{\mathbb{E}}_{x_i}\rho(i,j)] $$
+$$ = \Pr [z_i \leq 2\E[z_i]] $$
+$$ = 1 - \Pr [z_i > 2\E[z_i]] $$ 
 Apply Markov Inequality: \\
 
-\noindent $$ \Pr [z> 2\E[z]] < \frac{\E[z]}{2\E[z]} = \frac{1}{2} $$ \\
-$$ 1 - \Pr [z > 2\E[z]] \geq \frac{1}{2} $$ \\
+\noindent $$ \Pr [z> 2\E[z]] < \frac{\E[z]}{2\E[z]}  $$ 
+$$ \Pr [z> 2\E[z]] < \frac{1}{2} $$
+$$ 1 - \Pr [z > 2\E[z]] \geq \frac{1}{2} $$ 
 $$ \sum\limits_{j \in B(i, 2c_i)}x_{ij} \geq \frac{1}{2} $$ \\
+To bring everything together, we observe that if we do not double count any $y_j$, the following holds true: 
+$$ \sum\limits_{j}y_j \geq \sum\limits_{i \in T}\sum\limits_{j \in B(i, 2c_i)}y_j $$ 
+Then: 
+$$k \geq \sum\limits_{i \in T}\sum\limits_{j \in B(i, 2c_i)}y_j \geq \sum\limits_{i \in T}\sum_{j \in \text{Ball}(i, 2c_i)}x_{ij} \geq \frac{\mid T \mid}{2}$$ \\
+$$\mid T \mid \leq 2k$$\\
+\noindent Intuitively, this inequality can be confirmed by the following contradiction: \\
+If there are more than $2k$ disjoint metric balls $B(i, c_i), i \in T$, and each $y_j$ is contributing at least half a center, then the following would be true: \\
+$$\sum\limits_{i \in T}\sum\limits_{j \in B(i, 2c_i)}y_j > \frac{1}{2}2k = k$$
+Which implies that 
+$$\sum\limits_{j}y_j > k$$
+But we know that $$\sum\limits_{j}y_j \leq k$$
+So we know that $\mid T \mid \leq 2k$
 
 \noindent \textbf{Claim 1} and \textbf{Claim 2} above can be generalized to $\forall \epsilon > 0$, COST(T)$\leq2(1+\frac{1}{\epsilon})$OPT$_\text{LP}$ and $\mid $T$\mid$ $\leq (1+\epsilon)k$. \\
 
