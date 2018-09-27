@@ -169,9 +169,9 @@ $$ = \Pr [z_i \leq 2\E[z_i]] $$
 $$ = 1 - \Pr [z_i > 2\E[z_i]] $$ 
 Apply Markov Inequality: \\
 
-\noindent $$ \Pr [z> 2\E[z]] < \frac{\E[z]}{2\E[z]}  $$ 
-$$ \Pr [z> 2\E[z]] < \frac{1}{2} $$
-$$ 1 - \Pr [z > 2\E[z]] \geq \frac{1}{2} $$ 
+\noindent $$ \Pr [z_i> 2\E[z_i]] < \frac{\E[z_i]}{2\E[z_i]}  $$ 
+$$ \Pr [z_i> 2\E[z_i]] < \frac{1}{2} $$
+$$ 1 - \Pr [z_i > 2\E[z_i]] \geq \frac{1}{2} $$ 
 $$ \sum\limits_{j \in B(i, 2c_i)}x_{ij} \geq \frac{1}{2} $$ \\
 To bring everything together, we observe that if we do not double count any $y_j$, the following holds true: 
 $$ \sum\limits_{j}y_j \geq \sum\limits_{i \in T}\sum\limits_{j \in B(i, 2c_i)}y_j $$ 
