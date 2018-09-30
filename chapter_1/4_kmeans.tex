@@ -40,30 +40,6 @@ One approximate solution is Lloyd's method for $k$-means, which alternates betwe
 Call $cost(T^*)$ the cost of the optimal k-means solution, and $cost(T^{LLOYD})$ the cost the approximate solution returned by k-means. Then necessarily, $cost(T^{LLOYD}) \geq cost(T^*)$.
 \end{remark}
 
-\begin{example} Consider the following setting and dataset
-where $k=2$ and $d=1$:
-\begin{figure}
-    \centering
-    \captionsetup{width=0.8\textwidth}
-    \includegraphics[scale=0.4]{chapter_1/files/kmeans.png}
-    \caption{An example of datapoints and initial setting where
-    Lloyd's algorithm fails to be optimal.}
-    \label{fig:kmeans}
-\end{figure}
-
-The dashed lines point to the current cluster centers, with 0
-for the blue cluster and 28 for the red cluster. On this
-setting, Lloyd's algorithm makes no further improvement (it
-terminates after one iteration), since the middle point at 16
-is closer to the red cluster center 28 than to the blue cluster
-center 0. And the total cost is $0^2+12^2+12^2=288$.
-
-However, the optimal cluster center assignment should be 8 for
-the blue cluster and 40 for the red cluster, which gives a cost
-of $8^2+8^2+0^2=128$. Thus, Lloyd's algorithm does not give the
-optimal solution.
-\end{example}
-
 \begin{remark}
 $cost(T^{LLOYD})$ is unbounded and may be \emph{arbitrarily bad} compared to the optimal solution depending on the initialization of cluster means.
 \end{remark}
