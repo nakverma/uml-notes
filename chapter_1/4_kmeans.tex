@@ -69,7 +69,41 @@ $cost(T^{LLOYD})$ is unbounded and may be \emph{arbitrarily bad} compared to the
 \end{remark}
 
 \begin{example} 
-Insert example from 9/24 class.  
+Llyod's method is arbitrarily bad even for seemingly ideal inputs. Consider data that is actually separable into $k=3$ collinear clusters, the diameter of each of which is $\delta$. Let the distance between the middle cluster and the other two clusters be $\Delta$, and let $n$ be the number of points in each cluster, for $3n$ points total. 
+
+\begin{figure}
+	\centering
+	\captionsetup{width=0.8\textwidth}
+	\includegraphics[scale=0.6]{chapter_1/files/kmeans.png}
+	\caption{An example of a "nice" set of clusters for which Llyod's method can be arbitrarily bad.}
+	\label{fig:kmeans}
+\end{figure}
+
+Llyod's method is given $k=3$ as part of its input and initializes its
+cluster centers to be random data points. Suppose two of the initial
+centers end up in the right cluster, and the third initial center is
+in the middle cluster. Then all the points in the left and middle
+clusters are assigned to the center that was initialized in the middle
+cluster. When the center is updated to be the mean of all these
+points, it moves to be between the left and the center clusters, which
+is a stable configuration. 
+
+\begin{figure}
+	\centering
+	\captionsetup{width=0.8\textwidth}
+	\includegraphics[scale=0.6]{chapter_1/files/stable-kmeans.png}
+	\caption{A stable configuration with cost $\Omega(n\Delta^2)$.}
+	\label{fig:kmeans}
+\end{figure}
+
+Consider the cost of this configuration. Because one of the centers is
+between two clusters, and because the k-means cost is the sum of the
+squared distances to each point's center, the total cost is
+$\Omega(n\Delta^2)$. In contrast, the minimum cost (which is achieved
+when the centers are initialized to be in separate clusters) is
+$O(n\delta^2)$ since each points is within $O(\delta)$ of its center.
+$\delta$ and $\Delta$ were arbitrary, so the bad case is arbitrarily
+worse than the good case.
 \end{example}
 
 
