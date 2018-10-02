@@ -40,36 +40,46 @@ One approximate solution is Lloyd's method for $k$-means, which alternates betwe
 Call $cost(T^*)$ the cost of the optimal k-means solution, and $cost(T^{LLOYD})$ the cost the approximate solution returned by k-means. Then necessarily, $cost(T^{LLOYD}) \geq cost(T^*)$.
 \end{remark}
 
-\begin{example} Consider the following setting and dataset
-where $k=2$ and $d=1$:
-\begin{figure}
-    \centering
-    \captionsetup{width=0.8\textwidth}
-    \includegraphics[scale=0.4]{chapter_1/files/kmeans.png}
-    \caption{An example of datapoints and initial setting where
-    Lloyd's algorithm fails to be optimal.}
-    \label{fig:kmeans}
-\end{figure}
-
-The dashed lines point to the current cluster centers, with 0
-for the blue cluster and 28 for the red cluster. On this
-setting, Lloyd's algorithm makes no further improvement (it
-terminates after one iteration), since the middle point at 16
-is closer to the red cluster center 28 than to the blue cluster
-center 0. And the total cost is $0^2+12^2+12^2=288$.
-
-However, the optimal cluster center assignment should be 8 for
-the blue cluster and 40 for the red cluster, which gives a cost
-of $8^2+8^2+0^2=128$. Thus, Lloyd's algorithm does not give the
-optimal solution.
-\end{example}
-
 \begin{remark}
 $cost(T^{LLOYD})$ is unbounded and may be \emph{arbitrarily bad} compared to the optimal solution depending on the initialization of cluster means.
 \end{remark}
 
 \begin{example} 
-Insert example from 9/24 class.  
+Llyod's method is arbitrarily bad even for seemingly ideal inputs. Consider data that is actually separable into $k=3$ collinear clusters, the diameter of each of which is $\delta$. Let the distance between the middle cluster and the other two clusters be $\Delta$, and let $n$ be the number of points in each cluster, for $3n$ points total. 
+
+\begin{figure}
+	\centering
+	\captionsetup{width=0.8\textwidth}
+	\includegraphics[scale=0.6]{chapter_1/files/kmeans.png}
+	\caption{An example of a "nice" set of clusters for which Llyod's method can be arbitrarily bad.}
+	\label{fig:kmeans}
+\end{figure}
+
+Llyod's method is given $k=3$ as part of its input and initializes its
+cluster centers to be random data points. Suppose two of the initial
+centers end up in the right cluster, and the third initial center is
+in the middle cluster. Then all the points in the left and middle
+clusters are assigned to the center that was initialized in the middle
+cluster. When the center is updated to be the mean of all these
+points, it moves to be between the left and the center clusters, which
+is a stable configuration. 
+
+\begin{figure}
+	\centering
+	\captionsetup{width=0.8\textwidth}
+	\includegraphics[scale=0.6]{chapter_1/files/stable-kmeans.png}
+	\caption{A stable configuration with cost $\Omega(n\Delta^2)$.}
+	\label{fig:kmeans}
+\end{figure}
+
+Consider the cost of this configuration. Because one of the centers is
+between two clusters, and because the k-means cost is the sum of the
+squared distances to each point's center, the total cost is
+$\Omega(n\Delta^2)$. In contrast, the minimum cost (which is achieved
+when the centers are initialized to be in separate clusters) is
+$O(n\delta^2)$ since each points is within $O(\delta)$ of its center.
+$\delta$ and $\Delta$ were arbitrary, so the bad case is arbitrarily
+worse than the good case.
 \end{example}
 
 
