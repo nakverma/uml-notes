@@ -1,57 +1,121 @@
 % Contributors: Jie Li, Yadin Rozov
 % Contributors: Kevin Wu, Emily Jin
+% Contributors: Jenny Chen, Collin Burns, Nav Ravindranath
+% Contributors: Eric Bolton, Xinyuan Cao
 \section{Hardness of \emph{k}-means}
 
-For our hardness result, an alternative definition of the $k$-means
-optimization problem will be more useful: 
-\begin{enumerate}
-\item \underline{Input}: A set of $n$ points $\mathcal{S} =
-  x_1,....x_n \in \mathbb{R}^d$ and a positive integer $k<n$. 
-\item \underline{Output}: 
-\begin{enumerate}
-\item A partition of size $k$ of $\mathcal{S}$, $P_1,P_2,...P_k$. 
-\begin{itemize}
-\item (By definition of a partition, $\cup_i P_i = \mathcal{S}$,  and $P_i \cap P_j = \emptyset \ \forall \ i, j$))
-\end{itemize}
-\item $k$ centroids $\mu_1,\mu_2,...,\mu_k$
-\end{enumerate}
-\item \underline{Goal}: minimize ``cost'' of $P$ where $cost(P) 
-:=  \sum_{j=1}^{k} \ \sum_{i\in P_j} || x_i - \mu_j || ^2 $
- \end{enumerate}
- 
-Note that for a given partition $j$, the inner sum, $ \sum_{i\in P_j} || x_i - \mu_j || $, is a convex function in $\mu_j$ that is minimized at $\mu_j = \frac{1}{|P_j|} \sum_{i \in P_j} x_i $, the mean of the points in partition $j$.\\ 
+In this section, we show that the $k$-means problem is NP-hard. To do
+so, we first demonstrate that NAE-3SAT* $\le_p$ Generalized 2-means, and
+then that the Generalized 2-means instance constructed in the reduction
+of NAE-3SAT* can be solved by 2-means. Since NAE-3SAT* is a decision
+problem which is known to be NP-hard, this establishes the NP-hardness
+of $k$-means.
 
-\noindent We begin with a few observations:
-\begin{enumerate}
-\item One obvious way to find the optimal solution to $k$-means is
-  through an exhaustive search with exponential complexity. Note that there are $k^n$ possible
-  partitions, which for $k=10$ and $n=100$ equals the number of atoms
-  in the universe! 
-\item The identity $\E || X - Y ||^2 = 2 \E || X- \E X ||^2$ implies
-  that the cost function in the second definition above can be
-  re-written as:  $$\sum_{j=1}^{k} \ \sum_{i\in P_j} || x_i - \mu_j ||
-  ^2 = \sum_{j=1}^{k} \frac{1}{2 |P_j|} \sum_{i,k \in P_j} || x_i -
-  x_k || ^2 $$ 
-\item The first of these is true because (assuming $X$ and $Y$ to be
-  i.i.d.): 
+To motivate the definition of the Generalized $k$-means problem, we
+first reformulate the original $k$-means problem. We initially defined
+the $k$-means problem as follows.
+
+\begin{mdframed}
+    \underline{\textbf{$k$-means (Formulation 1)}}
+    
+    \vspace{0.5em} \underline{Input}:
+    $\{x_1, \ldots, x_n\} = S \subset \bbR^d$, positive integer $k$
+    
+    \vspace{0.5em} \underline{Output}: $T \subset \bbR^d$, $|T| = k$
+    
+    \vspace{0.5em} \underline{Goal}: minimize $\text{cost}(T) :=
+    \sum\limits_{s \in S} \min\limits_{t \in T} \norm{s - t}^2$
+\end{mdframed}
+
+Equivalently, rather than only outputting a set $T$ of cluster centers,
+we could instead output a partition of the input set $S$. This gives a
+second formulation of $k$-means.
+
+\begin{mdframed}
+    \underline{\textbf{$k$-means (Formulation 2)}}
+    
+    \vspace{0.5em} \underline{Input}:
+    $\{x_1,\ldots,x_n\} = S \subset \bbR^d$, positive integer $k$
+    
+    \vspace{0.5em} \underline{Output}: $P_1, \ldots, P_k \subset [n],
+    ~\bigcup_{j=1}^k P_j = [n],
+    ~P_j \cap P_{j'} = \emptyset ~\text{for}~ j \ne j';$
+
+    $\quad \mu_1, \ldots, \mu_k \in \bbR^d,
+    ~\mu_j ~\text{is the center of the points in cluster}~ P_j$
+    
+    \vspace{0.5em} \underline{Goal}: minimize
+    $\text{cost}(P_1, \ldots, P_k, \mu_1, \ldots, \mu_k) :=
+    \sum\limits_{j=1}^k \sum\limits_{i \in P_j} \norm{x_i - \mu_j}^2$
+\end{mdframed}
+
+Finally, we make use of the following fact to remove the necessity to
+explicitly know the cluster centers.
+
+\begin{fact}
+    $\E \norm{X - \E X}^2 = \frac{1}{2} \E_{X,Y} \norm{X - Y}^2
+    \quad (X, Y ~\text{i.i.d.})$
+\end{fact}
+
+\begin{proof}
+    \begin{align*}
+        \E_{X,Y} \norm{X - Y}^2
+        &= \E_{X,Y} \left[(X - Y)^2\right] \\
+        &= \E_X \E_Y \left[X^2 + Y^2 - 2 X Y\right] \\
+        &= \E X^2 + \E Y^2 - 2 \E_X \E_Y [X Y] \\
+        &= 2 \left[\E X^2 - (\E X)^2\right] \\
+        &= 2 \E \left[(X - \E X)^2\right] \\
+        &= 2 \E \norm{X - \E X}^2
+    \end{align*}
+\end{proof}
+
+Observing that each cluster center $\mu_j := \frac{1}{|P_j|}
+\sum_{i \in P_j} x_i$ can be thought of as an expectation of the points
+in belonging to $P_j$, and applying the previous fact, we see that
 \begin{align*}
-  \E\norm{X - Y}^2 &= \E_x \E_{y} \left[\norm{X}^2 + \norm{Y}^2 - 2
-    XY \right] \\ 
-  &= \E_x \norm{X}^2 + \E_y\norm{Y}^2 -2 \E_x \E_y [ X Y ] \\
-  &= 2 \left[ \E X^2 - (\E X)^2\right] = 2 \E [ X - \E X ]^2 = 2
-  \E\norm{ X- \E X}^2 
+    \sum_{j=1}^{k} \sum_{i \in P_j} \norm{x_i - \mu_j}^2
+    &= \sum_{j=1}^{k} \sum_{i \in P_j} \norm{x_i - \frac{1}{|P_j|}
+        \sum_{i' \in P_j} x_{i'}}^2 \\
+    &= \sum_{j=1}^{k} \frac{1}{2 |P_j|} \sum_{i,i' \in P_j}
+        \norm{x_i - x_{i'}}^2
 \end{align*}
-\item And the second of these is true because by using the first
-  identity and since $\mu_j = \E X = \frac{1}{|P_j|} \sum_{x_i \in
-    P_j} x_i$: 
-\begin{align*}
-	\sum_{j=1}^{k} \ \sum_{i\in P_j} \norm{x_i - \mu_j}^2 &=
-        \sum_{j=1}^{k}  \sum_{i\in P_j} \norm{x_i - \frac{1}{|P_j|}
-        \sum_{x_k \in P_j} x_k}^2 \\
-        & = \sum_{j=1}^{k} \frac{1}{2 |P_j|} \sum_{i,k \in P_j}
-        \norm{x_i - x_k}^2.
-\end{align*}
-\end{enumerate}
+which leads to yet another formulation of $k$-means.
+
+\begin{mdframed}
+    \underline{\textbf{$k$-means (Formulation 3)}}
+    
+    \vspace{0.5em} \underline{Input}:
+    $\{x_1,\ldots,x_n\} = S \subset \bbR^d$, positive integer $k$
+    
+    \vspace{0.5em} \underline{Output}: $P_1, \ldots, P_k \subset [n],
+    ~\bigcup_{j=1}^k P_j = [n],
+    ~P_j \cap P_{j'} = \emptyset ~\text{for}~ j \ne j'$
+    
+    \vspace{0.5em} \underline{Goal}: minimize
+    $\text{cost}(P_1, \ldots, P_k) := \sum\limits_{j=1}^{k}
+    \frac{1}{2 |P_j|} \sum\limits_{i,i' \in P_j} \norm{x_i - x_{i'}}^2$
+\end{mdframed}
+
+A slight modification of this last formulation leads to the Generalized
+$k$-means problem; instead of using the squared distance penalty term
+$\norm{x_i - x_{i'}}^2$, we can specify the penalties as an $n \times n$
+matrix $D$ with the entry $D_{ii'}$ giving the penalty for points $x_i$
+and $x_{i'}$.
+
+\begin{mdframed}
+    \underline{\textbf{Generalized $k$-means}}
+    
+    \vspace{0.5em} \underline{Input}:
+    $n \times n$ symmetric matrix $D$, positive integer $k$
+    
+    \vspace{0.5em} \underline{Output}: $P_1, \ldots, P_k \subset [n],
+    ~\bigcup_{j=1}^k P_j = [n],
+    ~P_j \cap P_{j'} = \emptyset ~\text{for}~ j \ne j'$
+    
+    \vspace{0.5em} \underline{Goal}: minimize
+    $\text{cost}(P_1, \ldots, P_k) := \sum\limits_{j=1}^{k}
+    \frac{1}{2 |P_j|} \sum\limits_{i,i' \in P_j} D_{ii'}$
+\end{mdframed}
 
 \subsection{Review of NP-hard problems}
 \begin{enumerate}
@@ -67,7 +131,7 @@ Note that for a given partition $j$, the inner sum, $ \sum_{i\in P_j} || x_i - \
 \end{enumerate} 
 
 For a more complete review of complexity and hardness please go to
-reference \cite{cor2009} chapter 34. \\
+reference \cite{cor2009} chapter 34.
 
 Our goal is to show that the 2-means problem is NP hard:
 
@@ -120,13 +184,12 @@ $(\neg x_i, \neg x_j)$ and once as  $(x_i,\neg x_j)$ or $(\neg x_i,
 x_j)$. 
 \end{definition}
 
-\begin{definition}[Generalized k-means]
-\item \underline{Input}:  $n \times n$ matrix, ``distance matrix''
-  with elements $D_{ij} = $ distance between object $i$ and object
-  $j$.
-\item \underline{Output}:  Partition of objects into $P_1$ and $P_2$
-\item \underline{Goal}: minimize $cost(P_1,P_2) = \sum_{j=1}^{2}
-  \frac{1}{2|p_j|} \sum_{i,j \in p_j} D_{ij}$. 
+\begin{definition}[Generalized 2-means]
+\item \underline{Input}: $n \times n$ matrix, ``distance matrix'' with
+    elements $D_{ii'} =$ distance between object $i$ and object $i'$
+\item \underline{Output}: Partition of objects into $P_1$ and $P_2$
+\item \underline{Goal}: minimize $cost(P_1,P_2) := \sum\limits_{j=1}^{2}
+    \frac{1}{2|P_j|} \sum\limits_{i,i' \in P_j} D_{ii'}$. 
 \end{definition}
 
 
@@ -167,9 +230,25 @@ Note that above implies that $0 < \delta < \Delta < 1$ and also:
 \begin{align}
 4 \delta m < \Delta \le 1 - 2 \delta n.
 \end{align}
+Consider the following example matrix generated from the clause $x_1 \vee \bar{x_2} \vee x_3$, where the diagonal is filled with 0s (where $\alpha=\beta$).
 
+\begin{table}[H]
+\begin{tabular}{lllllll}
+                       & $x_1$                      & $x_2 $                     & $x_3 $                    & $\bar{x_1}$                      & $\bar{x_2}$                      & $\bar{x_3}$                     \\ \cline{2-7} 
+\multicolumn{1}{l|}{$x_1$} & \multicolumn{1}{l|}{0} & \multicolumn{1}{l|}{1}  & \multicolumn{1}{l|}{1+$\delta$}  & \multicolumn{1}{l|}{1+$\Delta$}  & \multicolumn{1}{l|}{$1+\delta$}  & \multicolumn{1}{l|}{1}  \\ \cline{2-7} 
+\multicolumn{1}{l|}{$x_2$} & \multicolumn{1}{l|}{1}  & \multicolumn{1}{l|}{0} & \multicolumn{1}{l|}{1}  & \multicolumn{1}{l|}{1+$\delta$}  & \multicolumn{1}{l|}{1+$\Delta$}  & \multicolumn{1}{l|}{1+$\delta$}  \\ \cline{2-7} 
+\multicolumn{1}{l|}{$x_3$} & \multicolumn{1}{l|}{1+$\delta$}  & \multicolumn{1}{l|}{1}  & \multicolumn{1}{l|}{0} & \multicolumn{1}{l|}{1}  & \multicolumn{1}{l|}{1+$\delta$}  & \multicolumn{1}{l|}{1+$\Delta$}  \\ \cline{2-7} 
+\multicolumn{1}{l|}{$\bar{x_1}$} & \multicolumn{1}{l|}{1+$\Delta$}  & \multicolumn{1}{l|}{1+$\delta$}  & \multicolumn{1}{l|}{1}  & \multicolumn{1}{l|}{0} & \multicolumn{1}{l|}{1}  & \multicolumn{1}{l|}{1+$\delta$}  \\ \cline{2-7} 
+\multicolumn{1}{l|}{$\bar{x_2}$} & \multicolumn{1}{l|}{1+$\delta$}  & \multicolumn{1}{l|}{1+$\Delta$}  & \multicolumn{1}{l|}{1+$\delta$}  & \multicolumn{1}{l|}{1}  & \multicolumn{1}{l|}{0} & \multicolumn{1}{l|}{1}  \\ \cline{2-7} 
+\multicolumn{1}{l|}{$\bar{x_3}$} & \multicolumn{1}{l|}{1}  & \multicolumn{1}{l|}{1+$\delta$}  & \multicolumn{1}{l|}{1+$\Delta$}  & \multicolumn{1}{l|}{1+$\delta$}  & \multicolumn{1}{l|}{1}  & \multicolumn{1}{l|}{0} \\ \cline{2-7} 
+
+\end{tabular}
+
+\end {table}
+
+We want to reformulate Generalized k-means from a minimization problem to a decision problem to prove satisfiability, so we prove the following lemma.
 \begin{lemma} \label{generalized-2-means-cost}
-If $\phi$ is NAE-3SAT* satisfiable, then $D(\phi)$ admits to a
+$\phi$ is NAE-3SAT* satisfiable if and only if $D(\phi)$ admits a
 generalized 2-means cost of $cost(\phi) = n - 1 + \frac{2\delta
   m}{n}$. 
 \end{lemma}
@@ -185,8 +264,8 @@ this leads to the fact that the distances between pairs can only be 1,
 $1+\delta$, with $m$ instances of the later and the fact that the two
 clusters have identical costs. So we get that 
 \begin{align*}
-cost(P_1,P_2) &= \sum_{j=1}^{2} \frac{1}{2|P_j|} \sum_{i,j \in P_j}
-D_{ij}\\ 
+cost(P_1,P_2) &= \sum_{j=1}^{2} \frac{1}{2|P_j|} \sum_{i,i' \in P_j}
+D_{ii'}\\ 
 &= \frac{1}{2n}( 2 {n \choose 2} + 2m\delta ) + \frac{1}{2n}( 2 {n
   \choose 2} + 2m\delta ) \\ 
 &= \frac{ n (n-1) } {n} + \frac{2 m \delta}{n} \\
@@ -209,6 +288,14 @@ cost(P_1,P_2) &\ge \frac{1}{n'}({n' \choose 2} + \Delta ) +
 \end{align*}
 \end{proof}
 
+\begin{figure}
+    \centering
+    \includegraphics[width=10cm]{chapter_1/files/KmeansNAE3SAT.png}
+\centering
+    \caption{Partition of True and False literals, with blue lines meaning a cost of $1+\delta$, demonstrating that each clause contributes only $1+\delta$ cost within its cluster.}
+    \label{fig:my_label}
+\end{figure}
+
 
 \begin{lemma} \label{satisfiable-instance}
 If $D(\phi)$  admits a generalized 2-means cost of $cost(\phi) \le n -
@@ -228,7 +315,7 @@ clustering $P_1$ and $P_2$ is:
     3 & \textrm{otherwise} \\ 
   \end{cases}\right]
 \end{align*}
-Since cost $\le n - 1 + \frac{2\delta m}{n}$, it follows that all
+Since $cost(P_1, P_2) \le n - 1 + \frac{2\delta m}{n}$, it follows that all
 clauses are split between $P_1$ and $P_2$.  That is, every clause has
 at least one literal in $P_1$ and one literal in $P_2$.  Therefore,
 the assignment that sets all of the $P_1$ to true and all of $P_2$ to
@@ -259,12 +346,12 @@ u^TDu &= \sum_{\alpha, \beta} u_\alpha u_\beta D_{\alpha \beta}\\
 +2\Delta (u^+ \cdot u^-) + \delta \sum_{\alpha, \beta} u_\alpha
 u_\beta \mathbf{1}_{(\alpha \sim \beta)}\\ 
 & \le (\sum u_\alpha)^2  - \norm{u}^2 + 2\Delta (u^+ \cdot u^-) +
-\delta \sum_{\alpha, \beta} |u_\alpha| |u_\beta| \text{,  and use:
-  $2ab \le a^2 + b^2$}\\  
+\delta \sum_{\alpha, \beta} |u_\alpha| |u_\beta| \textrm{,  and use: }
+  2ab \le a^2 + b^2\\  
 & \le - \norm{u}^2 + \Delta (\norm{u^+}^2  + \norm{u^-}^2) + \delta
 (\sum |u_\alpha|)^2 \\ 
-& \le -(1- \Delta) \norm{u}^2  + \delta 2n \norm{u}^2  \text{,  and
-  since $(1- \Delta) \ge \delta 2n$} \\ 
+& \le -(1- \Delta) \norm{u}^2  + \delta 2n \norm{u}^2 \textrm{,  and
+    since } (1- \Delta) \ge \delta 2n \\ 
 & \le 0.
 \end{align*}
 \end{fact}
@@ -284,7 +371,3 @@ fact that the reduction steps take polynomial time in $n$ and
 Fact~\ref{d-phi-fact} that $D(\phi)$ can be embedded into $l_2$,
 completes the proof for 2-means. 
 \end{proof}
-
-
-
-
