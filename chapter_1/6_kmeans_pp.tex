@@ -1,10 +1,11 @@
-\section{k-means++}
+% Contributors: Xinyuan Cao, Eric Bolton
+\section{Heuristics for k-means problems}
 
-Instead of arbitrarily initializing cluster centers in Lloyd's k-means
-algorithm, k-mean++ algorithm chooses a center with probability that
-is proportional to $D^2$ weighting.
+So far we have proved that the k-means problem is NP-hard. And we are going to talk about several heuristics that provide approaches to the k-means problem.
 
-Here's Lloyd's k-means algorithm:
+\subsection{Lloyd's Method}
+
+Here's Lloyd's k-means algorithm (1980's):
 \begin{algorithm}[H]
   \caption{Lloyd's k-means Algorithm}
   \label{ladder-mechanism}
@@ -20,9 +21,13 @@ Here's Lloyd's k-means algorithm:
 \end{algorithm}
 
 \begin{fact}
-  Solution to Lloyd's method for k-means can be arbitrarily worse from
-  the optimal solution.
+  Initialization is crucial. It heavily affects the final results. In the worst case, there is no approximation guaranteed. That is, the solution to Lloyd's method for k-means can be arbitrarily worse from the optimal solution.
 \end{fact}
+
+\begin{fact}
+  Random initialization achieves the worst case with the probability equal or greater than $50\%$ even in the case of "nice" input.
+\end{fact}
+
 \begin{lemma}
   At every step of the algorithm, the k-means cost can only improve.
 \end{lemma}
@@ -33,6 +38,10 @@ Here's Lloyd's k-means algorithm:
   For step 3: once partition fixed, center is assigned by
   $\frac{1}{|P_j|} \sum_{x_i\in P_j} xi$ .
 \end{proof}
+
+
+
+
 \textbf{Possible Improvement}:
 \begin{itemize}
 \item Choose centers uniformly at random:\\
@@ -45,11 +54,17 @@ Here's Lloyd's k-means algorithm:
   is: $klogk$. If pick $klogk$ centers, then all clusters will be
   covered. Extra merging step should be taken to reduce cluster size
   to $k$. 
-  $Cost$
+  
 \item Farthest-First Traversal:\\
   $$cost ~ \Omega(\xi^2n)$$
-  Outliers will not work for this method.
-\item Probalistic Farthest-First Traversal(\textit{k-means++ paper}):
+  It is sensitive to outliers, and can result in bad solution.
+  
+\item Probalistic Farthest-First Traversal(\textit{k-means++ paper, 2007}):
+
+Instead of arbitrarily initializing cluster centers in Lloyd's k-means
+algorithm, k-mean++ algorithm chooses a center with probability that
+is proportional to $D^2$ weighting.
+
   \begin{enumerate}
   \item Pick $c_1$ uniformly at random from $X$.
   \item Take a new center $c_i$, choosing $x_j$ with probability
@@ -57,10 +72,12 @@ Here's Lloyd's k-means algorithm:
   \item Repeat Step 2 until we have $k$ centers $C$.
   \end{enumerate}
 \end{itemize}
+
 \begin{theorem}
   For the initialization done by $k$-means++ algorithm, the
-  $\mathbb{E}cost(c)] \leq O(logk)opt$ 
+  $\mathbb{E}[cost(c)] \leq O(logk)opt$ 
 \end{theorem}
+
 \begingroup\leftskip4em
 Notation of potential function $\phi$, for $A\subset X=\{x_1\cdots
 x_n\}$:  
@@ -71,6 +88,7 @@ x_n\}$:
   &\phi_{opt}(A)=  \sum_{a\in A} \min_{c_j\in C_opt} ||a-c_j||^2\\
   &\phi_{opt} = \phi_{opt}(X)
 \end{align*}
+
 \begin{proof}[Conceptually proof.]
   \hfill	
   \begin{figure}[H]
@@ -87,6 +105,7 @@ x_n\}$:
     \par\endgroup
   \end{enumerate}			
 \end{proof}
+
 \begin{lemma}[Lemma 3.2 in $k$-means++ paper]
   Let $A$ be a cluster from $C_{opt}$, let $C$ be just one cluster
   chosen uniformly at random from $A$. Then $\mathbb{E}[\phi(A)]\leq
@@ -106,12 +125,14 @@ x_n\}$:
     &\leq2\phi_{opt}(A)
   \end{align*}
 \end{proof}
+
 \begin{lemma}[Lemma 3.3 in $k$-means++ paper]
-  Let $A$ be an arbirary cluster from $C_{opt}$ and $C$ be some
+  Let $A$ be an arbitrary cluster from $C_{opt}$ and $C$ be some
   arbitrary clustering. If we add a random center to $C$ ($C$ is a set
   of centers) from $A$ according to $k$-means++ weighting, then
   $\mathbb{E}[\phi(A)]\leq 8\phi_{opt}(A)$. 
 \end{lemma}
+
 \begin{proof}
   \underline{Observation}: probability that $a_0\in A$ is chosen:
   $D^2(a_0)/\sum_{a\in A}D^2(a)$, where $D^2(a_0)= d^2(a_0,C)$ and
@@ -143,6 +164,7 @@ x_n\}$:
     &\leq 4\cdot 2\phi_{opt}(A)=8\phi_{opt}(A)
   \end{align*}	
 \end{proof}
+
 \begin{lemma}[Lemma 3.4 in $k$-means++ paper]
   Let $C$ be any arbitrary clustering we have chosen, choose $u>0$
   (number of uncovered clustering from $C_{opt}$). The corresponding
@@ -158,6 +180,7 @@ x_n\}$:
   $$\E[\phi']\leq(\phi(\chi_c)+8\phi_{opt}(\chi_u))(1+H_t)+\frac{u-t}{u}\phi(\chi_u)$$ 
   $$H_t=1+\frac{1}{2}+\frac{1}{3}+\cdots+\frac{1}{t}\ \text{is the harmonic sum}$$
 \end{lemma} 
+
 Let $A$ be the cluster which is covered by the first pick. Then
 $u=k-1$, chose $t=k-1$ 
 \begin{align*}
@@ -167,17 +190,47 @@ $u=k-1$, chose $t=k-1$
   (where\ \phi(A)\leq2\phi_{opt}(A))\\  
   &\leq(2+\log k)8\phi_{opt}		
 \end{align*}
+
 \begin{proof}
   The proof was done by induction, showing that if we can prove
   equations $P(u,t-1)$ and $P(u-1,t-1)$ hold true, then $P(u,t)$ holds
   true. Base case of the induction is $P(u,0)\ for\ u>0$ and
   $P(1,1)$. 
 \end{proof}
+
 Example: Let $k=3$ for optimal clustering, after first pick there are
 2 uncovered clusters from $C_{opt}$. Now we want to prove that
 $P(2,2)$ holds true when we pick other two centers with $D^2$
 weighting. By induction, if we prove that $P(2,1)$ and $P(1,1)$ hold
 true then the result holds.  
+
+Practically it works very well. The initialization is so important that this is always an option when you implement it in your favorite language when you are programming. For example, in Python, k-means++ is the default option. 
+	
+\subsection{Hartigan's method}
+
+The insight of Hartigan's method is to repeatedly pick a point, and determine its optimal cluster assignment. For $k$ partitions $\{P_j\}_1^k$, the centers $\mu_j = |P_j|^{-1} \sum_{x \in P_j}x$. We also refer to the k-means cost of $P_j$, denoted by $\phi(P_j) = \sum_{x \in P_j} ||x-\mu_j||^2$. For two cluster identity $n, m \in {1,\cdots,k}$, for $x \in P_n$ denote
+
+$$\Delta (i,j,x) = \phi(P_i) + \phi(P_j) - \phi(P_i \backslash \{x\}) - \phi(P_j \cup \{x\}).$$
+
+\begin{algorithm}[H]
+  \caption{Hartigan's method}
+  \label{ladder-mechanism}
+  \begin{algorithmic}[1]
+    \renewcommand\algorithmicrequire{\textbf{input}} 
+    \REQUIRE ${x_1\cdots x_n}$, $k\in N$
+    \STATE Randomly put data $\{x_1\cdots x_n\}$ into $k$ partitions $\{P_1\cdots P_k\}$, and compute ${\mu_j}$
+    \STATE Pick any two cluster id $i,j \in \{1,\cdots,k\}$, pick any $x \in P_i$, compute $\Delta(i,j,x)$
+    \STATE Choose $j$ to maximize $\Delta(i,j,x)$, and then put $x$ into cluster $P_j$
+    \STATE Repeat step 2-3 until no more improvement can be made
+  \end{algorithmic}
+\end{algorithm}
+
+The algorithm has worse running time, but it always gives us a better final solution.
+
+\subsection{GMM}
+
+\subsection{Local Swap Algorithm}	
+	
 	
 \begin{algorithm}[H]
   \caption{Local Swap Algorithm}
@@ -190,6 +243,7 @@ true then the result holds.
     \STATE Repeat step 2 until no more improvement can be made.
   \end{algorithmic}
 \end{algorithm}
+
 \begin{lemma}[w/o proof]
   The solution to "local swap method" is no more than 25 optimum.
 \end{lemma}
