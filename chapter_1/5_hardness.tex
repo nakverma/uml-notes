@@ -1,6 +1,7 @@
 % Contributors: Jie Li, Yadin Rozov
 % Contributors: Kevin Wu, Emily Jin
 % Contributors: Jenny Chen, Collin Burns, Nav Ravindranath
+% Contributors: Eric Bolton, Xinyuan Cao
 \section{Hardness of \emph{k}-means}
 
 In this section, we show that the $k$-means problem is NP-hard. To do
@@ -229,14 +230,15 @@ Note that above implies that $0 < \delta < \Delta < 1$ and also:
 \begin{align}
 4 \delta m < \Delta \le 1 - 2 \delta n.
 \end{align}
-Consider the following example matrix generated from the clause $x_1 \vee \bar{x_2} \vee \bar{x_3}$, where the diagonal is filled with 0s (where $\alpha=\beta$).
+
+Consider the following example matrix generated from the clause $x_1 \vee \bar{x_2} \vee x_3$, where the diagonal is filled with 0s (where $\alpha=\beta$).
 
 \begin{table}[H]
 \begin{tabular}{lllllll}
                        & $x_1$                      & $x_2 $                     & $x_3 $                    & $\bar{x_1}$                      & $\bar{x_2}$                      & $\bar{x_3}$                     \\ \cline{2-7} 
 \multicolumn{1}{l|}{$x_1$} & \multicolumn{1}{l|}{0} & \multicolumn{1}{l|}{1}  & \multicolumn{1}{l|}{1+$\delta$}  & \multicolumn{1}{l|}{1+$\Delta$}  & \multicolumn{1}{l|}{$1+\delta$}  & \multicolumn{1}{l|}{1}  \\ \cline{2-7} 
 \multicolumn{1}{l|}{$x_2$} & \multicolumn{1}{l|}{1}  & \multicolumn{1}{l|}{0} & \multicolumn{1}{l|}{1}  & \multicolumn{1}{l|}{1+$\delta$}  & \multicolumn{1}{l|}{1+$\Delta$}  & \multicolumn{1}{l|}{1+$\delta$}  \\ \cline{2-7} 
-\multicolumn{1}{l|}{$x_3$} & \multicolumn{1}{l|}{1+$\delta$}  & \multicolumn{1}{l|}{1}  & \multicolumn{1}{l|}{0} & \multicolumn{1}{l|}{1}  & \multicolumn{1}{l|}{1+$\delta$}  & \multicolumn{1}{l|}{1+$\delta$}  \\ \cline{2-7} 
+\multicolumn{1}{l|}{$x_3$} & \multicolumn{1}{l|}{1+$\delta$}  & \multicolumn{1}{l|}{1}  & \multicolumn{1}{l|}{0} & \multicolumn{1}{l|}{1}  & \multicolumn{1}{l|}{1+$\delta$}  & \multicolumn{1}{l|}{1+$\Delta$}  \\ \cline{2-7} 
 \multicolumn{1}{l|}{$\bar{x_1}$} & \multicolumn{1}{l|}{1+$\Delta$}  & \multicolumn{1}{l|}{1+$\delta$}  & \multicolumn{1}{l|}{1}  & \multicolumn{1}{l|}{0} & \multicolumn{1}{l|}{1}  & \multicolumn{1}{l|}{1+$\delta$}  \\ \cline{2-7} 
 \multicolumn{1}{l|}{$\bar{x_2}$} & \multicolumn{1}{l|}{1+$\delta$}  & \multicolumn{1}{l|}{1+$\Delta$}  & \multicolumn{1}{l|}{1+$\delta$}  & \multicolumn{1}{l|}{1}  & \multicolumn{1}{l|}{0} & \multicolumn{1}{l|}{1}  \\ \cline{2-7} 
 \multicolumn{1}{l|}{$\bar{x_3}$} & \multicolumn{1}{l|}{1}  & \multicolumn{1}{l|}{1+$\delta$}  & \multicolumn{1}{l|}{1+$\Delta$}  & \multicolumn{1}{l|}{1+$\delta$}  & \multicolumn{1}{l|}{1}  & \multicolumn{1}{l|}{0} \\ \cline{2-7} 
@@ -247,7 +249,7 @@ Consider the following example matrix generated from the clause $x_1 \vee \bar{x
 
 We want to reformulate Generalized k-means from a minimization problem to a decision problem to prove satisfiability, so we prove the following lemma.
 \begin{lemma} \label{generalized-2-means-cost}
-$\phi$ is NAE-3SAT* satisfiable if and only if $D(\phi)$ admits to a
+$\phi$ is NAE-3SAT* satisfiable if and only if $D(\phi)$ admits a
 generalized 2-means cost of $cost(\phi) = n - 1 + \frac{2\delta
   m}{n}$. 
 \end{lemma}
@@ -289,7 +291,7 @@ cost(P_1,P_2) &\ge \frac{1}{n'}({n' \choose 2} + \Delta ) +
 
 \begin{figure}
     \centering
-    \includegraphics[width=6cm]{KmeansNAE3SAT.png}
+    \includegraphics[width=10cm]{chapter_1/files/KmeansNAE3SAT.png}
 \centering
     \caption{Partition of True and False literals, with blue lines meaning a cost of $1+\delta$, demonstrating that each clause contributes only $1+\delta$ cost within its cluster.}
     \label{fig:my_label}
@@ -314,7 +316,7 @@ clustering $P_1$ and $P_2$ is:
     3 & \textrm{otherwise} \\ 
   \end{cases}\right]
 \end{align*}
-Since cost $\le n - 1 + \frac{2\delta m}{n}$, it follows that all
+Since $cost(P_1, P_2) \le n - 1 + \frac{2\delta m}{n}$, it follows that all
 clauses are split between $P_1$ and $P_2$.  That is, every clause has
 at least one literal in $P_1$ and one literal in $P_2$.  Therefore,
 the assignment that sets all of the $P_1$ to true and all of $P_2$ to
@@ -345,12 +347,12 @@ u^TDu &= \sum_{\alpha, \beta} u_\alpha u_\beta D_{\alpha \beta}\\
 +2\Delta (u^+ \cdot u^-) + \delta \sum_{\alpha, \beta} u_\alpha
 u_\beta \mathbf{1}_{(\alpha \sim \beta)}\\ 
 & \le (\sum u_\alpha)^2  - \norm{u}^2 + 2\Delta (u^+ \cdot u^-) +
-\delta \sum_{\alpha, \beta} |u_\alpha| |u_\beta| \text{,  and use:
-  $2ab \le a^2 + b^2$}\\  
+\delta \sum_{\alpha, \beta} |u_\alpha| |u_\beta| \textrm{,  and use: }
+  2ab \le a^2 + b^2\\  
 & \le - \norm{u}^2 + \Delta (\norm{u^+}^2  + \norm{u^-}^2) + \delta
 (\sum |u_\alpha|)^2 \\ 
-& \le -(1- \Delta) \norm{u}^2  + \delta 2n \norm{u}^2  \text{,  and
-  since $(1- \Delta) \ge \delta 2n$} \\ 
+& \le -(1- \Delta) \norm{u}^2  + \delta 2n \norm{u}^2 \textrm{,  and
+    since } (1- \Delta) \ge \delta 2n \\ 
 & \le 0.
 \end{align*}
 \end{fact}
