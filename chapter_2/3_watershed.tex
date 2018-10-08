@@ -8,14 +8,22 @@
   Then the algorithm will ``flip'' the estimated PDF and start ``filling it with water''. Regions where water from different
   ``wells'' touch for the first time will become cluster boundaries.
   
-  \begin{figure}[h]
+  Figure \ref{watershed 1d} shows the boundaries formed by the watershed algorithm on a toy 1 dimensional PDF.
+  
+  \begin{figure}[h]\label{watershed 1d}
   \centering
   \includegraphics[width=.7\linewidth]{chapter_2/files/Watershed-flooding-graph.png}
   \caption{Watershed 1D visualization }
   \end{figure}
   
-  \begin{figure}[h]
+  The watershed algorithm is often used for image recognition tasks. The idea is that rather than 
+  analyzing each pixel (i.e. making each pixel a feature and then running some classification algorithm)
+  one can first cluster the pixels to form very similar ``meta-regions''. These, rather than the individual pixels,
+  can then be made into features of the image for further tasks. Figure \ref{watershed on image} shows the results one can
+  obtain by running watershed on a 2d image.
+  
+  \begin{figure}[h]\label{watershed on image}
   \centering
   \includegraphics[width=.7\linewidth]{chapter_2/files/PW_overlay.png}
-  \caption{2D images clustering using watershed}
+  \caption{2D image clustering using watershed}
   \end{figure}
