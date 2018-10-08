@@ -46,7 +46,7 @@
   \begin{figure}[h]
   \centering
   \includegraphics[width=.7\linewidth]{chapter_2/files/dbscan.jpg}
-  \caption{Visualize the deterministic poly-time algorithm. }
+  \caption{Visualization of DBSCAN}
   \end{figure}
 
   We can also see that if we take our core points as our vertices, put an edge between
@@ -67,7 +67,7 @@
   \item Ignore the rest of the points, which we consider noise points.
 
   \end{enumerate}
-  
+
   \subsection{Pros and Cons}
   Cons:
   \begin{itemize}
@@ -75,10 +75,10 @@
     and very bad ones for a different, but close, setting of $\epsilon$ and $m$. To avoid this drawback one can try many different values for the parameters and/or use
     some kind of parameter search (also called hyperparameter optimization) method.
     \item Different clusters could have different densities. This would mean that there is no single global setting of $\epsilon$ and $m$ which will work for all clusters.
-    There is a modification of DBSCAN called OPTICS which partially solves this problem. The core idea of this modification is use very tight parameters to find a very 
+    There is a modification of DBSCAN called OPTICS which partially solves this problem. The core idea of this modification is use very tight parameters to find a very
     dense cluster, remove that cluster from the data, relax the parameters, and repeat.
-    \item DBSCAN does not work in high dimensions. This is the main drawback of DBSCAN. The issue is that in high dimensions, in practice, almost all points are 
-    at almost identical distances from each other. As a result, depending on the parameters, either all points are ``close'' to each other and we get one big 
+    \item DBSCAN does not work in high dimensions. This is the main drawback of DBSCAN. The issue is that in high dimensions, in practice, almost all points are
+    at almost identical distances from each other. As a result, depending on the parameters, either all points are ``close'' to each other and we get one big
     cluster, or all points are ``far'' from each other and we get no clusters.
   \end{itemize}
   Pros:
@@ -87,10 +87,9 @@
     \item DBSCAN can find clusters of arbitrary shape, it makes no assumptions on the shape of the clusters (whereas centroid based methods assume that the clusters are convex, as discussed above).
     \item It has bounded runtime and runs relatively fast in practice.
   \end{itemize}
-  
+
   \subsection{An example}
-  Foursquare is a company with an app that, among other things, allows users to ``check-in'' by providing information on where they are. This is stored along with their current GPS position. 
+  Foursquare is a company with an app that, among other things, allows users to ``check-in'' by providing information on where they are. This is stored along with their current GPS position.
   Then a modification of the DBSCAN algorithm is used to estimate the ``boundaries'' between the different locations that users checked in too. This allows Foursquare to predict the establishment that
-  their users are in simply from their GPS data. Interestingly, they use a random forest to predict the parameters of DBSCAN. There is more information on Foursquare and their use of 
+  their users are in simply from their GPS data. Interestingly, they use a random forest to predict the parameters of DBSCAN. There is more information on Foursquare and their use of
   DBSCAN available on the web, as well as many more examples of real life uses of DBSCAN.
-  
