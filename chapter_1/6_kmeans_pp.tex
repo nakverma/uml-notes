@@ -1,4 +1,5 @@
 % Contributors: Xinyuan Cao, Eric Bolton
+% Contributors: Alexandre Lamy, Trung Vu
 \section{Heuristics for k-means problems}
 
 So far we have proved that the k-means problem is NP-hard. And we are going to talk about several heuristics that provide approaches to the k-means problem.
@@ -227,10 +228,35 @@ $$\Delta (i,j,x) = \phi(P_i) + \phi(P_j) - \phi(P_i \backslash \{x\}) - \phi(P_j
 
 The algorithm has worse running time, but it always gives us a better final solution.
 
-\subsection{GMM}
+\subsection{Gaussian Mixture Model (GMM)}
+  GMM is a probabilistic modeling technique. As for other techniques, its input is data points $\vec{x}_1, \vec{x}_2, \dots, \vec{x}_n$ from $\bbR^d$ and $k \in \bbN^*$ which 
+  is the number of clusters.
+  It assumes that there is a probability distribution $\mathcal{D}$ over the joint space $\bbR^d \times [k]$ such that for $(X, C) \sim D$ we have:
+  $$\Pr[C = i] = \pi_i$$
+  and 
+  $$(X | C = i) \sim N(\vec{\mu}_i, \Sigma_i) $$
+  Then the assumption is that the data points $(\vec{x}_1, c_1), (\vec{x}_2, c_2), ..., (\vec{x}_n, c_n)$ are drawn iid from a $\mathcal{D}$ but
+  that the values of $c_i$ are hidden (or unobserved or unknown).
+  
+  The task is then to use the observed values $\vec{x}_1, \vec{x}_2, \dots, \vec{x}_n$ to
+  estimate the parameters $\pi_1, \vec{\mu}_1, \Sigma_1, \pi_2, \vec{\mu}_2, {\Sigma_2}, ..., \pi_k, \vec{\mu}_k, {\Sigma_k}$.
+  
+  In other words, the model assumes that the data comes from a mix of $k$ different Gaussian distributions, each with its own mixing component (frequency of points from that
+  Gaussian vs from others), its own mean vector (which can be though of as the center of the cluster), and its own covariance matrix (describing the ``tightness'' or ``spread'' of the 
+  cluster in all directions).
+  
+  To estimate the parameters, MLE does not work (when taking the log-likelihood we get the log of a sum which blocks further progress). Instead one can use a heuristic like the 
+  Expectation Maximization (EM) algorithm, but this comes with no guarantees. 
+  As an interesting side note, there are also more cutting edge techniques that are able to return an arbitrarily good approximation of the true centers 
+  of the Gaussians 
+  with high probability under some mild assumptions (see ``Learning Mixtures of Gaussians'' by Sanjoy Dasgupta).
+  
+  As a last note, a nice advantage of this method is that it can give us the probability of a point belonging to a given cluster rather than a 0-1 decision. In some cases this can be very useful.
 
 \subsection{Local Swap Algorithm}	
-	
+	The local swap algorithm gives us another very interesting clustering method. The core of the algorithm is to randomly choose $k$ centers,
+  and then repeatedly remove a center and replace it with another if that lowers the solution's cost. Here is the exact
+  algorithm:
 	
 \begin{algorithm}[H]
   \caption{Local Swap Algorithm}
@@ -244,9 +270,21 @@ The algorithm has worse running time, but it always gives us a better final solu
   \end{algorithmic}
 \end{algorithm}
 
-\begin{lemma}[w/o proof]
-  The solution to "local swap method" is no more than 25 optimum.
-\end{lemma}
-$$\text{k-means++ \& Lloydss }\sim O(logk)\cdot OPT$$
-$$\text{Local Swap Method }\sim 25\cdot OPT$$
+\begin{theorem}[Due to Kanungo et al. '03]
+  The cost of the solution returned by the ``local swap method'' is no more than $25+\epsilon$ times the cost of the optimal solution.
+  Where $\epsilon$ can be made arbitrarily small.
+\end{theorem}
+\begin{fact}[Also due to Kanungo et al. '03]
+  With some changes the algorithm, the approximation can be brought down to $9+ \epsilon$.
+\end{fact}
+
+So the local swap algorithm gives us our first constant factor approximation for the k-means problem!
+
+\subsection{Comparison of heuristics for k-means}
+In terms of guarantees, local swap is the best: it gives us a constant factor approximation to the optimal solution. 
+Lloyd's algorithm when initialized with the $k$-means++ method has a guarantee that the returned solution won't be worse than $O(\log k)$ times the optimal cost.
+This can also be very good for reasonable values of $k$. Hartigan's method and the GMM method do not have guarantees in the general case.
+
+In practice $k$-means++ has an excellent runtime and performance. Hartigan's method seems to give better solutions but takes longer to run. 
+GMM and local swap are less common in practice.
 	
