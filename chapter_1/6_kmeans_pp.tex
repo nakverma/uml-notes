@@ -286,5 +286,7 @@ Lloyd's algorithm when initialized with the $k$-means++ method has a guarantee t
 This can also be very good for reasonable values of $k$. Hartigan's method and the GMM method do not have guarantees in the general case.
 
 In practice $k$-means++ has an excellent runtime and performance. Hartigan's method seems to give better solutions but takes longer to run. 
-GMM and local swap are less common in practice.
+GMM is also a very common  choice. The normality assumptions are common in practice, and the runtime and solutions are good. The fact that the model is generative 
+and gives probabilities of a point being in each cluster also might be helpful. Local swap is less commonly used in practice, 
+mainly due to its high runtime.
 	
