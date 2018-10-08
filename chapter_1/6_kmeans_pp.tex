@@ -235,7 +235,7 @@ The algorithm has worse running time, but it always gives us a better final solu
   $$\Pr[C = i] = \pi_i$$
   and 
   $$(X | C = i) \sim N(\vec{\mu}_i, \Sigma_i) $$
-  Then the assumption is that the data points $(\vec{x}_1, c_1), (\vec{x}_2, c_2), ..., (\vec{x}_n, c_n)$ are drawn iid from a $\mathcal{D}$ but
+  Then the assumption is that the data points $(\vec{x}_1, c_1), (\vec{x}_2, c_2), ..., (\vec{x}_n, c_n)$ are drawn iid from $\mathcal{D}$ but
   that the values of $c_i$ are hidden (or unobserved or unknown).
   
   The task is then to use the observed values $\vec{x}_1, \vec{x}_2, \dots, \vec{x}_n$ to
@@ -275,15 +275,16 @@ The algorithm has worse running time, but it always gives us a better final solu
   Where $\epsilon$ can be made arbitrarily small.
 \end{theorem}
 \begin{fact}[Also due to Kanungo et al. '03]
-  With some changes the algorithm, the approximation can be brought down to $9+ \epsilon$.
+  With some changes the algorithm, the approximation can be brought down to a factor of $9+ \epsilon$.
 \end{fact}
 
 So the local swap algorithm gives us our first constant factor approximation for the k-means problem!
 
 \subsection{Comparison of heuristics for k-means}
-In terms of guarantees, local swap is the best: it gives us a constant factor approximation to the optimal solution. 
+In terms of guarantees, local swap is theoretically the best, with a constant factor approximation to the optimal solution. 
 Lloyd's algorithm when initialized with the $k$-means++ method has a guarantee that the returned solution won't be worse than $O(\log k)$ times the optimal cost.
-This can also be very good for reasonable values of $k$. Hartigan's method and the GMM method do not have guarantees in the general case.
+Note that for practical values of $k$ (not incredibly large) the $k$-means++ guarantee can often be as good or better than local swap's guarantee. 
+Hartigan's method and the GMM method do not have guarantees in the general case.
 
 In practice $k$-means++ has an excellent runtime and performance. Hartigan's method seems to give better solutions but takes longer to run. 
 GMM is also a very common  choice. The normality assumptions are common in practice, and the runtime and solutions are good. The fact that the model is generative 
