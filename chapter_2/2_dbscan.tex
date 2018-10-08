@@ -57,16 +57,22 @@
 
   We include a formal definition of the algorithm:
 
-  \begin{enumerate}
-  \item Let $C=\{x \in X \ | \ X \cap B(x, \epsilon) \geq m\}$.
-  \item Construct the graph $G=(V,E)$, with $V=C$, $E=\{(i,j) \ | \ ||x_i-x_j|| \leq \epsilon\}$.
-  \item Run connected components on $G$. The clusters are the connected components
-  \item Let $B=\{x \in X \ | \ x \notin C, \exists c \in C, ||x-c|| \leq \epsilon\}$.
-  For each $b \in B$, assign $b$ to the connected component of any arbitrary $c$
-  that is within $\epsilon$ of $b$.
-  \item Ignore the rest of the points, which we consider noise points.
+  \begin{algorithm}[H]
+    \caption{DBSCAN Algorithm}
+    \label{dbscan alg}
+    \begin{algorithmic}[1]
+      \renewcommand\algorithmicrequire{\textbf{input}} 
+      \REQUIRE $X = {x_1\cdots x_n}$, $\epsilon \in \bbR^+$, $m \in \bbN^*$   
+      \STATE Let $C=\{x \in X \ | \ X \cap B(x, \epsilon) \geq m\}$.
+      \STATE Construct the graph $G=(V,E)$, with $V=C$, $E=\{(i,j) \ | \ ||x_i-x_j|| \leq \epsilon\}$.
+      \STATE Run connected components on $G$. The clusters are the connected components.
+      \STATE Let $B=\{x \in X \ | \ x \notin C, \exists c \in C, ||x-c|| \leq \epsilon\}$.
+      For each $b \in B$, assign $b$ to the connected component of any arbitrary $c$
+      that is within $\epsilon$ of $b$.
+      \STATE Ignore the rest of the points, which we consider noise points.
+    \end{algorithmic}
+  \end{algorithm}
 
-  \end{enumerate}
 
   \subsection{Pros and Cons}
   Cons:
