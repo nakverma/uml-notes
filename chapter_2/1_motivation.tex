@@ -7,28 +7,31 @@ shortcomings of centroid-based clustering. The first is that it makes
 some strong assumptions on what a cluster should look like. Consider the following data set
 in $\mathbb{R}^2$.
 
-\begin{figure}[h]
-\centering
+\begin{figure}
+\begin{center}
 \includegraphics[width=.7\linewidth]{chapter_2/files/raw.jpg}
-\caption{Visualize the deterministic poly-time algorithm. }
+\end{center}
+\caption{Our dataset in $\mathbb{R}^2$}
 \end{figure}
 
 Our intuition suggests that each concentric circle should form its own cluster.
 Thus the "ideal" clustering, according to our intuition, should look something
 like this:
 
-\begin{figure}[h]
-\centering
+\begin{figure}
+\begin{center}
 \includegraphics[width=.7\linewidth]{chapter_2/files/intuition.jpg}
-\caption{Visualize the deterministic poly-time algorithm. }
+\end{center}
+\caption{Ideal clustering of the dataset}
 \end{figure}
 
 However, running $k$-means on this dataset produces the following clustering.
 
-\begin{figure}[h]
-\centering
+\begin{figure}
+\begin{center}
 \includegraphics[width=.7\linewidth]{chapter_2/files/kmeans.jpg}
-\caption{Visualize the deterministic poly-time algorithm. }
+\end{center}
+\caption{Clustering produced by $k$-means}
 \end{figure}
 
 Why is it the case that $k$-means fails to comply to our intuition in the example
@@ -37,10 +40,11 @@ if you draw a line between any given points in a partition then all the points
 between those two points should also be in that partition. Thus the reason
 why the partition found by $k$-means looks like this:
 
-\begin{figure}[h]
-\centering
+\begin{figure}
+\begin{center}
 \includegraphics[width=.7\linewidth]{chapter_2/files/voronoi-cell.jpg}
-\caption{Visualize the deterministic poly-time algorithm. }
+\end{center}
+\caption{Partitions induced by Voronoi cells of the centroids}
 \end{figure}
 
 The partitions induced by centroids are called Voronoi cells: the Voronoi
@@ -52,10 +56,11 @@ Voronoi cells are convex.
 However, convexity is not always what we're looking for in a partition. Our intuition
 roughly partitions the space up like this:
 
-\begin{figure}[h]
-\centering
+\begin{figure}
+\begin{center}
 \includegraphics[width=.7\linewidth]{chapter_2/files/intuition-cell.jpg}
-\caption{Visualize the deterministic poly-time algorithm. }
+\end{center}
+\caption{Partitions induced by our intuition}
 \end{figure}
 
 If you draw a line between any two yellow points then that line will
