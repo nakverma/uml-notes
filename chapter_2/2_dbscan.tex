@@ -4,27 +4,28 @@
   \textbf{C}lustering  for \textbf{A}pplication with \textbf{N}oise. This
   algorithm was proposed by Ester, Kriegel, Sander, and Xu in 1996. In 2014,
   the original paper won the Test of Time Award from \textit{Knowledge Discovering and Data Mining},
-  the top journal in data mining.
+  the top journal in data mining.\\
 
-  \noindent\textbf{Basic idea of DBSCAN}
-  There are two parameters to the DBSCAN algorithm: $\epsilon$ and $m$, which
-  controls which point qualifies as being in a dense region. Based on $\epsilon$
-  and $m$, we classify the data points of into 3 kind of data points:
+  \noindent\textbf{The Basic idea of DBSCAN}
+  
+  There are two parameters to the DBSCAN algorithm: $\epsilon$ and $m$. They control 
+  which points qualify as being in a dense region. Based on $\epsilon$
+  and $m$, we classify the data points in one of three ways:
 
   \begin{enumerate}
-  \item Core points: These are the points which are considered to be in a
+  \item \textbf{Core points}: These are the points which are considered to be in a
   dense region, where dense is defined precisely as follows: given a point $x$,
-  consider the $\epsilon$-ball around it, and if the $\epsilon$-ball has
+  consider the $\epsilon$-ball around it. If the $\epsilon$-ball has
   at least $m$ data points around it, then we consider it a core point. Formally,
-  if we denote the set of core points as $C$, then $C=\{x \in X \ | \ X \cap B(x,\epsilon)\geq m\}$.
-  \item Border points: These are points that do not satisfy the $\epsilon$-ball
-  density condition for core points, but is within $\epsilon$ of a core point.
-  Note that if a border point is within $\epsilon$ of more than 1 data point
+  if we denote the set of core points as $C$, then $C=\{x \in X: |X \cap B(x,\epsilon)|\geq m\}$.
+  \item \textbf{Border points}: These are points that do not satisfy the $\epsilon$-ball
+  density condition for core points, but are within $\epsilon$ of a core point.
+  Note that if a border point is within $\epsilon$ of more than one core point
   then we break ties arbitrarily. Note that this implies that DBSCAN is sensitive
   to the order of the input data. These points are consider to be the "boundary"
   of our dense region: they are "buffer zones" for which the density of our regions
   taper off before they become low-density.
-  \item Noise points: These are points that neither satisfy the condition for
+  \item \textbf{Noise points}: These are points that neither satisfy the condition for
   core points or border points. Since they are so far away from the core points,
   they should be considered noisy data points sampled from low-density regions.
   \end{enumerate}
