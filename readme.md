@@ -4,22 +4,14 @@ This git repository holds the scribe notes for lectures.
 
 ## Quick Usage
 
-**Forking repoo.** Create a fork of this repo by clicking on
+**Forking repo.** Create a fork of this repo by clicking on
   **Fork** on the top-right corner of the page. See also:
   [forking a repo](https://help.github.com/articles/fork-a-repo/)
 
-**Making a local copy.** To clone the scribe notes into a local
-  repository, run the following command:
 
-```
-$ git clone https://github.com/[YOUR-USERNAME]/uml-notes.git
-```
-
-  Be sure to replace [YOUR-USERNAME] with your actual git username.
-
-**Generate main.** The root directory contains the shell script
-  `make_main.sh`. This helps you generate the `main.tex` file for
-  specific chapters.
+**Generate main.** Navigate to your local repository. In the root
+  directory contains the shell script `make_main.sh`. This helps you
+  generate the `main.tex` file for specific chapters.
 
 ```
 $ ./make_main.sh
@@ -44,25 +36,6 @@ $ chmod +x make_main.sh
  `main.tex.backup` file to `main.tex` and make changes to the
  `main.tex` file manually.
 
-**Creating a branch.** When scribing, you should checkout a
-  branch. This will help us keep the `master` branch from becoming too
-  chaotic.
-
-Let's say you're scribing k-means. As k-means is covered in Chapter 1,
-you should checkout the `chapter-one` branch: 
-
-```
-$ git checkout -b chapter-one
-```
-
-Do local edits and push your edits into your branch:
-
-```
-$ git push origin chapter-one
-```
-
-If you've checked out the `chapter-one` branch, please make edits only
-to chapter one files.
 
 **Making a pull request.** Once you've finalized your scribe notes,
   please submit a [pull request](https://yangsu.github.io/pull-request-tutorial/) on github.
