@@ -4,12 +4,18 @@ This git repository holds the scribe notes for lectures.
 
 ## Quick Usage
 
-**Cloning repo.** To clone the scribe notes into a local repository,
-  run the command:
+**Forking repoo.** Create a fork of this repo by clicking on
+  **Fork** on the top-right corner of the page. See also:
+  [forking a repo](https://help.github.com/articles/fork-a-repo/)
+
+**Making a local copy.** To clone the scribe notes into a local
+  repository, run the following command:
 
 ```
-$ git clone https://github.com/nakverma/uml-notes.git
+$ git clone https://github.com/[YOUR-USERNAME]/uml-notes.git
 ```
+
+  Be sure to replace [YOUR-USERNAME] with your actual git username.
 
 **Generate main.** The root directory contains the shell script
   `make_main.sh`. This helps you generate the `main.tex` file for
