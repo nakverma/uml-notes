@@ -179,6 +179,13 @@ done
 echo "" >> main.tex
 echo "" >> main.tex
 
+### Index
+
+if [[ include_part -eq 1 ]]; then
+    echo "\printindex" >> main.tex
+    echo "" >> main.tex
+fi
+
 echo "\end{document}" >> main.tex
 
 
