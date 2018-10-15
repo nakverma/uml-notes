@@ -1,4 +1,3 @@
-\section{Linear Dimensionality Reduction}
 The goal of JL is to presere $\ell_{2}$ distances. However, depending
 on what property you care about, there will be different linear
 dimensionality reduction techniques appropriate for your task. \\ 
@@ -16,7 +15,7 @@ dimensionality reduction techniques appropriate for your task. \\
 \item NMF/MF ((Non-negative) Matrix Factorization)
 \end{itemize}
 
-\subsection{RP (Random Projection)}
+\section{RP (Random Projection)}
 \subsubsection*{Method}
 For random projection, $P\in \mathbb{R}^{d\times D}$ with $P_{ij} =
 \mathcal{N}(0,1)$. i.e. 
@@ -29,7 +28,7 @@ P =
 \]
 If a projection matrix is wanted, apply Gram-Schmidt to $P$.
 
-\subsubsection{Practical application}
+\subsection{Practical application}
 PCA has time complexity $O(n^3)$, if we assume both the number of data
 points and the number of features are equal to $n$. In practice, if we
 are working with large amounts of data our first instinct to speed up
@@ -48,8 +47,8 @@ will be distorted within 1 $\pm$ $\epsilon$, the quality of the
 eigenvectors will be better.  
 
 
-\subsection{PCA~(Principal Component Analysis)}
-\subsubsection{Outline}
+\section{PCA~(Principal Component Analysis)}
+\subsection{Outline}
 Data: $x_1,x_2,...,x_n \in \mathbb{R}^d$\\
 
 \noindent Goal: Find the best linear transformation $\phi:
@@ -78,7 +77,7 @@ is given by
 \]
 To represent it in $\mathbb{R}^k$ (using basis $q_1,...,q_k$) the
 coefficients simply are: $(q_1,x),...,(q_k,x)$.\\ 
-\subsubsection{The $k$ = 1 case}
+\subsection{The $k$ = 1 case}
 In $k=1$ case, the objective is the following:\\
 
 $\textrm{minimize}_{||q||=1} \frac{1}{n} \sum_{i=1}^n
@@ -99,11 +98,11 @@ direction $q$.
 The general $k$ case is similar and the solution is basically the top
 $k$ eigenvectors of the matrix $XX^T$.\\ 
 
-\subsection{LDA~(Linear Discriminate Analysis)}
-\subsubsection{Motivation}
+\section{LDA~(Linear Discriminate Analysis)}
+\subsection{Motivation}
 The goal of PCA is to minimize the reconstruction error. However, this
 is not necessarily going to help for classification purposes. 
-\subsubsection{Method}
+\subsection{Method}
 Define $\mu_1=\frac{1}{|C_1|} \sum_{x\in C_1} x$ and
 $\mu_2=\frac{1}{|C_2|} \sum_{x\in C_2} x$. Define $\bar{\mu}_1=w^T
 \mu_1$ and $\bar{\mu}_2=w^T \mu_2$\\ 
@@ -165,7 +164,7 @@ the largest eigenvalues of $S_w^{-1} S_B$.\\
 \noindent \textbf{Remark}: When you have $c$-classes, LDA will find a
 $c-1$ subspace. \\ 
 
-\subsection{MDS~(Multi-dimensional Scaling)}
+\section{MDS~(Multi-dimensional Scaling)}
 MDS is useful when you don't have a Euclidean representation of the
 data, and wish to come up with one based on distances between data
 points. There are three types of MDS: 
@@ -175,7 +174,7 @@ points. There are three types of MDS:
 \item non-metric MDS
 \end{itemize}
 Here, we are mostly going to discuss metric MDS.\\
-\subsubsection{Metric MDS method}
+\subsection{Metric MDS method}
 Given a distance matrix $P \in \mathbb{R}^{n\times n}$, define the
 ``stress function", for $x_i \in \mathbb{R}^k \ \forall i=1,...,n$, to
 be the following: 
@@ -191,7 +190,7 @@ The problem can be formulated as the following:\\
 There is no easy way to write this as an eigenvalue problem, so to
 solve this we can simply do any gradient based optimization.\\ 
 
-\subsubsection{Non-metric MDS}
+\subsection{Non-metric MDS}
 The goal on non-metric MDS is to maintain the order of distances
 between data points. For example, if $x_{i}$ is closer to $x_{j}$ than
 $x_{k}$, then maintain this ordering. Can make $||x_{i} - x_{j}||$
