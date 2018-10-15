@@ -1,5 +1,6 @@
 % CONTRIBUTORS: Jonathan Terry
-So far, we have studied k-means clustering for finding nice, convex
+
+So far, we have studied $k$-means clustering for finding nice, convex
 clusters which conform to the standard notion of what a cluster looks
 like: separated ball-like congregations in space. Today, we look at a
 different approach to clustering, wherein we first construct a graph
@@ -7,7 +8,7 @@ based on our dataset. Upon a construction of this graph, we then use
 something called the graph Laplacian in order to estimate a reasonable
 partition subject to how the graph was constructed. Even more
 specifically, we look at the eigenvalues of the graph Laplacian in
-order to make an approximate MinCut, the result being the partitions
+order to make an approximation of \texttt{MinCut}, the result being the partitions
 corresponding to clusters. Before delving into the algorithm, we first
 develop a discrete version of vector calculus to motivate the
 structure of the mysterious graph Laplacian. 
@@ -165,7 +166,7 @@ So far we have been building the machinery to understand the
 Laplacian, and we are almost there. The big thing that we have been
 working towards is actually a measure of global smoothness of vertex
 functions on our graph. This is important to us as we will see that
-"independently" smooth sections of the graph will correspond to
+``independently" smooth sections of the graph will correspond to
 clusterings. To define smoothness, we actually consider the inner
 product of the differentials of functions, corresponding to a measure
 of total variation in the graph functions: 
@@ -547,122 +548,85 @@ configuration, and making an appropriate delineation of what we
 consider to be the isolated isolated systems corresponding to
 clusters.  
 
-\section{Approximating MinCut}
-In order to finally use the Laplacian for clustering, consider the
-MinCut Algorithm: 
+\section{The \texttt{MinCut} Problem}
+\subsection{Preliminaries}
+Before diving into the \texttt{MinCut} problem, we introduce the following definitions:
+\begin{itemize}
+\item \(G=(V,E)\) is an undirected graph
+\item \(W\) is a weight amtrix where \(w_{ij}\) is the weight of \((i,j)\in E\) 
+\item \(D:=\text{diag}(d_1,\ldots,d_n)\) is the ``degree'' matrix where \(d_i=\sum_{j\in V}w_{ij}\)
+\item If \(S\subset V\), then \(\overline{S}=V\setminus S\)
+\item For \(S,T\subset V, E(S,T):=\{(i,j)\in E | i\in S, j\in T \} \)
+\item \(\partial S:=E(S,\overline{S})\)
+\item For \(F\subset E\), weight\((F)=\sum_{e\in F}w_e\)
+\item We have two notions of size of some \(S\subset V\): (i) the cardinality \(|S|\) and (ii) vol\((S):=\sum_{i\in S}d_i=\sum_{i\in S,j\in V}w_{ij}=\)weight\((E(S,V))\)
+\end{itemize}
+\subsection{The Problem Statement}
+Now consider the \texttt{MinCut} problem: 
 \\\\
 \noindent
 \textbf{Input:} A Graph \(G(V, E, W)\)
 \\\\
 \noindent
-\textbf{Output:} Two sets \(A\) and \(B\) such that \(G = A \coprod
-B\) such that the cut is minimized: 
+\textbf{Output:} A set \(S\in V\) such that the cut is minimized: 
 \[
-\textnormal{min cut}(A,B) = \frac{\sum_{i \in A, j\in B}
-  w_{ij}}{\textnormal{min} \{|A|, |B|\} } 
+\min_{S\subset V}\text{weight}(\partial S) 
 \]
-Returning to the analogy of springs and masses, this objective
-function is trying to separate the system such that the fewest and
-weakest springs separate the clusters while maximizing the cluster
-size. This prevents us from making a trivial cut (one of the sets
-being empty) and generally forces the two clusters to be of
-approximately the same size. From here, we note that if the graph
-functions with which we are dealing are of the form \(f: V \rightarrow
-\{0,1\}\), we can suggestively rewrite the the numerator of the cut
-objective function, and note it corresponds to the global smoothness! 
-\[
-\textnormal{min cut}(A,B) = \frac{\sum_{i \in A, j\in B} w_{ij} (f(i)
-  - f(j))^2}{\textnormal{min} \{|A|, |B|\} } 
-\]
-\[
-\textnormal{min cut}(A,B) = \frac{f^TLf}{\textnormal{min} \{|A|, |B|\} }
-\]
-From here we can note that the \(\textnormal{min} \{|A|, |B|\}\) under
-the assumed functional form is simply counting the number of 1's in
-the vector, then we can see that the objective function is really just
-a Rayleigh quotient! 
-\[
-\textnormal{min cut}(A,B) = \frac{f^TLf}{f^Tf }
-\]
-Now, we need to perform this minimization, while excluding the obvious
-all 1's solution. To do this, we simply impose the constraint that the
-solution must be orthogonal to the constant solution, invoke formulate
-Rayleigh's theorem which is at the core of computing these clusters. 
-\begin{theorem}[Rayleigh's Theorem]
-The following quotient is minimized when \(f = u_2\), the eigenvector
-corresponding to \(\lambda_2\): 
-\[
-\textnormal{arg min}_{f \perp \mathbf{1}} = \frac{f^TLf}{f^Tf }
-\]
-\end{theorem}
+Returning to the analogy of springs and masses, this objective function is trying to separate the system such that the fewest and weakest springs separate the clusters. Note that this is efficiently solvable and often gives a trivial solution. We therefore want a \textit{balanced} partition, meaning we simultaneously maximize the intra-cluster weights. This prevents us from making a trivial cut (one of the sets being empty) and generally forces the two clusters to be of approximately the same size. Solutions and approximations to this problem are NP-hard. Before considering some relaxations of \texttt{MinCut}, we make a detour through Eigenvalue Problems.
 
-From here, we note that given the spectral decomposition of the
-Laplacian, that the minimal value is obtained when \(f = u_2\), or the
-eigenvector of the Laplacian corresponding to \(\lambda_2\) for any
-graph. Note that for a graph with one connected component, this
-constraint excludes a bad answer to the problem. This effectively
-imposes that the first eigenvector, which is always in the kernel of
-\(L\) since every graph has at least one connected component, cannot
-minimize the quantity. However, this DOES NOT exclude a good answer in
-the case of a disconnected graph as subsequent eigenvalues will have
-value 0 and allow for the minimization to be obtained.  In practice,
-this will seldom be the case, and usually \(\lambda_2 > 0\), so we get
-an imperfect cut. The result is an eigenvector which is not a perfect
-indicator function, but can be subsequently used for clustering. Due
-to \textit{Cheeger's Inequality}, the second eigenvalue is related to
-a property of the graph known as the conductance, which more or less
-says how meaty the MinCut was: a lower conductance implies a better
-MinCut. 
+\subsection{Review of Eigenvalue Problems}
 
-If you wish to find k-clusters, simply look at the bottom \(k\)
-eigenvalues (excluding \(\lambda_1 = 0\)), and use the associated
-eigenvectors as a basis for new data points to perform
-clustering. These basis vectors will be mutually orthogonal as
-guaranteed by the spectral theorem, and allow for a representation of
-any new data points encountered. To cluster a new datapoint, simply
-consider its representation in the new basis, and perform regular
-k-means clustering. An intuitive depiction of the spectral clustering
-and the resultant eigenvectors is shown in Figure 3, highlighting that
-these vectors should be orthogonal and ideally be very sharp
-indicators of partition membership. Of course this is subject to
-appropriate graph preprocessing. 
-\begin{figure}[ht]
-\centering
-\includegraphics[width=0.8\textwidth, height=0.3\textheight]{chapter_3/files/cluster.png}
-\caption{Intuitive depiction of eigenvectors minimizing the Rayleigh
-  Quotient. Note their indicator behavior and mutual orthogonality. In
-  the real world, they will be less sharp and more squiggly.} 
-\label{fig:circle}
-\end{figure}
-\section{Closing Remarks}
-Wrapping up this lecture, we close with some summarizing
-remarks. Namely, the big picture of spectral clustering, summarized in
-four steps: 
-\begin{enumerate} 
-\item Construct a weight matrix \(W\) for the dataset you wish to
-  cluster. A common method of defining similarity is \(w_{ij} =
-  \exp({||x_i - x_j||^2 / \sigma^2})\). 
-\item Construct the induced Laplacian \(L = D-W\).
-\item Find the eigendecomposition of \(L\) and select the number of
-  basis vectors according to the number of clusters you expect. 
-\item Run k-means in the new basis.
-\end{enumerate}
+Let $M\in \text{Sym}(\mathbb{R}^{n \times n})$. Let $k \leq n$. We consider the following optimization problem:
+$$\min_{x_1,x_2,...x_k} \sum_{i = 1}^k x_i^TMx_i$$
+for some $x_i \in \mathbb{R}^n$ such that $x_i \neq 0, ||x_i||^2 = 1$ and $x_i \bot x_j = 0$  $\forall i \neq j$. This problem can be reformulated as:
+$$\min_X \text{Tr}(X^T M X) \text{ such that } X \in R^{n \times k} \text{ and } X^TX = I_k$$
+For any unitary matrix $U\in \mathbb{R}^{k\times k}$, $XU$ is a minimizer to the above problem if and only if $X$ is a minimizer. Then we have a final reformulation:
+$$\min_X \text{Tr}\big((XU)^T \text{diag}(\lambda_1,\ldots,\lambda_n) (XU)\big) \text{ such that } X \in R^{n \times k} \text{ and } X^TX = I_k$$
+where $\lambda_1\leq\cdots\leq\lambda_n$ are the eigenvalues of $M$. Thus the solution is the matrix whose $k$ columns are the corresponding eigenvectors: $\begin{pmatrix}v_1 &\cdots&v_k \end{pmatrix}$
 
-\section{Some More for the Advanced Reader}
-There were a few more tidbits mentioned in class, which should be
-noted here, but are not directly applicable to the homework. One
-particularly interesting piece was on the PseudoInverse of the
-Laplacian. You may remember that the Laplacian took us from position
-to force. Well, the PseudoInverse does the opposite giving us the
-position from a set of forces. Therefore, the PseudoInverse of the
-Laplacian induces a distance kernel. The example mentioned in class
-was about the Euclidean average commute time distance, namely
-\(\langle x, L^{-1}x \rangle\) which sort of tells you how bad your
-commute will be going to and from a certain area of the graph.  
+\subsubsection{Generalized Eigenvalue Problem} Now say that we have $M,N\in\text{Sym}(\mathbb{R}^{n\times n})$ and $N\succ 0$ What is the solution to $Mv=\lambda Nv$? Note that
+$$Mv=\lambda Nv \Leftrightarrow Mv=\lambda N^{1/2}N^{1/2}v \Leftrightarrow \underbrace{N^{-1/2}MN^{-1/2}}_{M'}\underbrace{N^{1/2}}_{v'}=\lambda\underbrace{N^{1/2}}_{v'}$$
+which we have already solved above. This allows us to find solutions to problems of the form $\min v^TMv$ such that $v^TNv=c\in\mathbb{R}$.
+
+\subsection{Motivating the Laplacian}
+There are a few different Laplacians that we can define:
+\begin{itemize}
+\item The ``Combinatorial'' Laplacian $L = D - W$. 
+\item The Random Walk Laplacian $L_{\text{rw}} = D^{-1}L$
+\item The symmetric/normalized Laplacian $L_{\text{sym}}=D^{-1/2} L D^{-1/2}$
+\end{itemize}
+The motivation of the random walk definition is as follows: A random walker transitions from $i$ to vertex $j$ with probability 
+$$P_{ij} = \frac{w_{ij}}{\sum_{ij \in E} w_{ij}} = \frac{w_{ij}}{d_i}$$
+
+So if $\pi_t \in R^{|V|}$ is a probability mass function of a random walk on $G$ at time $t$, then $\pi_{t+1} = \pi_t P$ where the matrix $P$ is the transition matrix defined as $P = D^{-1}W$.
+
+\subsection{\texttt{NormalizedCut} Problem}
+Consider a $2$-partition of the vertex set $V=A\sqcup\overline A$. We consider the probability (under a stationary distribution) that we transition from $A$ to $\overline A$:
+$$P(A \rightarrow \overline{A}) = \frac{\text{weight}(E(A,\overline{A}))}{\text{vol}(A)}$$
+More generally, for a $k$-partition of the vertex set $V=A_1\sqcup\cdots\sqcup A_k$, we have 
+\begin{align*}
+P(\text{transition across clusters})&= \sum_{i=1}^k P(A_i \rightarrow \overline{A_i})\\
+&= \sum_{i=1}^k \frac{\text{weight}(E(A_i,\overline{A_i}))}{\text{vol}(A_i)}\\
+&=:\text{Ncut}(A_1,\ldots,A_k)
+\end{align*}
+
+\subsection{The Problem Statement and Solution}
+Now we formally state the \texttt{NormalizedCut} problem: 
 \\\\
-One other very cool point from class was that the eigendecomposition
-is not a convex problem, but we still do it all the time! While convex
-problems are inherently easy, non-convex does not imply impossible or
-even that difficult. The take-away being that just because a problem
-is non-convex does not mean it's the end of the world :) 
+\noindent
+\textbf{Input:} A Graph \(G(V, E, W)\), $k$
+\\\\
+\noindent
+\textbf{Output:} A partition $V=A_1\sqcup\cdots\sqcup A_k$ such that the normalized cut is minimized: 
+\[
+\min_{A_1,A_2,...,A_k}\text{Ncut}(A_1,A_2,...,A_k) 
+\]
+We now take note that 
+$$ \frac{\text{weight}(E(A_i,\overline{A_i}))}{\text{vol}(A_i)} = \frac{\mathbbm{1}^T_{A_i}L\mathbbm{1}_{A_i}}{\text{vol}(A_i)}=  \left(\frac{\mathbbm{1}_{A_i}}{\sqrt{\text{vol}(A_i)}}\right)^T L \left(\frac{\mathbbm{1}_{A_i}}{\sqrt{\text{vol}(A_i)}}\right)$$
+This allows us to rewrite $\text{Ncut}(A_1,A_2,...,A_k)=\sum_{i=1}^kf_i^TLf_i$ such that $f_i^TDf_i=1$. Further re-writing the objective we have
+$$\min_{X=(f_1\cdots f_k)}\text{Tr}(X^TLX) \text{ such that } X^TDX=I$$
+This problem is NP-hard, so we relax:
+$$\min_{X, X^TDX = I_k}Tr(X^T L X) $$
+The solutions are those of $Lv=\lambda Dv$, which we are able to solve with machinery we built earlier. They will be the first $k$ eigenvectors of $L_{\text{sym}}$. Unfortunately, unlike the $f_i$ we sought, these eigenvectors will not give a clear assignment of each vertex to a cluster. They do, however, give us an embedding of the vertices into Euclidean space. We may then use this embedding to perform $k$-means. It should be noted that there are no theoretical guarantees associated with this approximation.
+
 
