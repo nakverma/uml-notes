@@ -1,4 +1,21 @@
 \section{Kleinberg's Impossibility}
+  Different Clustering Methods not Discussed in class
+ 
+\begin{itemize}
+  \item Linkage Based Clustering - Single and Average Linkage \cite{ackerman}
+  \item Planted Partition Model \cite{chaudhuri}
+  \item Random Graph Based Clustering
+  \item Hierarchical Agglomerative Clustering \cite{aglclus}
+  \item Soft Clustering - Each point can belong to multiple clusters \cite{bilmes}
+\end{itemize}
+
+\textbf{Kleinberg's Axiomatic Approach to Clustering -} \cite{klnbrgimp} \\
+Its is not a specific clustering algorithm, but it addresses clustering as a whole. Often we see people develop a clustering algorithm and it can not be used in all places. Then they develop a fresh new algorithm. So we ask is there any clustering strategy that can satisfy all needs ?
+
+So Kleinberg comes up with three axioms which are natural qualities we can expect from clustering algorithms.
+
+We use the following notation, $X$ is our data points and $d$ is a distance matrix and $F(X,d)$ is a clustering produced by an algorithm.\\\\
+
 \begin{enumerate}
 \item \textbf{Scale-Invariance}
 
@@ -7,11 +24,11 @@
 \item \textbf{Richness}
 
   Different $d$'s can give different partitions. All partitions are
-  possible by changing $d$.  
+  possible by changing $d$. Which means, for every partition $C$ of the data points, there exists a $d$, such that $F(X,d) = C$. So this property ensures that we don't get trivial clusters form our algorithm. NOTE : K-means is only K-rich.
 \item \textbf{Consistency}
 
   Reducing distance within clusters and increasing distance between
-  clusters won't change partition. 
+  clusters won't change partition. Simply saying, take any clustering $C$. Now decrease the intra clustering distances and increase the inter clustering distance then suppose the new data point is $X'$ and distance matrix be $d'$ Then $F(X',d') = C$. Formally,
   \begin{align*}
     \text{Suppose}\ &f(x,d)\ \textrm{gives a partition}\\ 
     \bar{d}(i,j)&\leq
@@ -20,28 +37,46 @@
     f(x,\bar{d})&=f(x,d)
   \end{align*}
 \end{enumerate}
+  
+  Note : Optimal K-means satisfies Scale In-variance and Consistency.\\\\
+
 \begin{theorem}
   There exists no $f$ which satisfies axiom $1,2~\&~3$.
 \end{theorem}
 
 \begin{proof}
-  Suppose there is a set of three points$\{x_1, x_2,x_3\}$. Two
-  distance function $d$ and $d'$ such that $f(x,d)$ gives a clustering
-  of $\{\{x_1\},\{x_2\},\{x_3\}\}$ and $f(x,d')$ gives a clustering of
-  $\{\{x_1,x_2\},\{x_3\}\}$.
+
+  Let $X = {x_1, x_2,x_3}$. Now we know due to the richness property,
+  $$\exists d_1 \text{ such that } F(X,d_1) = \{\{x_1\},\{x_2\},\{x_3\}\}$$
+  and 
+  $$\exists d_2 \text{ such that } F(X,d_1) = \{\{x_1, x_2\},\{x_3\}\}$$
+
+  Now take $\alpha > 0$ such that $d_2(x_i,x_j) \geq d_1(x_i,x_j)$ for all $i,j$
+
+  Make $d_3 = \alpha d_2$. Now by Scale In-variance property, we have $F(X,d_3) = F(X, \alpha d_2) = F(X,d_2)$.
+  Now by consistency, we have $F(X,d_1) = F(X, d_3)$. As it increase all inter distance and the intra distances are unchanged trivially as we have only one point in each cluster.
+  Hence $F(X,d_1) = F(X,d_3) = F(X,d_2) $ But this is a contradiction due to the fact $F(X,d_1) \neq F(X,d_2) $. Hence there is no such F
+
+
+  % I have commented out the origin proof, as there were really nothing extra in the lecture, as we just argued about the axioms
+  % I already scribed a different lecture, the previous one with Dimitri, is it fine ?
+  % Suppose there is a set of three points$\{x_1, x_2,x_3\}$. Two
+  % distance function $d$ and $d'$ such that $f(x,d)$ gives a clustering
+  % of $\{\{x_1\},\{x_2\},\{x_3\}\}$ and $f(x,d')$ gives a clustering of
+  % $\{\{x_1,x_2\},\{x_3\}\}$.
   
-  It can be observed that $$f(x,d)\neq f(x,d')\hspace{5em}(1)$$
+  % It can be observed that $$f(x,d)\neq f(x,d')\hspace{5em}(1)$$
   
-  By scale-invariance, $$f(x,\alpha\cdot d') =
-  f(x,d')\hspace{5em}(2)$$
+  % By scale-invariance, $$f(x,\alpha\cdot d') =
+  % f(x,d')\hspace{5em}(2)$$
   
-  We can find an $\alpha$ that $\alpha\cdot d'$ enlarges distance
-  between any two points. If consistency holds, it means new distance
-  function $\alpha\cdot d'$ shouldn't change partition result of
-  $f(x,d)$ because $\alpha\cdot d'$ increases all between-cluster
-  distances. However, from (1) and (2) we know that $f(x,d)\neq
-  f(x,\alpha\cdot d')$, so consistency doesn't hold for the partition
-  function $f$.
+  % We can find an $\alpha$ that $\alpha\cdot d'$ enlarges distance
+  % between any two points. If consistency holds, it means new distance
+  % function $\alpha\cdot d'$ shouldn't change partition result of
+  % $f(x,d)$ because $\alpha\cdot d'$ increases all between-cluster
+  % distances. However, from (1) and (2) we know that $f(x,d)\neq
+  % f(x,\alpha\cdot d')$, so consistency doesn't hold for the partition
+  % function $f$.
 \end{proof}
-Note that k-means algorithm is not richness because it can only have
+Note that k-means algorithm is not rich because it can only have
 $k$ clusters. 
