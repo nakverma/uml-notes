@@ -18,8 +18,7 @@ f(x)=
 \]
 \textbf{Claim}: $f$ is a contraction. That is, $\forall u,v \in
 \mathbf{X}$, $||f(u)-f(v)||_{l_\infty^d} \leq \rho (u,v)$.\\ 
-Observation: Because $\rho$ is a metric and thus by triangle
-inequality, 
+Observation: Because $\rho$ is a metric, by triangle inequality, 
 \[
 \forall x_i \in \mathbf{X},\ \rho (u,x_i) - \rho (v,x_i) \leq \rho
 (u,v) 
@@ -27,7 +26,7 @@ inequality,
 It follows that 
 \[
 \max_{u,v} \rho (u,x_i) - \rho (v,x_i) \leq \rho (u,v)\]
-so the claim is true.\\
+so F is a contraction.\\
 Now consider the coordinate for $u$, we have 
 \[
 \rho (u,v) \leq | \rho (u,u) - \rho (u,v) |
