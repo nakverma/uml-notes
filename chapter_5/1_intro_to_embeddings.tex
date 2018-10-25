@@ -1,3 +1,6 @@
+% Contributors: Last semester's scribes...
+% Contributors: Alex Gajewski, Wentian Bao
+% Contributors: Greg Kocher
 \section{Overview and Motivation}
 Not all data people deal with has a ``vector space''
 representation. For example, we might only have a similarity matrix,
@@ -73,5 +76,12 @@ X\rightarrow Y$ is said to be a \emph{$D$-embedding} of $X$ into $Y$
 r \cdot \rho(x,x') \leq \sigma(f(x),f(x')) \leq D \cdot r \cdot
 \rho(x,x').
 \]
-$D$ is said to be the \emph{distortion} of the embedding $f$, and if $D=1$, $f$ is isometric.
+$D$ is said to be the \emph{distortion} of the embedding $f$, and if $D=1$, $f$ is isometric. \\
+\end{definition}
+
+\begin{definition}
+Let $(X,\rho)$ and $(Y,\sigma)$ be two 
+metric spaces. The mapping $f: X \rightarrow Y$ is a \textbf{contraction}
+if $\forall x,x' \in X$, then $\exists k$, $0 \leq k < 1$, such that 
+$\sigma (f(x), f(x')) \leq k \rho (x,x')$.
 \end{definition}
