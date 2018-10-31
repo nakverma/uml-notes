@@ -1,9 +1,10 @@
 % Contributors: Last semester's scribes...
-% Contributors: Greg Kocher
+% Contributors: Greg Kocher, Wenbo Gao, Sahil Manocha
 \section{Embedding into $l_\infty^d$} 
 %sectioning used above is autocapitalizing 
 %and confusing little d with big D in header on every odd pg...
 Reminder: $||u-v||_{l_\infty^d}=\max_{1\leq i \leq d} |u_i-v_i|$\\
+
 
 \begin{theorem}[Fr\'echet]
 Any $n$-point metric space $(\mathbf{X}, \rho)$ with $|\mathbf{X}|=n$
@@ -401,8 +402,7 @@ be $D$-embedded into $l_\infty^d$ where $d=O(q n^{1/q} \ln n)$.
 \end{theorem}
 To prove this, we can reuse ideas from the $D=3$ ($q=2$)
 proof but now 
-we require more sets (e.g. $A_i$, $\bar{A_i}$, $\bar{\bar{A_i}}$) 
-and more balls. \\
+we require more sets (e.g. $A_i$, $\bar{A_i}$, $\bar{\bar{A_i}}$) and more balls. \\
 
 \subsubsection{Summary}
 Fr\'echet: $l_\infty^d$, $d=n$, $d=\Omega (n)$, $D<3$. \\
@@ -430,147 +430,111 @@ sophisticated. \\
 Incompressibility Theorem, and an upper bound from Bourgain,
 with a gap of $\log n$. How can we close that gap? \\
   
-\textbf{Question}: What if we already started in $l_2$ 
-instead of any arbitrary n-point metric space? Can we do 
-an isometric embedding with $l_2^K \rightarrow l_2^k$, for some
-$k<<K$? \\
-\textbf{Answer}: No, we cannot even do $k=K-1$. To see this, think
-of how an isometry will preserve dot products. 
-For example, we cannot
-remove a dimension and still have an orthogonal
-basis without 
-losing information. However, if we are willing to
-tolerate some distortion,
-we can achieve such an embedding, as described next in the 
-JL-lemma. \\
+  
+  
+  
+  
+\section{Dimensionality Reduction in $\ell_2$}
+It is generally not possible to isometrically embed points in 
+$\ell_2^n$ in any lower-dimensional space.
+
+\textbf{Example}: Consider the $n+1$ points $V = \{0, e_1,\ldots,e_n\}$ 
+in $\ell_2^n$, where $e_i$ is the $i$-th basis vector. Then 
+$V$ cannot be isometrically embedded in $\ell_2^{n-1}$. 
+\begin{proof}
+Suppose to the contrary that $f: \ell_2^n \rightarrow \ell_2^{n-1}$ 
+is an isometric embedding of $V$. Without loss of generality, 
+we may assume $f(0) = 0$. For any $u,v$, we have
+$$\|f(u) - f(v)\|^2 = \|f(u)\|^2 - 2\langle f(u), f(v)\rangle + \|f(v)\|^2$$
+Since $\|f(u)\|^2 = \|f(u) - f(0)\|^2 = \|u\|^2 = 1$ for every $u$, 
+we have $\|f(u) - f(v)\|^2 = 2 - 2\langle f(u),f(v)\rangle$. 
+Hence $2 = \|u - v\|^2 = 2 - 2\langle f(u), f(v)\rangle$ for 
+all $u,v$. Hence $\langle f(u), f(v)\rangle = 0 $ for all $u,v$. 
+But then we have a set of $n$ mutually orthogonal points in 
+$\bbR^{n-1}$, a contradiction.
+
+The same argument holds for arbitrary simplices in $\bbR^n$, 
+which follows from the general fact that Gram matrix $V^TV$ 
+has the same rank as $V$.
+\end{proof}
+
+However, if we are willing to permit a small distortion in 
+the distances, then we can do much better: $n$ points can 
+be embedded in a space of dimension $O(\log n)$. \\
 
 
-\begin{theorem}[Johnson-Lindenstrauss "flatten" lemma(JL-lemma, 1984)]
-Pick any $0<\epsilon<\frac{1}{2}$. Then for any integer $n$, let $d >
-\ceil{\frac{4}{\epsilon^2} (2\ln n + \ln 3)} \rightarrow d > \Omega
-(\frac{\ln n}{\epsilon^2})$. Then for any set $V \subset \mathbb{R}^D,
-\ s.t. \ |V|=n$, there exists a map $f:\mathbb{R}^D \rightarrow
-\mathbb{R}^d \ s.t. \ \forall u,v \in V, \ (1-\epsilon)||u-v||^2_2
-\leq ||f(u)-f(v)||_2^2 \leq (1+\epsilon)||u-v||^2_2$.\\ 
-\begin{itemize} 
-\item Moreover, $f$ is simply a linear map.  
-\item Pick a random $d$-dim subspace (in $D$-dim), then above holds 
-  true with high probability(minor global scaling).  
-\end{itemize} 
-\end{theorem} 
-For any $D$-dim $v$, define \[
-f(v)=
-\begin{bmatrix}
-    x_{11}&...&x_{1D}\\
-    ...\\
-    x_{d1}&...&x_{dD}\\
-\end{bmatrix}v
-\]
-where $x_{ij}\ \forall i,j$ is drawn from a Gaussian
-independently. Then with high probability, $f$ satisfies the above
-properties. 
-
-$\exists \ n+1$ points in $\mathbb{R}^D (D\geq n)$ that cannot be
-isometrically embeddable in $l_2^d$ with $d<n$.\\ 
-\textbf{Application of JL}:
-\begin{itemize}
-\item Fast provable clusterings(1999)
-\item Fast approximate nearest neighbor search
-\item Approximate solutions to graph problems(e.g. multi-commodity
-  flow) 
-\item Fast approximate linear algebra(e.g. matrix
-  multiplication)("sketching") 
-\end{itemize}
-\textbf{Proof Sketch}\\
-Observation: Let $\phi$ be a random $d$-dim subspace (in $D$-dim).\\
-\textbf{Claim}: We can show that $\mathbb{E}_\phi[||\phi
-  (w)||^2]=\frac{d}{D}$. Pick any $0<\epsilon<\frac{1}{2}$ and fix a
-unit vector $w\in \mathbb{R}^D$. Then,  
-\[
-\Pr\left[||\phi (w)||^2 < (1-\epsilon) \frac{d}{D} \textrm{ or }
-  ||\phi (w)||^2 \geq (1+\epsilon) \frac{d}{D}\right] \leq
-3e^{-d\epsilon^2/4}. 
-\]
-\emph{Note:} on average, a projection of $w$ onto the random subspace
-$\phi$ has expected squared-norm: 
-\[\E\left[||\phi(w)||^2\right] = \frac{d}{D}.\]
-Then, apply a concentration/Chernoff-type bound.
-
-\section{JL-Lemma}
-\subsection{Recall}
-\begin{theorem}[Johnson-Lindenstrauss ``flattening" lemma, 1984]
-\noindent Pick any $0<\epsilon<\frac{1}{2}$. Then for any integer $n$,
-let $d > \ceil{\frac{4}{\epsilon^2} (2\ln n + \ln 3)}$, that is, $d >
-\Omega (\frac{\ln n}{\epsilon^2})$. Then for any set $V \subset
-\mathbb{R}^D, \ s.t. \ |V|=n$, there exists a linear map
-$f:\mathbb{R}^D \rightarrow \mathbb{R}^d \ s.t. \ \forall u,v \in V$,  
-
-\begin{equation*}
-(1-\epsilon)||u-v||^2_2 \leq ||f(u)-f(v)||_2^2 \leq
-  (1+\epsilon)||u-v||^2_2 
-\end{equation*}
+\begin{theorem}[Johnson-Lindenstrauss ``Flattening'' Lemma (1984)]
+For any $n$ and $0 < \epsilon < \frac{1}{2}$, let 
+$d \geq \ceil{\frac{4}{\epsilon^2} (2\ln n + \ln 3)}$. 
+Then, for any $V \subseteq \bbR^D$, where $D$ can be arbitrary, 
+with $|V| = n$, there exists a mapping $f: \bbR^D \rightarrow \bbR^d$ such that
+$$(1-\epsilon)\|u-v\|^2_2
+\leq \|f(u)-f(v)||_2^2 \leq (1+\epsilon)\|u-v\|^2_2 \text{ for all } u,v \in V$$
+Moreover, we may take $f$ to be a linear map.
 \end{theorem}
-\begin{remark} Since $\sqrt{1 - \epsilon} \leq 1 - \epsilon$ and $1 +
-  \epsilon \leq \sqrt{1 + \epsilon}$, the embedding is thus a
-  $D$-embedding where the distortion  $D=\frac{1+\epsilon}{1-\epsilon}
-  \leq 1+5\epsilon$ because $\frac{1}{1-\epsilon} \leq 1+2\epsilon
-  \ \forall 0 < \epsilon < \frac{1}{2}$. The above holds true for any
-  random $d$-dim subspace (in $D$-dim) with high probability (minor
-  global scaling). 
-\end{remark}
 
+\textbf{Remarks}:
+\begin{itemize}
+\item The flattening lemma is stated in terms of the squared 
+$\ell_2$-norm. By taking square roots, we find that
+ $(1-\epsilon)\|f(u) - f(v)\|_2 \leq \|u -v \|_2 \leq (1+\epsilon)\|f(u) - f(v)\|_2$, 
+ because $\sqrt{1+\epsilon} < 1 + \epsilon$ and 
+ $\sqrt{1-\epsilon} < 1- \epsilon$. Thus, the distortion factor 
+ $D$ can be upper bounded by
+ $\frac{1+\epsilon}{1 - \epsilon} \leq 1+5\epsilon = 1 + O(\epsilon)$ 
+ (the constant 5 arises when $\epsilon < \frac{1}{2}$).
+\item If $f$ is chosen to be a (scaled) projection onto a 
+``random'' $d$-dimensional subspace of $\bbR^D$, then $f$ 
+will satisfy the conditions of the lemma with high probability.
+\end{itemize}
 
+\textbf{Applications}:
+\begin{itemize}
+\item Data compression
+\item Compressed sensing (Donoho, Cand\`{e}s, Tao)
+\item Approximate linear algebra, sketching methods
+\item Fast approximate nearest neighbors in large scale (Indyk, locality-sensitive hashing)
+\item Fast provable clustering. EM-methods do not provide theoretical guarantees.
+\end{itemize}
+
+The JL lemma can be proved using the following phenomenon 
+in high-dimensional spaces, which is called \emph{concentration of measure}.
 
 \begin{lemma}[Concentration of Measure] \label{concentration}
-Pick any $0<\epsilon<\frac{1}{2}$, fix any unit vector $w\in
-\mathbb{R}^D (\mathrm{i.e.}~||w||=1)$, let
-$\phi:\mathbb{R}^D\rightarrow \mathbb{R}^d$, $d<D$, be a random
-subspace map. Then,  
-\[\Pr_\phi \left[||\phi(w)||^2 < (1-\epsilon)\frac{d}{D} \textrm{ or }
-  ||\phi (w)||^2 > (1+\epsilon)\frac{d}{D}\right]\leq 3 e^{-d
+Fix any $0 < \epsilon < \frac{1}{2}$, and a unit vector $w \in \bbR^D$ 
+(in the $\ell_2$-norm). Let $\phi: \bbR^D \rightarrow \bbR^d$ 
+be the projection onto a ``random'' subspace (to be defined later). Then
+\[\Pr_\phi \left[\|\phi(w)\|^2 < (1-\epsilon)\frac{d}{D} \textrm{ or }
+  \|\phi (w)\|^2 > (1+\epsilon)\frac{d}{D}\right]\leq 3 e^{-d
   \epsilon^2/4}.\] 
 \end{lemma}
 
-For JL, we'll want to project to a random subspace, then scale by $\sqrt{D/d}$.
+We now proceed to prove the JL Flattening lemma.
 
-\subsection{Proof of JL-Lemma}
 \begin{proof}
-Because $\phi$ is linear, there is a corresponding matrix $P\in
-\mathbb{R}^{d\times D}$ s.t. $\phi(w)=Pw$. \\ 
-$f:=\sqrt{\frac{D}{d}} \phi$, so $f(w) = \sqrt{\frac{D}{d}} Pw$. For
-any distinct $u,v\in V$,\\ 
+Define the map $f$ by $f = \sqrt{\frac{D}{d}}\phi$. Applying the 
+concentration of measure lemma to any two $u,v \in V$, we find that
 \begin{align*}
-\Pr\bigg[\exists u,v \in V &\textrm{ s.t. } ||f(u)-f(v)||^2 <
-  (1-\epsilon)||u-v||^2\textrm{ or } ||f(u)-f(v)||^2 >
-  (1+\epsilon)||u-v||^2\bigg]\\ 
-&\leq \sum_{\substack{(u,v)\in V\times V\\
-    \mathrm{unordered~pairs}}} \Pr_\phi \Big[||f(u)-f(v)||^2 <
-  (1-\epsilon)||u-v||^2\\  
-&\hspace{4cm}\textrm{ or } \ \ ||f(u)-f(v)||^2 >
-  (1+\epsilon)||u-v||^2\Big]\\ 
-& = \sum_{\substack{(u,v)\in V\times V\\
-                  \mathrm{unordered~pairs}}} \Pr_\phi
-\bigg[\left|\left|\phi
-  \left(\frac{u-v}{||u-v||}\right)\right|\right|^2 <
-  (1-\epsilon)\frac{d}{D}\\ 
-&\hspace{4cm}\textrm{ or }\ \ \left|\left|\phi
-  \left(\frac{u-v}{||u-v||}\right)\right|\right|^2 >
-  (1+\epsilon)\frac{d}{D}\bigg]\\ 
-&\leq \binom{n}{2} 3 e^{-d\epsilon^2/4} < 1
+&\Pr \left( \|f(u)-f(v)\|^2 < (1-\epsilon)\|u-v\|^2\textrm{ or } 
+\|f(u)-f(v)\|^2 > (1+\epsilon)\|u-v\|^2 \right) \\
+&= \Pr\left( \|f(\frac{u-v}{\|u-v\|})\|^2 < (1-\epsilon)\textrm{ or } 
+\|f(\frac{u-v}{\|u-v\|})\|^2 >
+(1+\epsilon) \right) \\
+&= \Pr\left( \|\phi(\frac{u-v}{\|u-v\|})\|^2 < (1-\epsilon) \frac{d}{D} \textrm{ or } \|\phi(\frac{u-v}{\|u-v\|})\|^2 >
+(1+\epsilon)\frac{d}{D} \right) \\
+&\leq 3e^{-d\epsilon^2/4}
 \end{align*}
-where the first inequality is a union bound, and the last inequality
-holds if we choose $d$ such that: 
-\[d > \left\lceil\frac{4}{\epsilon^2} (2\ln n + \ln 3)\right\rceil.\]
-The inner inequality follows from the linearity of $f =
-\sqrt{\frac{D}{d}} \phi$, followed by an application of
-Lemma~\ref{concentration}: 
-\begin{align*}
-||f(u)-f(v)||^2 < (1-\epsilon)||u-v||^2
-&\Leftrightarrow \norm{\sqrt{\frac{D}{d}}
-  \phi\left(\frac{u-v}{||u-v||}\right)}^2 < (1-\epsilon)\\ 
-&\Leftrightarrow \norm{\phi\left(\frac{u-v}{||u-v||}\right)}^2 <
-(1-\epsilon)\frac{d}{D}. 
-\end{align*}
+where we have used linearity of $f$ in the second line, and in the 
+third, the definition of $f$ as a scaling of $\phi$.
+
+Taking the union bound over all $\binom{n}{2}$ pairs of distinct 
+elements of $V$, the probability that this event occurs for at least one 
+pair $u,v$ is bounded above by $\binom{n}{2} 3e^{-d\epsilon^2/4}$. When 
+$d$ is chosen so that $d > \ceil{\frac{4}{\epsilon^2}(2\ln n + \ln 3)}$,
+ this probability is strictly less than 1, and thus the complementary 
+ event holds with nonzero probability: some map $f$ exists for which 
+ every pair $u,v \in V$ satisfies 
+$$(1-\epsilon)\|u-v\|^2 \leq \|f(u)-f(v)\|^2 \leq (1+\epsilon)\|u-v\|^2$$
 \end{proof}
 
 \noindent\textbf{Recap}: 
@@ -584,13 +548,13 @@ Lemma~\ref{concentration}:
   (1-\epsilon)d/D$, where $||\phi(w)||^{2}$ is the actual length of a
   particular draw and $d/D$ is the expected length. The actual draw
   will be concentrated towards a specific value, typically the
-  expected value.
+  expected value.  
 
 \end{itemize}
 
 
 \subsection{Aside: A list of concentration inequalities}
-\begin{centering} 
+\begin{centering}
 Markov \\
 Chebychev \\
 Chernoff \\
