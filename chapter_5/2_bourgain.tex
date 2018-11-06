@@ -557,9 +557,37 @@ $$(1-\epsilon)\|u-v\|^2 \leq \|f(u)-f(v)\|^2 \leq (1+\epsilon)\|u-v\|^2$$
   \item Remark 1
   \item We cannot improve the JL Lemma result (in asymptotic space) from:
   $$d \geq \Omega(\frac{log n}{\epsilon^2})$$
-  \item Remark 3
-\end{itemize}
+  \item \textbf{Question:} What if $S$ is of infinite size? \\ \\
+  In general, we cannot achieve a bound on the number of dimensions $d$ required to embed an infinitely sized $S$ in Euclidean space. \\ \\
+  However, if $S$ is particularly structured, then progress can be made. That is, it is possible to construct an embedding of $S$ that achieves some bound on dimensionality. \\
+  \begin{itemize}
+      \textbf{Example 1:} $S$ is a fixed (but unknown) $k$-dimensional affine subspace of $\bbR^d$. If this is the case, there is a random linear map
+  $$f : \bbR^D \rightarrow \bbR^d $$ where $d < D$, such that mapping $S$ will preserve inter-point distances.
+  \end{itemize}
+Remarks and Observations:
+  \begin{itemize}
+      \item $d > k$. It is not possible to place a $k$-dimensional object into $k-1$ dimensions and preserve inter-point distance. 
+      \item The embedding only depends on the subspace that $S$ resides in, and not $S$ itself. It is a \textit{universal embedding}, i.e. the embedding is oblivious to the actual configuration.
+      \item For a distortion factor of $\epsilon$, we can achieve $d = \Omega(\frac{k}{\epsilon^2})$. 
+  \end{itemize}
 
+  
+ However, $k$-dimensional affine spaces are very stringent structures. We could extend random linear mapping to a more flexible notion of structure. \\
+ \begin{itemize}
+      \textbf{Example 2:} $S$ is a \textit{curved} $k$-dimensional object (e.g. a $k$ manifold), and the dimensionality and distance between points are functions of its bend in $\bbR^D$. Here, we care about geodesic distance (shortest distance \textit{on the manifold}). 
+\end{itemize}
+ In this case, if we take a random linear map of this $k$-dimensional manifold, we can preserve distances approximately. In fact, a random linear mapping preserves \textbf{both geodesic and shortest/Euclidean distance}, with $d = \Omega(\frac{k}{\epsilon^2})$. \\ \\
+ Taking a random linear map might be counter-intuitive because the object can twist and turn in $\bbR^D$, or can create loops or knots. It seems like there should be some distortion when doing a random linear mapping. The $\epsilon^2$ in $d = \Omega(\frac{k}{\epsilon^2})$ accounts for this event. \\ \\
+ More generally, we have
+ $$ d = \Omega(\frac{k}{\epsilon^2} + log(V\alpha))$$
+ where $\alpha$ is a curvature parameter and $V$ is the $k$-dimensional volume of the object (how large it is). Although not proven, the above can be considered a lower bound for the minimum number of dimensions required to embed a $k$-dimensional object curved in $\bbR^D$. \\ \\
+ We've so far considered flat objects in $\bbR^D$ or some $k$-dimensional manifold in $\bbR^D$. What are other structures? \\
+\begin{itemize}
+      \textbf{Example 3:} $S$ could be sparse. Every data point in a $k$-sparse $S$ has no more than $k$ entries. \\
+      More specifically, $\forall x \in \bbR^D$ and $\rho \in \bbR^+$ (a.k.a the budget) $$ \sum\limits_{i =1}^{D} \mid x_i \mid \leq \rho$$
+\end {itemize}    
+If $S$ has the above property, then entire object can be embedded in $l_2$. The embedding and dimensionality would depend on the budget $\rho$.
+\end{itemize}
 \subsection{Aside: A list of concentration inequalities}
 \begin{centering}
 Markov \\
