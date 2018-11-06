@@ -567,7 +567,7 @@ $$(1-\epsilon)\|u-v\|^2 \leq \|f(u)-f(v)\|^2 \leq (1+\epsilon)\|u-v\|^2$$
 Remarks and Observations:
   \begin{itemize}
       \item $d > k$. It is not possible to place a $k$-dimensional object into $k-1$ dimensions and preserve inter-point distance. 
-      \item The embedding only depends on the subspace that $S$ resides in, and not $S$ itself. It is a \textit{universal embedding}, i.e. the embedding is oblivious to the actual configuration.
+      \item The embedding only depends on the subspace that $S$ resides in, and not $S$ itself. It is a \textit{universal embedding}, i.e. the embedding is oblivious to the actual configuration of data points in $S$.
       \item For a distortion factor of $\epsilon$, we can achieve $d = \Omega(\frac{k}{\epsilon^2})$. 
   \end{itemize}
 
@@ -586,7 +586,7 @@ Remarks and Observations:
       \textbf{Example 3:} $S$ could be sparse. Every data point in a $k$-sparse $S$ has no more than $k$ entries. \\
       More specifically, $\forall x \in \bbR^D$ and $\rho \in \bbR^+$ (a.k.a the budget) $$ \sum\limits_{i =1}^{D} \mid x_i \mid \leq \rho$$
 \end {itemize}    
-If $S$ has the above property, then entire object can be embedded in $l_2$. The embedding and dimensionality would depend on the budget $\rho$.
+If $S$ has the above property, then the entire object can be embedded in $l_2$. The embedding and dimensionality would depend on the budget $\rho$.
 \end{itemize}
 \subsection{Aside: A list of concentration inequalities}
 \begin{centering}
