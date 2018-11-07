@@ -552,18 +552,42 @@ $$(1-\epsilon)\|u-v\|^2 \leq \|f(u)-f(v)\|^2 \leq (1+\epsilon)\|u-v\|^2$$
 
 \end{itemize}
 
+\noindent
 \textbf{Extensions}:
 \begin{itemize}
-  \item Remark 1
+  \item There exists a deterministic version of the JL Lemma for finding 
+  $f$ through Derandomization Techniques \cite{sivakumarderandom}
+
+  The deterministic extension of the JL Lemma construction is derived from 
+  the randomized construction such that for $d\times D$ matrix $R$, 
+  $R_{ij} \sim \text{DiscreteUniform}(-1,1)$ and for $u \in \bbR^D$ 
+  $f(u) = Ru$. The above paper postulates that this construction can be 
+  made deterministic with runtime $(2^b D n/\epsilon)^{O(1)}$ with space 
+  constraint $O(b + \log D + \log \epsilon^{-1} + \log n)$ where $b$ is 
+  the precision of a bit in $u$. 
+
   \item We cannot improve the JL Lemma result (in asymptotic space) from:
   $$d \geq \Omega(\frac{log n}{\epsilon^2})$$
-  \item \textbf{Question:} What if $S$ is of infinite size? \\ \\
-  In general, we cannot achieve a bound on the number of dimensions $d$ required to embed an infinitely sized $S$ in Euclidean space. \\ \\
-  However, if $S$ is particularly structured, then progress can be made. That is, it is possible to construct an embedding of $S$ that achieves some bound on dimensionality. \\
-  \begin{itemize}
+  
+
+  \item \textbf{Question:} What if $S$ is of infinite size? 
+
+
+  In general, we cannot achieve a bound on the number of dimensions $d$ 
+  required to embed an infinitely sized $S$ in Euclidean space. 
+
+
+  However, if $S$ is particularly structured, then progress can be made. 
+  That is, it is possible to construct an embedding of $S$ that achieves 
+  some bound on dimensionality.
+
+
+\indent
       \textbf{Example 1:} $S$ is a fixed (but unknown) $k$-dimensional affine subspace of $\bbR^d$. If this is the case, there is a random linear map
   $$f : \bbR^D \rightarrow \bbR^d $$ where $d < D$, such that mapping $S$ will preserve inter-point distances.
-  \end{itemize}
+
+
+
 Remarks and Observations:
   \begin{itemize}
       \item $d > k$. It is not possible to place a $k$-dimensional object into $k-1$ dimensions and preserve inter-point distance. 
@@ -572,32 +596,91 @@ Remarks and Observations:
   \end{itemize}
 
   
- However, $k$-dimensional affine spaces are very stringent structures. We could extend random linear mapping to a more flexible notion of structure. \\
- \begin{itemize}
+ However, $k$-dimensional affine spaces are very stringent structures. We could extend random linear mapping to a more flexible notion of structure. 
+
+
+\indent
       \textbf{Example 2:} $S$ is a \textit{curved} $k$-dimensional object (e.g. a $k$ manifold), and the dimensionality and distance between points are functions of its bend in $\bbR^D$. Here, we care about geodesic distance (shortest distance \textit{on the manifold}). 
-\end{itemize}
- In this case, if we take a random linear map of this $k$-dimensional manifold, we can preserve distances approximately. In fact, a random linear mapping preserves \textbf{both geodesic and shortest/Euclidean distance}, with $d = \Omega(\frac{k}{\epsilon^2})$. \\ \\
- Taking a random linear map might be counter-intuitive because the object can twist and turn in $\bbR^D$, or can create loops or knots. It seems like there should be some distortion when doing a random linear mapping. The $\epsilon^2$ in $d = \Omega(\frac{k}{\epsilon^2})$ accounts for this event. \\ \\
+
+
+ In this case, if we take a random linear map of this $k$-dimensional manifold, 
+we can preserve distances approximately. In fact, a random linear mapping 
+preserves \textbf{both geodesic and shortest/Euclidean distance}, 
+with $d = \Omega(\frac{k}{\epsilon^2})$. 
+
+
+ Taking a random linear map might be counter-intuitive because the object can 
+ twist and turn in $\bbR^D$, or can create loops or knots. It seems like there
+ should be some distortion when doing a random linear mapping. The $\epsilon^2$
+  in $d = \Omega(\frac{k}{\epsilon^2})$ accounts for this event. 
+
+
  More generally, we have
  $$ d = \Omega(\frac{k}{\epsilon^2} + log(V\alpha))$$
- where $\alpha$ is a curvature parameter and $V$ is the $k$-dimensional volume of the object (how large it is). Although not proven, the above can be considered a lower bound for the minimum number of dimensions required to embed a $k$-dimensional object curved in $\bbR^D$. \\ \\
- We've so far considered flat objects in $\bbR^D$ or some $k$-dimensional manifold in $\bbR^D$. What are other structures? \\
-\begin{itemize}
+ where $\alpha$ is a curvature parameter and $V$ is the $k$-dimensional volume 
+ of the object (how large it is). Although not proven, the above can be 
+ considered a lower bound for the minimum number of dimensions required to 
+ embed a $k$-dimensional object curved in $\bbR^D$. 
+
+
+ We've so far considered flat objects in $\bbR^D$ or some $k$-dimensional manifold in $\bbR^D$. What are other structures? 
+
+
+\indent
       \textbf{Example 3:} $S$ could be sparse. Every data point in a $k$-sparse $S$ has no more than $k$ entries. \\
       More specifically, $\forall x \in \bbR^D$ and $\rho \in \bbR^+$ (a.k.a the budget) $$ \sum\limits_{i =1}^{D} \mid x_i \mid \leq \rho$$
-\end {itemize}    
+
+
 If $S$ has the above property, then the entire object can be embedded in $l_2$. The embedding and dimensionality would depend on the budget $\rho$.
+
+
+\item Alternative Measure of Defining Metric Spaces of Non-
+euclidean Nature: Growth Rate/Doubling Dimension
+
+
+Let there be a ball $B(n,r) = \{y \in X | \rho(x,y) \leq r\}$. 
+We consider a measure of this non-euclidean space as the rate 
+at which the number of points in ball $B$ change as we change 
+the tolerance $r$. 
+
+Define the ``doubling dimension'' $\text{dim}(X,\rho)$ as 
+$\lceil \log_2(k) \rceil$ where the ``doubling constant'' $k$ 
+is the smallest integer such that every ball $B(x, 2r)$ can be 
+covered by at most $k$ balls $B(x, r)$. 
+    
+\textit{Negative result}: If ``doubling dimension'' $k$ of $S$ is small we still
+ do not have a guarantee that we can do Random Projection in reasonably low 
+ dimensions $O(k)$ and be able to preserve interpoint distances. That is, for 
+ some $p$-normed space $\ell_p^{O(k)}$ we cannot bound distortion on simply a 
+ function of $k$ [\cite{doubling}].
+
+Other extensions using this idea include bouding the distortion of tree metrics [\cite{boundedgeometries}].
+
+
 \end{itemize}
+
+\noindent
 \textbf{Aside: A list of concentration inequalities}
 \begin{itemize}
-\item \textit{Markov}: For a nonnegative random variable $X$ and $a > 0$ $$P(X \geq a) \leq \frac{\bbE[X]}{a}$$ 
-\item \textit{Chebychev}: For a continuous random variable $X$ with $\bbE[X] = \mu$ and $\Var[X] = \sigma^2$; then for $k>0$
+\item \textit{Markov}: For a nonnegative random variable $X$ and $a > 0$ $$P(X \geq a) \leq \frac{\E[X]}{a}$$ 
+\item \textit{Chebychev}: For a continuous random variable $X$ with $\E[X] = \mu$ and $\Var[X] = \sigma^2$; then for $k>0$
 $$\Pr[|X-\mu| \geq k\sigma^2 ] \leq \frac{1}{k^2}$$
-\item \textit{Chernoff}: An extension of the Markov Inequality for $e^{tX}$
-\item \textit{Hoeffding}: 
+\item \textit{Chernoff}: An extension of the Markov Inequality for $e^{tX}$ and moment generating functions: $$P(X \geq a) \leq \frac{\E[e^{tX}]}{e^{ta}}$$ 
+\item \textit{Hoeffding}: Bounding sums of bounded random variables $X_1, \ldots, X_n$ where $X_i \in [a,b]$ 
+\begin{align*}
+  \E\left[\exp(\lambda(X_i - \E[X_i]))\right] &\leq \exp \left( \frac{\lambda^2(b-a)^2}{8}\right)\\
+  \Pr\left( \frac{1}{n} \sum_{i=1}^n (X_i - \E[X_i]) \geq t\right) & \leq \exp \left( -\frac{2nt^2}{(b-a)^2}\right)
+\end{align*}
 \item \textit{Bernstein}: 
-\item \textit{Effron-Stein}: 
-\item \textit{Azuma}: 
-\item \textit{Mcdiarmid}: 
+
+$$\Pr \left( \left| \frac{1}{n} \sum_{i=1}^n X_i \right| > \varepsilon\right) \leq 2 \exp \left( - \frac{n \varepsilon^2}{2(1+\frac{\varepsilon}{3})}\right)$$
+\item \textit{Effron-Stein}: A moment bound on variance. Define $X^{(i)}$ as all random variables except $X_i$.
+
+$$\Var(f(X)) \leq \frac{1}{2} \sum_{i=1}^n \E [(f(X) - f(X^{(i)}))^2]$$
+
+\item \textit{Azuma}: Similar result to Hoeffding Inequality
+\item \textit{Mcdiarmid}: Similar result to Hoeffding Inequality
 \item \textit{Talagrand}: 
+\item \textit{Jensen's Inequality}: Used in the derivation of the EM Algorithm; Given convex function $f$
+$$f(\E[X]) \leq \E[f(X)]$$
 \end{itemize}
