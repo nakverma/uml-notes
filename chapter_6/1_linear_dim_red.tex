@@ -13,6 +13,7 @@ dimensionality reduction techniques appropriate for your task. \\
 \item DML (Distance Metric Learning)
 \item Factor (Factor Analysis)
 \item NMF/MF ((Non-negative) Matrix Factorization)
+\item Feature Selection
 \end{itemize}
 
 \section{RP (Random Projection)}
@@ -44,8 +45,17 @@ quality.
 The better approach to speeding up PCA is to first do a random
 projection, and then perform PCA. While the distances between points
 will be distorted within 1 $\pm$ $\epsilon$, the quality of the
-eigenvectors will be better.  
+eigenvectors will be better.
 
+Random Projection plays a major role in processing images from
+single-pixel cameras. These cameras use a method called compressive
+sampling, which looks to reconstruct the optical signal. 
+Specifically, random projection helps with a technique called 
+smashed filters (as opposed to matched filters), which benefits from
+the fact that random sampling preserves the original structure of the
+data with high probability since it maintains inter-point distances. 
+To learn more about this process, see "Single-Pixel Imaging via 
+Compressive Sampling" \cite{duarte}.
 
 \section{PCA~(Principal Component Analysis)}
 \subsection{Outline}
