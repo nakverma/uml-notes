@@ -559,15 +559,16 @@ $$(1-\epsilon)\|u-v\|^2 \leq \|f(u)-f(v)\|^2 \leq (1+\epsilon)\|u-v\|^2$$
   \item Remark 3
 \end{itemize}
 
-\subsection{Aside: A list of concentration inequalities}
-\begin{centering}
-Markov \\
-Chebychev \\
-Chernoff \\
-Hoeffding \\
-Bernstein \\
-Effron-Stein \\
-Azuma \\
-Mcdiarmid \\
-Talagrand \\
-\end{centering}
+\textbf{Aside: A list of concentration inequalities}
+\begin{itemize}
+\item \textit{Markov}: For a nonnegative random variable $X$ and $a > 0$ $$P(X \geq a) \leq \frac{\bbE[X]}{a}$$ 
+\item \textit{Chebychev}: For a continuous random variable $X$ with $\bbE[X] = \mu$ and $\Var[X] = \sigma^2$; then for $k>0$
+$$\Pr[|X-\mu| \geq k\sigma^2 ] \leq \frac{1}{k^2}$$
+\item \textit{Chernoff}: An extension of the Markov Inequality for $e^{tX}$
+\item \textit{Hoeffding}: 
+\item \textit{Bernstein}: 
+\item \textit{Effron-Stein}: 
+\item \textit{Azuma}: 
+\item \textit{Mcdiarmid}: 
+\item \textit{Talagrand}: 
+\end{itemize}
