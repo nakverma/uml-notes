@@ -175,33 +175,92 @@ the largest eigenvalues of $S_w^{-1} S_B$.\\
 $c-1$ subspace. \\ 
 
 \section{MDS~(Multi-dimensional Scaling)}
-MDS is useful when you don't have a Euclidean representation of the
+\subsection{Motivation} MDS is useful when you don't have a Euclidean representation of the
 data, and wish to come up with one based on distances between data
-points. There are three types of MDS: 
+points.\\
+%Here, we are mostly going to discuss metric MDS.\\
+\subsection{Problem Setting} Before diving into the different types of MDS, let us define formalize our problem and specify it mathematically. Say, we have some set of points, not necessarily in Euclidean representation $\tau = \{\gamma_1, \cdots, \gamma_n\}$. We also have a function $\rho(\gamma_i, \gamma_j)$ which can be used to calculate the distance between any 2 points in $\tau$.
+\subsection{Goal} Our goal is to come up with a function $$f: \tau  \rightarrow \mathbb{R}^D$$ such that $$\norm{f(\gamma_i) - f(\gamma_j)} \approx \rho_{ij} \forall i,j \in [1,n]$$  
+
+There are three types of MDS : 
 \begin{itemize}
 \item classical MDS
 \item metric MDS
 \item non-metric MDS
 \end{itemize}
-Here, we are mostly going to discuss metric MDS.\\
-\subsection{Metric MDS method}
-Given a distance matrix $P \in \mathbb{R}^{n\times n}$, define the
+These type of MDS differ in the way approximation  $\norm{f(\gamma_i) - f(\gamma_j)} \approx \rho_{ij} \forall i,j \in [1,n]$ is made.\\
+\subsection{Details about the 3 types of MDS}
+\begin{enumerate}
+    \item \textbf{Classical MDS method}: In this case we want to find an isometric embedding in $\mathbb{R}^D$ space,
+    $$\norm{f(\gamma_i)- f(\gamma_j)} = \rho(\gamma_i,\gamma_j)$$
+    The following theorem is used to find out if such  an isometric embedding exists,
+\begin{theorem}
+Let $D$ be the distance matrix such that $D_{ij}= \rho(\gamma_i, \gamma_j)$. Define $$G= -\frac{1}{2}H^TDH$$
+where $H = I-\frac{1}{n}\mathbbm{1}\mathbbm{1^T}$. There exists an isometric embedding of $\gamma_1, \cdots, \gamma_n$ if and only if $G$ is a positive semi-definite matrix.
+\end{theorem} 
+The proof of the above theorem is straight-forward. If there exist, $x_1, \cdots, x_n \in \mathbb{R}^n$ such that $\norm{x_i - x_j}^2 = \rho(\gamma_i, \gamma_j)$, then it can be shown by expanding the term $G_{ij}$ that $G_{ij}= (x_i-\bar{x})^T(x_j- \bar{x})$.\\
+If $G$ in the above theorem is positive semi definite, we can find out the isometric embedding as well. Because $G$ is positive semi definite, we can write its eigenvalue decomposition,
+$$G = V\Lambda V$$
+$\Lambda$ is a diagonal matrix. The eigenvalues of a positive semi-definite matrix are all positive. Therefore, all the diagonal elements of $Lambda$ are positive, and $\Lambda = \Lambda^{\frac{1}{2}}\Lambda^{\frac{1}{2}}$. Thus,
+$$G = V\Lambda^{\frac{1}{2}}\Lambda^{\frac{1}{2}}V^T$$
+$$G = V\Lambda^{\frac{1}{2}}(V\Lambda^{\frac{1}{2}})^T$$
+$$G = X^TX$$
+where $X = (V\Lambda^{\frac{1}{2}})^T$ and $X = [x_1, \cdots, x_n]$ ($x_1, \cdots x_n$ are the required points). \\
+An interesting point to note is that in case of classical MDS, we optimize over the reconstruction error, which is same for the case of PCA as well.\\
+What can we do if $G$ is not a positive semi-definite matrix? In that case, we use the Metric MDS method, which is described in the next point.
+\item \textbf{Metric MDS method}: Given a distance function $\rho(\gamma_i, \gamma_j) \in \mathbb{R}^{n\times n}$, define the
 ``stress function", for $x_i \in \mathbb{R}^k \ \forall i=1,...,n$, to
 be the following: 
 \[
-S(x_1,...,x_n) = \sum_{i<j}(||x_i-x_j||-p_{ij})^2
+S(x_1,...,x_n) = \sum_{i<j}(||x_i-x_j||-\rho(\gamma_i, \gamma_j))^2
 \]
 We want to minimize the stress function over the data points $x_1,...,x_n$.\\
 The problem can be formulated as the following:\\
 \begin{align*}
-&\min S(x_1,...,x_n)\\
+&\min_{x_1 ,\cdots,x_n} S(x_1,...,x_n)\\
 &s.t. \sum x_i = 0
 \end{align*}
-There is no easy way to write this as an eigenvalue problem, so to
-solve this we can simply do any gradient based optimization.\\ 
-
-\subsection{Non-metric MDS}
-The goal on non-metric MDS is to maintain the order of distances
+We require the points to have a zero mean because the other condition ($\min_{x_1 ,\cdots,x_n} S(x_1,...,x_n)$) is under complete. If we know a set of points that satisfy the given condition, we can create another set of points by just shifting the given set of points.\\
+A closed form solution for the above optimization problem does not exist. A way to solve the optimization is use to use standard gradient descent.\\ 
+\item \textbf{Non-Metric MDS method} The goal on non-metric MDS is to maintain the order of distances
 between data points. For example, if $x_{i}$ is closer to $x_{j}$ than
-$x_{k}$, then maintain this ordering. Can make $||x_{i} - x_{j}||$
-into any monotonic function. 
+$x_{k}$, then maintain this ordering. Formally,
+$$\norm{x_i - x_j} < \norm{x_i - x_k} \text{ if } \rho_{ij}< \rho_{ik} \forall i,j, k$$
+%Can make $||x_{i} - x_{j}||$ into any monotonic function. 
+In this case, the stress function is the same as before, but we can replace $||x_{i} - x_{j}||$ by any monotonic function,
+$$S(x_1,...,x_n) = \sum_{i<j}(g(||x_i-x_j||)-\rho(\gamma_i, \gamma_j))^2$$. 
+Thus, we wish to optimize, 
+$$\min_{x_1,\cdots, x_n \text{, g is a monotonic function}} S(x_1,\cdots, x_n)$$
+\end{enumerate}
+
+
+
+\noindent   \\
+
+
+
+
+\section{BSS (Blind Source Separation) } 
+
+\subsection{Motivation}
+There are situations in which data comes from many sources, but can only be observed as a combination of these individual sources. It is often beneficial to know how these sources operate as stand-alones and not in unison. Thus the \textbf{goal} of BSS problems is to uncover these individual sources. 
+\subsection{Setting}
+
+There are a set of $k$ signals denoted by $S = \{ s_1, \dots, s_k\}$. Instead of being able to observe 
+each of these signals independently, we only are capable of measuring a mixtures of these signals. To make
+this notion more clear we will give examples: 
+\begin{enumerate}
+    \item \textbf{Cocktail Party Problem:} At a cocktail party there are many people around a table
+    engaging in conversation. We want to monitor these conversations; however, there are many people
+    speaking at once and this mixture of signals are not uniform either (this can be denoted as the
+    \textit{blind} aspect of BSS because we do not know how the signals are being mixed/the weights of the
+    signals). We also want to get a clean signal back given these mixtures (this can be understood at the
+    \textit{separation} part of BSS).  
+    \item \textbf{Electroencephalogram (EEG) tests:} It is a test to measure electrical signals in the brain and can be useful in prediction of various diseases such as Alzheimers. The problem setup in unsupervised learning is analogous to BSS; the electric signals are independent and non-Gaussian, can we find the weights of the independent signals given the mixed signal observations? 
+\end{enumerate}
+A way of solving the Blind Source Separation (BSS) problem is through \textbf{Independent Component Analysis (ICA) }. At a high level, ICA assumes that the individual signals are non Gaussian and are independent from each other. \\ \\
+Hence given $X$, where $X$ is the observed mixed signal data we want to recover $S$, the independent signals. \\ \\
+\textbf{Formulation: } We are given a matrix of sources denoted by $S$ of dimensions $k \times t$ where $k$ is the number of independent signals and $t$ are the number of observations (t for time). There is a hidden (\textit{blind}) mixing matrix of weights denoted by $M$ of dimension $d \times k$ \\ \\ 
+Thus our observed data matrix is defined as: \[ X := MS \]
+ICA works under the assumption that the sources are not Gaussian, which may not necessarily be the case. If the sources were actually Gaussian, then the underlying distribution would be symmetric and consequently a direction of the source would not be able to be found (unless only a single source has a Gaussian distribution).  \\ \\
+Factoid: $4^{th}$ moment of a distribution tells you how Gaussian a distribution is. 
