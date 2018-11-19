@@ -264,3 +264,65 @@ Hence given $X$, where $X$ is the observed mixed signal data we want to recover 
 Thus our observed data matrix is defined as: \[ X := MS \]
 ICA works under the assumption that the sources are not Gaussian, which may not necessarily be the case. If the sources were actually Gaussian, then the underlying distribution would be symmetric and consequently a direction of the source would not be able to be found (unless only a single source has a Gaussian distribution).  \\ \\
 Factoid: $4^{th}$ moment of a distribution tells you how Gaussian a distribution is. 
+
+\section{Independent Component Analysis}
+Suppose we have set of signals $ S = \{S_1, \cdots ,S_k \} $, where $S_i \in \textbf{R}^{1\times T}$ and $S \in \textbf{R}^{k\times T} $. There also exists an unknown but fixed mixing matrix $M$ where $M \in \textbf{R}^{D\times k} $. Observed the mixed signal $X = MS$, we want to recover the original $S$. 
+
+This problem is not well defined because $S$ can be in any dimension. But, if assume that the sources $S_i$ in $S$ are independent, then the goal become clearer, which is to find a decomposition of the rows of $S$ which are independent of each other. Recall the \textbf{CLT}:
+
+\textsl{An average of independent random variables (with some mild assumptions) essentially looks like a Gaussian.}
+
+More specifically, let $x_1, \cdots , x_n$ be independent random variables $s.t.$ $\textbf{E}[x_i]=0$ and $\textbf{Var}[x_i] = \sigma ^2 $, then:
+\begin{align*}
+    \text{lim}_{n \to \inf} \sqrt{n}(S_n - \mu)  \to \textbf{N}(0,\sigma ^2)
+\end{align*}
+Here $S_n = \frac{x_1+ \cdots + x_n}{n}$, $S_n$ can also be generalized to other reasonable weightings as well, such as: 
+\begin{align*}
+    S_n = w_1x_1 + w_2x_2 & + \cdots + w_nx_n=W^TX \\
+    s.t.  \sum w_i & = 1
+\end{align*}
+
+Now we can set our \textbf{goal} as: if the $X$ looks more "Gaussian" like, perhaps we want to find sources $S$ that are less "Gaussian" like. 
+
+\subsection{Kurtosis Method}
+Kurtosis Method is the measure of the fourth moment of the distribution. Given a random variable $x$ with $\textbf{E}[x] = 0$, we have:
+\begin{align*}
+    \text{kurtosis}(x) = \textbf{E}[x^4] - 3(\textbf{E}[x^2])^2
+\end{align*}
+We can know that 
+\begin{align*}
+     -3 \leq \text{kurtosis}(x) < \infty
+\end{align*}
+For random variable $g \sim N(0,1)$, $E[g^4] = 3$ and $\text{kurtosis}(g)=0$
+
+ Given an random variable $x$ with $\textbf{E}(x)=0$ and $Var(x)=\delta^2=1$:
+ \begin{enumerate}
+     \item  Gaussian $\iff \text{kurtosis}(x)=0$
+     \item  subGaussian (sharper tail Gaussian/light tail distribution/plateau distribution) $\iff \text{kurtosis}(x)<0$
+     \item  super Gaussian (heavy tail) $\iff \text{kurtosis}(x)>0$
+ \end{enumerate}
+
+We set our optimization problem as:
+\begin{align*}
+    \max _W \quad & \text{kurtosis}(W^TX) \\
+    \text{s.t.} \quad & Var[W^T_X] = 1 \\
+            \quad & \textbf{E}[W^TX] = 0
+\end{align*}
+
+\subsection{Negative Entropy Method}
+Recall Entropy: a measure of uncertainty to a distribution: $H(p):=-\textbf{E}_p(\log p)=-\int_x p(x)\log p(x)dx$. We have the fact that out of all distribution with a fixed variance, Gaussian distribution has the highest entropy, which means least information. Then we form our optimization problem as:
+\begin{align*}
+    \max \quad & -H(W^TX) \\
+    \text{s.t.} \quad & Var(W^TX)=1 \\
+                \quad & \textbf{E}(W^TX) = 0
+\end{align*}
+
+\subsection{Mutual Information Method}
+We denote $I(x,y)$ to measure the mutual information between two quantities. 
+\begin{align*}
+    I(x,y) = \int _x \int _y p(x,y) \log \frac{p(x,y)}{p(x)p(y)} \text{d}x \text{d}y
+\end{align*}
+We minimize the mutual information of any two quantities in the $X$ and therefore set our optimization problem as: 
+\begin{align*}
+    \min \sum _{i<j} (W_i^TX,W^T_jX)
+\end{align*}
