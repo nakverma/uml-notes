@@ -266,63 +266,119 @@ ICA works under the assumption that the sources are not Gaussian, which may not 
 Factoid: $4^{th}$ moment of a distribution tells you how Gaussian a distribution is. 
 
 \section{Independent Component Analysis}
-Suppose we have set of signals $ S = \{S_1, \cdots ,S_k \} $, where $S_i \in \textbf{R}^{1\times T}$ and $S \in \textbf{R}^{k\times T} $. There also exists an unknown but fixed mixing matrix $M$ where $M \in \textbf{R}^{D\times k} $. Observed the mixed signal $X = MS$, we want to recover the original $S$. 
+\textbf{Motivation: } \newline Consider some party is happening at some house. We place microphones at different corners in the house. Obviously, we observed mixed sound waves from different individuals. We want to reproduce the speech of each individual from the observed signal.
 
-This problem is not well defined because $S$ can be in any dimension. But, if assume that the sources $S_i$ in $S$ are independent, then the goal become clearer, which is to find a decomposition of the rows of $S$ which are independent of each other. Recall the \textbf{CLT}:
+\textbf{Setup: }  
+\newline - A set of source signals $ S = 
+\begin{bmatrix}
+    \text{---} & S_1 & \text{---}\\
+    \text{---} & S_2 & \text{---}  \\
+     & \cdots &   \\
+    \text{---} & S_k & \text{---} \\
+\end{bmatrix} $, where each signal $ S_i \in \mathbb{R}^{1\times T}$. 
+\newline - Some unknown but fixed mixing matrix $M \in \mathbb{R}^{D\times k} $. 
+\newline - We observe a $\mathbb{R}^{D\times T}$ data matrix $X = MS$. We want to recover $S$ from this data.
 
-\textsl{An average of independent random variables (with some mild assumptions) essentially looks like a Gaussian.}
+\textbf{Remark: } \newline
+This problem is not ill-posed! We are essentially factorizing a matrix into two. Infinitely many factorization solutions exist.
 
-More specifically, let $x_1, \cdots , x_n$ be independent random variables $s.t.$ $\textbf{E}[x_i]=0$ and $\textbf{Var}[x_i] = \sigma ^2 $, then:
+\textbf{Assumption: } \newline Some mild assumptions will lead to some progress. \newline 
+- We assume different signals $S_i$ are independent to each other. So we now look for a matrix S has independent rows. \newline
+- We treat it probablistically, that each signal has its entries sampled from some distribution. So $M$ sums the different draws from those distributions. By central limit theorem, we know that the sum of random variables would look like a Gaussian. So, to recover the ``independency", we want source signals to be ``not Gaussian".
+
+\textbf{Central Limit Theorem:}\textsl{ An average of independent random variables (with some mild assumptions) essentially looks like a Gaussian.}
+
+More specifically, let $X_1, X_2, \cdots , X_n$ be independent random variables $s.t.$ $\mathbb{E}[x_i]=0$ and $\text{Var}[x_i] = \sigma ^2 $, then:
 \begin{align*}
-    \text{lim}_{n \to \inf} \sqrt{n}(S_n - \mu)  \to \textbf{N}(0,\sigma ^2)
+    & \lim_{n \to \infty} \sqrt{n}(S_n - \mu)  \to \mathcal{N}(0,\sigma ^2) \\
+    \text{OR } & \lim_{n \to \infty} (S_n - \mu)  \to \mathcal{N}(0,\frac{\sigma ^2}{n})
 \end{align*}
-Here $S_n = \frac{x_1+ \cdots + x_n}{n}$, $S_n$ can also be generalized to other reasonable weightings as well, such as: 
-\begin{align*}
-    S_n = w_1x_1 + w_2x_2 & + \cdots + w_nx_n=W^TX \\
-    s.t.  \sum w_i & = 1
-\end{align*}
+Here $S_n = \displaystyle \frac{X_1+ X_2 + \cdots + X_n}{n}$. Now, $S_n$ is in fact a weighted average with uniform weight $1/n$. Yet, it can be generalized to other reasonable weightings, where reasonable means not having schemes like $w_i = 1$ for some $i$ and $w_{\text{not }i} = 0$. A possible example is let weight drawn from a normal distribution, $w_i \sim \mathcal{N}(0,1)$.
 
-Now we can set our \textbf{goal} as: if the $X$ looks more "Gaussian" like, perhaps we want to find sources $S$ that are less "Gaussian" like. 
+A side note shall be marked on possible confusion with Gaussian Mixture Model. Perhaps the famous saying of ``sum of 2 Gaussians is a Gaussian" helps clarify, that the sum is not simply just putting two distribution together.
+
+\textbf{Modified Goal: } \newline
+We want to find distributions that entries of $S_i$ are drawn from which least resembles a Gaussian. 
+
+We here list three methods of achieving this goal. However, readers should note that even this modified goal does not solve our original problem. We are still far away from recovering the source signals. In fact, we raise this problem to introduce these methods we that readers may find useful elsewhere.
+
 
 \subsection{Kurtosis Method}
-Kurtosis Method is the measure of the fourth moment of the distribution. Given a random variable $x$ with $\textbf{E}[x] = 0$, we have:
-\begin{align*}
-    \text{kurtosis}(x) = \textbf{E}[x^4] - 3(\textbf{E}[x^2])^2
-\end{align*}
-We can know that 
-\begin{align*}
-     -3 \leq \text{kurtosis}(x) < \infty
-\end{align*}
-For random variable $g \sim N(0,1)$, $E[g^4] = 3$ and $\text{kurtosis}(g)=0$
+Kurtosis is a measure of the fourth moment of a certain distribution. It can be interpreted as a measure of the similarity between a distribution and normal distribution. Note that there exists multiple definitions but we introduce one useful in our model.
 
- Given an random variable $x$ with $\textbf{E}(x)=0$ and $Var(x)=\delta^2=1$:
+\textbf{Definition: } Given a random variable $X$ with $\mathbb{E}[X] = 0$, the \textit{Kurtosis} of $X$ is
+\begin{align*}
+    \text{Kurtosis}(x) = \mathbb{E}[x^4] - 3(\mathbb{E}[x^2])^2
+\end{align*}
+
+\textbf{Remark: } \newline
+- Note that the range of the Kurtosis is\begin{align*}
+     -3 \leq \text{Kurtosis}(X) < \infty
+\end{align*}
+The larger it is deviated from 0, the less similarity between it and a Gaussian.
+
+- Observe that, given a random variable $g \sim \mathcal{N}(0,1)$,  $\text{Kurtosis}(g) = 0$, because $E[g^4] = 3$.
+
+In fact, given any random variable $X$ with $\mathbb{E}(X)=0$ and $\text{Var}(X) = 1$, we have
  \begin{enumerate}
-     \item  Gaussian $\iff \text{kurtosis}(x)=0$
-     \item  subGaussian (sharper tail Gaussian/light tail distribution/plateau distribution) $\iff \text{kurtosis}(x)<0$
-     \item  super Gaussian (heavy tail) $\iff \text{kurtosis}(x)>0$
+     \item  X is \textit{Gaussian} $\iff \text{Kurtosis}(x)=0$
+     \item  X is \textit{sub-Gaussian}  $\iff \text{Kurtosis}(x)<0$
+     \item  X is \textit{super-Gaussian} (heavy tail) $\iff \text{Kurtosis}(x)>0$
  \end{enumerate}
+ Sometimes a sub-Gaussian is sometimes described as sharper-tailed Gaussian, light-tailed or platy-kurtic. An easy example of a light-tailed distribution would be uniform distribution! Similarly, a super-Gaussian may be called heavy-tailed or lepto-kurtic. The following sketch gives an idea of the what those distributions look like. The red one is heavy-tailed and the blue one is light-tailed. Note that the density at peak is restricted as such because we need to preserve the variance to be 1. 
+ 
+\includegraphics[height = 5cm]{chapter_6/files/Gaussians.png}
 
-We set our optimization problem as:
+Our Kurtosis Method now leaves us with an optimization problem. Consider for a single source signal $S_i = W_i^TX$. We look for
 \begin{align*}
-    \max _W \quad & \text{kurtosis}(W^TX) \\
-    \text{s.t.} \quad & Var[W^T_X] = 1 \\
-            \quad & \textbf{E}[W^TX] = 0
+    \max _{W_i} \quad & \text{Kurtosis}(W_i^TX) \\
+    \text{s.t.} \quad & \text{Var}[W_i^T X] = 1 \\
+            \quad & \mathbb{E}[W_i^TX] = 0
 \end{align*}
+\textbf{Remark: } \newline
+- It turns out that most of the distribution we encounter are heavy-tails! So we choose to define a max problem.
+\newline - It is sensitive to noise! Observe we have a $x^4$ term which enlarges any uncertainty in measurement.
+\newline - The above max problem will find only one signal. To satisfy our purpose to find $k$ sources, we simply repeat it $k$ times, and each time we rule out previous results. Thus we find $k$ signals that are least Gaussian.
+
 
 \subsection{Negative Entropy Method}
-Recall Entropy: a measure of uncertainty to a distribution: $H(p):=-\textbf{E}_p(\log p)=-\int_x p(x)\log p(x)dx$. We have the fact that out of all distribution with a fixed variance, Gaussian distribution has the highest entropy, which means least information. Then we form our optimization problem as:
+\textbf{Definition:} \textit{Entropy} is measure of uncertainty of a distribution and mathematically defined as $$H(p):=-\mathbb{E}_p[\log p]=-\int_x p(x)\log [p(x)]dx$$ \textbf{Remark: } \newline - This is Shannon's version of entropy definition (which is in fact axiomatically the correct version). 
+\newline - It is a fact in Information Theory that among all distributions with a fixed variance, Gaussian has the highest entropy, which means least information is given.
+
+\textbf{Setup: }\newline
+Adopting the above idea of finding a least-Gaussian distribution, we maximize the negative entropy so that the distribution of $S_i$ gives most information, hence not looking like a Gaussian. We form an optimization problem as
 \begin{align*}
-    \max \quad & -H(W^TX) \\
-    \text{s.t.} \quad & Var(W^TX)=1 \\
-                \quad & \textbf{E}(W^TX) = 0
+    \max_W \quad & -H(W^TX) \\
+    \text{s.t.} \quad & \text{Var}(W^TX)=1 \\
+                \quad & \mathbb{E}(W^TX) = 0
 \end{align*}
 
+
 \subsection{Mutual Information Method}
-We denote $I(x,y)$ to measure the mutual information between two quantities. 
-\begin{align*}
+\textbf{Definition: } Consider two random variables $X$ and $Y$. The \textit{mutual information} of $X$ and $Y$ is \begin{align*}
     I(x,y) = \int _x \int _y p(x,y) \log \frac{p(x,y)}{p(x)p(y)} \text{d}x \text{d}y
 \end{align*}
-We minimize the mutual information of any two quantities in the $X$ and therefore set our optimization problem as: 
+
+Note that if $X$ and $Y$ are independent, we would have $I(X,Y) = 0$.
+
+\textbf{Setup:}
+Same idea as above, We minimize the mutual information between some distribution $X$ and a Gaussian. Hence, the corresponding optimization problem is
 \begin{align*}
     \min \sum _{i<j} (W_i^TX,W^T_jX)
 \end{align*}
+
+\subsection{Summary}
+The above are three methods commonly used in matrix factorization problems. In general, assume a data matrix $X$ has factorization $X = UV$. We treat $U$ as some transformation of source matrix $V$. Readers in fact have seen familiar problems before. 
+
+- For example, in PCA, $X$ is the high-dimensional data, $U$ is the mapping for low dimensional data $V$. We want to minimize $\left\lVert X - UV\right\rVert^2_F$.
+
+- Consider if Netflix is trying to figure out relation between shows and ratings. Let $X$ be the rating data which is generated by user and genre. Each user rates the movies which he has seen.
+Let $R_{ij}$ be the rating assigned by user $i$ to movies $j$. Note if we assume that each user can only rate few movies, the $U$ matrix is super-sparse. We assume there are $k$ factors which have vital influence on users and movies, these factors maybe genre or something else. Define $U$ being the matrix of users and $M$ being the matrix of movies, we have objective function 
+\begin{align*}
+&\min_{U,M}\sum_{r_{ij} \text{ observed}}(r_{if} - u_im_j)\\
+\text{Or equivalently: } & \min_{U,M} \left\lVert R - UM\right\rVert^2_F
+\end{align*}
+
+- Dictionary learning is another problem falls in this field. We want to summarize data to some small ``dictionary" to represent large data set with ``richness" preserved.
+
+However, if we treat $U$ as linear transformation more than a matrix, we may ask think that $U$ does not have to be linear. This motivates out further study of non-linear dimensionality reduction methods.
