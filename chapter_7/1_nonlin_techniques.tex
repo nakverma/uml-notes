@@ -1,4 +1,3 @@
-
 This lecture introduces more manifold learning algorithms including
 Isomap, LLE, LE, MVU and briefly mentions an analog of JL-lemma in the
 manifold setting. 
@@ -91,109 +90,146 @@ Input data is $X \in \mathbb{R}^{D\times n}$. Output data $Y \in
 
 \end{itemize}
 
-\subsection{LLE(Locally Linear Embedding)}
+\subsection{LLE (Locally Linear Embedding)}
+\subsubsection*{Motivation}
+Isomap works well under certain conditions - but these conditions will not always hold. We need other algorithms that are capable of handling cases in which the manifold is not isometric to simple Euclidean space.
+
 \subsubsection*{Goal}
-Find a low-dimensional embedding that preserves ``local geometry". But
-what is ``local geometry"? 
+Rather than attempting to preserve global geometry as Isomap does, we will instead find a low-dimensional embedding that preserves ``local geometry". But just what is local geometry?
 
-\textbf{Answer}: If a manifold is locally linear, one can define
-``local geometry" as how a specific data point is linearly related to
-its neighbors. Then we can find a low-dimensional embedding $Y$ of the
-given data $X$ such that the locally linear relationships between
-neighbors is approximately preserved. 
+\noindent \textbf{Answer}: Intuitively speaking, a manifold is some object that is locally ``flat" - if you zoom in closely enough, it looks like flat Euclidean space.
 
-\subsection*{How?}
-Input: Input data $X\in \mathbb{R}^{D\times n}$, number of neighbors
-$k$, embedding dimension $d$. 
-\begin{itemize}
-\item Use the $k$-NN graph to find/determine the nearest neighbors for
-  each data point $x_i$. 
-\item 
+If a manifold is locally linear, then one can define ``local geometry" to be how a specific data point is linearly related to its neighbors. That is, every point in our observation set can be viewed as (approximately) a linear combination of its neighbors.
+
+Using this particular definition of ``local geometry", we can find a low-dimensional embedding $Y$ of the given data $X$ such that the locally linear relationships between neighbors are approximately preserved - this is the LLE algorithm.
+
+\subsubsection*{How?}
+In overview - given input data $X\in \mathbb{R}^{D\times n}$, number of neighbors
+$k$, embedding dimension $d$, we perform the following steps:
+
+\begin{enumerate}
+\item First we construct the $k$-NN graph (ideally, a connected graph) to find the nearest neighbors for each data point $x_i$; we denote the set of the $k$ nearest neighbors of $x_i$ as $N_i$, or $N(i)$ (but we'll prefer the latter, since the symbol $N_i$ will be used to refer to something different later).
+
+\item Next, we find the linear representation of each data point using its neighbors with minimum discrepancy to the actual location: we take the minimum over all possible weightings of neighbors for all points
+
 \begin{align*}
-&\min_{W} \Phi(W) = \sum_{i=1}^n \bigg|\bigg|x_i - \sum_{j\in N(i)}
-  W_{ij} x_j\bigg|\bigg|^2\\ 
-&\text{ s.t. } \forall i \ \sum_{j} W_{ij}=1.\\
-&w_{ij}=0 \text{ where } j \not \in N(i)
+\min\limits_{W} \Phi(W) &= \sum\limits_{i=1}^n \bigg|\bigg|x_i - \sum\limits_{j\in N(i)} w_{ij} x_j\bigg|\bigg|^2\\
+\text{ s.t. } & \forall i, \sum_{j} w_{ij}=1,\\
+& \forall i, w_{ij}=0 \text{ for } j \not \in N(i),
 \end{align*}
-\item 
+
+where $W$ is the weight matrix where entry $W_{ij} = w_{ij}$ is the weight of point $x_j$ in the linear neighbor representation of point $x_i$ (we set $w_{ij}$ to zero if $x_j$ is not a neighbor of $x_i$; and we require that the weights in the neighbor representation of any single point sum to one simply so that we may specify a unique, reasonably-scaled solution).
+
+\item Finally, we find the low-dimensional representation that most closely fits the linear relationship of a point to its neighbors that we found in the previous step:
+
 \begin{align*}
-&\min_{Y} \Psi(Y) = \sum_{i=1}^{n} ||y_i - \sum_{j\in N(i)} W_{ij}
+&\min_{Y} \Psi(Y) = \sum_{i=1}^{n} ||y_i - \sum_{j\in N(i)} w_{ij}
   y_i||^2\\ 
-&\text{s.t. } Y Y^T = I 
+&\text{s.t. } Y Y^\intercal = I
 \end{align*}
-\end{itemize}
 
+Here, $y_i \in \mathbb{R}^d$ is the embedding of $x_i \in \mathbb{R}^D$.
+\end{enumerate}
+
+\subsubsection*{Some notes.}
+First - in step 2, why are we solving for the representation of a point by its neighbors as an optimization problem? Why not find the precise solution directly?
+
+As it turns out, not all points \textit{can} be represented exactly as a linear combination of their neighbors. For example, in a very degenerate case, imagine we have three points sitting along a convex curve - let's call them $A, B, C$ for convenience, where $B$ lies between its neighbors $A$ and $C$. Then there's actually no way to represent $B$ as a linear combination of $A$ and $C$ - we can only represent points on the line $AC$, which cuts through the curve! (Try drawing it out if that doesn't make sense.) Another example given in class is a data point at the corner of some space. The 2D case is shown in the figure below.
+
+Similarly, in higher-dimensional space, it's possible for all the neighbors of point $x$ to lie along (or approximately along) some subspace not containing $x$, in which case we won't be able to find an exact solution (or the ``exact" solution will involve some very large coefficients, which will effectively be just an artefact of how we happened to sample the neighbors).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{chapter_7/files/no_linear_comb_case.png}
+\end{figure}
 
 \subsection*{Details}
 \subsubsection*{Step 2}
-Consider the $i$-th data point. $\Phi (W_{i:})=||x_i-\sum_{j\in N(i)}
-W_{ij} x_j||^2$.\\ 
-We use the following notations:\\
-$D\times k$ matrix:
+Consider the $i^\text{th}$ data point in isolation. For this single point, we'd like to minimize $\Phi (W_{i:})=||x_i-\sum_{j\in N(i)} w_{ij} x_j||^2$. So how specifically will we do this?
+
+First let's define some notation.
+
 \[N_i=
 \begin{bmatrix}
     x_{j_1} & x_{j_2} & \dots & x_{j_k} \\
-\end{bmatrix}
+\end{bmatrix};
 \]
-$k\times 1$ vector:
-\[W_i=
+
+\[w_i=
 \begin{bmatrix}
-    W_{ij_1} \\
-    W_{ij_2} \\
+    w_{ij_1} \\
+    w_{ij_2} \\
     \vdots \\
-    W_{ij_k} \\
-\end{bmatrix}
-\]
-$k\times 1$ vector:
-\[e=
+    w_{ij_k} \\
+\end{bmatrix}, \text{ and }
+e=
 \begin{bmatrix}
     1 \\
     1 \\
     \vdots \\
     1 \\
-\end{bmatrix}
+\end{bmatrix}.
 \]
-So we can write the two parts as the following forms:
+
+Note for clarity that $N_i$ is a $D \times k$ matrix, and $w_i$ and $e$ are $k \times 1$ vectors; the $j_1 \dots j_k$ in $w_i$ are the $k$ neighbors in $N(i)$.
+
+Going back to our original minimization expression, we can rewrite the right-hand term as
 \[
+\sum_{j\in N(i)} w_{ij} x_j=N_i w_i.
+\]
+
+Easy enough. But what about the left-hand term?
+\[
+x_i = x_i e^{\intercal} w_i.
+\]
+``What?" you may be saying to yourself. What is this black magic? But you can verify it for yourself: because of our handy assumption that $\sum_j w_{ij} = 1$, the expression $e^\intercal w_i$ can be rewritten as
+\[
+e^\intercal w_i = \begin{bmatrix}
+    1 & 1 & \dots & 1 \\
+\end{bmatrix} w_i =
 \begin{bmatrix}
-    x_i & x_i & \dots & x_i \\
-\end{bmatrix} = x_i e^T
+    w_{ij_1} + w_{ij_2} + \dots + w_{ij_k} \\
+    w_{ij_1} + w_{ij_2} + \dots + w_{ij_k} \\
+    w_{ij_1} + w_{ij_2} + \dots + w_{ij_k} \\
+    \text{etc.}
+\end{bmatrix} =
+\begin{bmatrix}
+    1 \\
+    1 \\
+    \vdots \\
+    1 \\
+\end{bmatrix}.
 \]
-\[
-\Rightarrow x_i = x_i e^T w_i \text{ where } \sum_j w_{ij} = 1
-\]
-and
-\[
-\sum_{j\in N(i)} W_{ij} x_j=N_i W_i
-\]
-It follows that:
+
+Using these rewritten terms, it follows that:
 \begin{align*}
-\min_{W_i} \Phi (W_{i:})
-&= \min_{W_i} ||X_i e^T W_i - N_i W_i||^2\\
-&= \min_{W_i} ||(X_i e^T-N_i)W_i||^2\\
-&= \min_{W_i} W_i^T (X_i e^T-N_i)^T (X_i e^T - N_i)W_i
+\Phi (W_{i:})
+&= ||x_i e^\intercal w_i - N_i w_i||^2\\
+&= ||(x_i e^\intercal-N_i)w_i||^2\\
+&= w_i^\intercal (x_i e^\intercal-N_i)^\intercal (x_i e^\intercal - N_i) w_i.
 \end{align*}
-The optimization now becomes:
+
+Now let's pause for a moment. This looks perhaps a bit complicated - but let's focus on just the middle section $(x_i e^\intercal-N_i)^\intercal (x_i e^\intercal - N_i)$. We know $x_i$ and $N_i$, and $e$ is fixed. So this entire expression in fact comes out to a known $D \times D$ matrix! Let's call it $G$. Then our optimization problem is
 \begin{align*}
-&\min_{W_i} W_i^T G W_i \text{ where }G = (X_i e^T-N_i)^T (X_i e^T - N_i)\\
-&\text{s.t. } e^T W_i = 1
+&\min_{w_i} w_i^\intercal G w_i \text{ where } G = (x_i e^\intercal-N_i)^\intercal (x_i e^\intercal - N_i)\\
+&\text{s.t. } e^\intercal w_i = 1.
 \end{align*}
-We relax the constraint using Lagrange and take the derivative of the
-cost function as the following: 
+
+(Note: at this point one might be tempted to reach for our familiar Rayleigh quotient minimization/minimum eigenvalue solution, but we can't use that here - that requires the condition $w_{i}^\intercal w_i = 1$, which we don't have.)
+
+From here, we relax the constraint using Lagrange and take the derivative of the cost function as follows:
 \begin{align*}
-L(W_i,\lambda) &= W_i^T G W_i - \lambda (e^T W_i - 1)\\
-\frac{dL}{dW_i} &= 2GW_i - \lambda e = 0\\
-2Gw_i &= \lambda e
+L(W_i,\lambda) &= W_i^\intercal G W_i - \lambda (e^\intercal W_i - 1)\\
+\frac{\partial L}{\partial W_i} &= 2GW_i - \lambda e = 0\\
+\Rightarrow 2GW_i &= \lambda e.
 \end{align*}
-If $\lambda$ is known, $W_i=G^{-1} \frac{\lambda}{2} e$.\\
-We can pick any $\lambda \neq 0$ and solve for $W_i$. $W_i^* =
-\frac{W_i}{\sum_j W_{ij}}$. 
+If $\lambda$ is known, $w_i=G^{-1} \frac{\lambda}{2} e$. But we don't actually know $\lambda$ beforehand! Luckily, knowing $\lambda$ is not necessary: we can pick any $\lambda \neq 0$ and solve for $w_i$, and if we used something other than the true $\lambda$, this will give us a scaled version $w_{i}'$ of the true $w_i$. Recalling again that $\sum_j w_{ij} = 1$, we can normalize $w_{i}'$ to get $w_i = \dfrac{w_{i}'}{\sum_j w_{ij}'}$.
 
 \subsubsection*{Step 3}
-We use the following notations:\\
-$d\times n$ matrix
-\[
-Y=
+We consider the $i^\text{th}$ data point's embedding $y_i$. For this single point, we'd like to minimize $\Psi (y_i)=||y_i-\sum_{j\in N(i)} w_{ij} y_j||^2$.
+
+We define the following notation:
+\[Y=
 \begin{bmatrix}
     y_1 & y_2 & \dots & y_n \\
 \end{bmatrix}
@@ -201,71 +237,63 @@ Y=
 \[
 W=
 \begin{bmatrix}
-    \dots & \dots & \dots\\
-    \dots & W_{ij} & \dots\\
-    \dots & \dots & \dots\\
-\end{bmatrix}
+    && && \\
+    && W_{ij} && \\
+    && && \\
+\end{bmatrix}, \text{ where } W_{ij} = w_{ij};
+\]
+and $I$ is the identity matrix.
+
+Note that here, $Y$ is a $d \times n$ matrix; both $W$ and $I$ are $n \times n$ matrices.
+
+We use the subscript $_{:i}$ to refer to a column vector that is the $i^\text{th}$ column of a matrix. So $W_{:i}$ is the $i^\text{th}$ column of $W$, and $I_{:i}$ is the $i^\text{th}$ column of $I$.
+
+Again we can do some rewriting:
+\[
+y_i = Y I_{:i}
 \]
 \[
-W_{:i}=
-\begin{bmatrix}
-    0 \\
-    \vdots\\
-    0\\
-    W_{j_1}\\
-    0\\
-    \vdots\\
-    0\\
-    W_{j_2}\\
-    0\\
-    \vdots
-\end{bmatrix}
+\sum_{j\in N(i)} w_{ij} y_j = Y W_{:i}
 \]
+
+so for an individual point with embedding $y_i$, we can write
 \[
-I_{:i}=
-\begin{bmatrix}
-    0 \\
-    \vdots\\
-    0\\
-    1 \text{ the }i\text{-th entry}
-    0\\
-    \vdots
-\end{bmatrix}
+\Psi (y_i) = ||Y I_{:i} - Y W_{:i}||^2.
 \]
-So we have
-\[
-y_i = y I_{:i}
-\]
-\[
-\sum_{j\in N(i)} W_{:j} y_i = Y W_{:i}
-\]
+
+Summing over $i$, we can express the overall $\Psi$ term as:
+\begin{align*}
+\Psi(Y)
+&= \sum\limits_{i=1}^n ||Y(I_{:i} - W_{:i})||^2 \\
+&= ||Y (I - W)||_F^2 \\
+&=\text{Tr}((I-W)^\intercal Y^\intercal Y (I-W)) \\
+&=\text{Tr}(Y(I-W)(I-W)^\intercal Y^\intercal).
+\end{align*}
+
 The optimization problem becomes:
 \begin{align*}
-&\min_{Y} \sum_{i=1}^n ||Y I_{:i} - Y W_{:i}||^2\\
-&\min_{Y} ||Y I - Y W||_F^2\\
-&\min_{Y} ||Y(I-W)||_F^2\\
-&\min_Y tr((I-W)^T Y^T Y (I-W))\\
-&\min_Y tr(Y(I-w)(I-W)^TY^T)\\
+&\min_Y \text{ Tr}(YMY^\intercal) \text{ where } M = (I-W)(I-W)^\intercal \\
+&\text{s.t. } Y Y^\intercal=I
 \end{align*}
-It follows that:
+
+Observe that $Y Y^\intercal=I$ does not exactly fit the generalized eigenvalue problem formulation; we can take $Z = Y^\intercal$ so the formulation becomes:
 \begin{align*}
-&\min_Y \text{tr}(YMY^T)\\
-&\text{s.t. } Y^TY=I
+&\min_Z \text{ Tr}(Z^\intercal MZ) \text{ where } M = (I-W)(I-W)^\intercal \\
+&\text{s.t. } Z^\intercal Z=I
 \end{align*}
-where $M = (I-w)(I-W)^T$.\\
-We can solve it by taking the eigenvalue decomposition takes
-$2,3,...,d+1$ eigenvectors of $M$.\\ 
-\subsubsection*{Observations}
+
+We can solve this by taking the eigenvalue decomposition of $M$, and then takes the  $2^\text{nd},3^\text{rd},...,d+1^\text{th}$ eigenvectors.
+
+\subsubsection*{Some observations about LLE.}
 \begin{itemize}
-\item does not preserve the scale in the low-dimensional parametrization.
-\item works quite poorly in practice.
-\item $(I-W)(I-W)^T$ is kind of like a Laplacian of the underlying graph.
+\item It does not preserve the scale in the low-dimensional parametrization.
+\item It works quite poorly in practice.
+\item $(I-W)(I-W)^\intercal$ is kind of like a Laplacian of the underlying graph.
 \end{itemize}
 
-\subsection*{LE(Laplacian Eigenmaps)}
+\subsection*{LE (Laplacian Eigenmaps)}
 \subsubsection*{Goal}
-Find a Low-Dimensional embedding of the original input data that
-preserves "local geometry" in terms of maximally preserving similarity
+Find a Low-Dimensional embedding of the original input data that preserves ``local geometry" in terms of maximally preserving similarity
 between points. 
 \textbf{Question}: How do we measure similarity?\\
 \textbf{Answer}: Can estimate local distances define similarity
@@ -276,12 +304,12 @@ proportional to the distance.
 \item 
 \begin{align*}
 &\min_{Y} \sum_{i,j} W_{ij} ||y_i-y_j||^2\\
-&\text{s.t. } Y^T Y=I
+&\text{s.t. } Y^\intercal Y=I
 \end{align*}
 $\Rightarrow$
 \begin{align*}
-&\min_{Y} \text{tr} (Y^T LY)\\
-&\text{s.t. } Y^T Y=I
+&\min_{Y} \text{tr} (Y^\intercal LY)\\
+&\text{s.t. } Y^\intercal Y=I
 \end{align*}
 \end{itemize}
 \subsubsection*{Observations}
@@ -295,12 +323,12 @@ We can put most linear dimensionality reduction algorithms in a
 unified framework. Essentially, they are all special cases of
 Kernel-PCA. 
 \begin{itemize}
-\item PCA: $K=X^T X$(Linear Kernel).
+\item PCA: $K=X^\intercal X$(Linear Kernel).
 \item Classical-MDS: $K=\frac{-1}{2} HD^{Euclidean}H$ where $H$ is the
   centering matrix. 
 \item Isomap: $K=\frac{-1}{2} HD^{Geodesic}H$.
 \item LLE: once $W$ is learned, $K=M^{-1}$ or $K=(\lambda_{max} I -
-  M)$, where $M=(I-W)(I-W)^T$. (Difference is in the scale of
+  M)$, where $M=(I-W)(I-W)^\intercal$. (Difference is in the scale of
   coordinate of the embedding. $K=\wedge^{1/2} V$). 
 \item LE: $K=L^{-1}$ or $K=(\lambda_{max} I - L)$ and the result is
   also off in the scale of coordinate of the embedding as LLE. 
