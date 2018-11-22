@@ -4,19 +4,27 @@ Isomap, LLE, LE, MVU and briefly mentions an analog of JL-lemma in the
 manifold setting. 
 
 \section{Non-Linear Dimensionality Reduction}
-\textbf{Idea}: underlying data follows some kind of manifold.\\
+So far, we've been trying to minimize $||X-UV||_F^2$ with  $U\in \mathbb{R}^{D\times d}$ and $V\in \mathbb{R}^{d\times n}$. In this case, $U$ is modeling a linear combination. But if we have $X=f(V)$ instead, where $f$ is a non-linear, smooth function, then we have a non-linear combination. \\
+For example, consider a robot moving its head with angle $\theta$. The image at each angle would be a vector in $\R^{100 \times 100}$. Then, in this case we can learn a mapping from $\theta$ to a vector in $\R^{100 \times 100}$. $\theta$ would be the low-dim representation in this case.\\
+
+\textbf{Idea}: Underlying data follows some kind of manifold. \\
+
+\textbf{Manifold} is a set of points which locally resembles Euclidean space. Specifically, manifold is a topological space such that for each point on manifold, the local neighborhood is homeomorphic to Euclidean space. \textbf{Homeomorphic} means that there exists a continuous bijection that maps from the local neighborhood to the Euclidean space. \\
+
 Agenda for today:
 \begin{itemize}
 \item Isomap (Isometric mapping)
 \item LLE (Locally Linear Embedding)
 \item LE (Laplacian Eigenmaps)
 \item MVU (Maximum Variance Unfolding)
+\item kernel PCA
 \item Some open problems and approaches to solve these problems
 \end{itemize}
 
 \subsection{Isomap}
 \subsubsection*{Goal}
-Preserve geodesic distances globally. Applications: computer vision. 
+To represent large dimensional data in low dimension, such that global geometry of the manifold is preserved. Applications: computer vision. \\
+Question: What is global geometry? The geodesic distances between data points. 
 
 \subsubsection*{Notation}
 Input data is $X \in \mathbb{R}^{D\times n}$. Output data $Y \in
@@ -25,19 +33,22 @@ Input data is $X \in \mathbb{R}^{D\times n}$. Output data $Y \in
 \subsubsection*{How?}
 \begin{itemize}
 \item Approximate the geodesic distances by computing the shortest
-  path on a $k$-nearest neighbor ($k$-NN) graph on the input data
-  (note that the graph needs to be connected). 
-\item Construct a ``distance" matrix $D^{(G)}_{n\times n}$.
-\item Run (classical/metric) MDS (multidimensional scaling) to find
-  the corresponding embedding ($\min_{Y} \sum_{i<j}||y_i - y_j|| -
+  path on a $k$-nearest neighbor ($k$-NN) graph constructed on the input data
+  (note that the $k$-NN graph needs to be connected). Use ASSP (All Source Shortest Path algorithm) to compute the shortest paths.
+\item Construct a "distance" matrix $D^{(G)}_{n\times n}$.
+\item Run (classical/metric) MDS (multidimensional scaling) on $D^{(G)}_{n\times n}$ to find
+  the corresponding low dimension embedding of $X$ ($\min_{Y} \sum_{i<j}||y_i - y_j|| -
   D^{(G)}_{ij}$). 
+  
+ \item The number of sample points is usually $O(Vk^d)$ where $V$ is volume and $k,d$ are curvature and intrisic dim respectively. 
 \end{itemize}
 
 \begin{figure}
 \centering
-\includegraphics[width=0.5\textwidth]{chapter_7/files/isomap.png}
+\includegraphics[width=0.7\textwidth]{chapter_7/files/isomap.png}
 \caption{Illustration of geodesic distance}
 \end{figure}
+
 
 \subsubsection*{Observations}
 \begin{itemize}
@@ -45,23 +56,40 @@ Input data is $X \in \mathbb{R}^{D\times n}$. Output data $Y \in
   \begin{itemize}
   \item Under suitable distributions over the underlying    manifold,
     as $r\rightarrow 0$, $n\rightarrow \infty$, $nr \rightarrow
-    \infty$, can show the shortest path $\rightarrow$ geodesic path. 
+    \infty$, we can show that ASSP approximates the geodesics. 
   \end{itemize}
-\item When can geodesic paths become Euclidean paths?
+ 
+\begin{figure}
+\centering
+\begin{tikzpicture}
+\draw (2,2) circle (1.5cm);
+\draw (10,2) arc[x radius=1.5, y radius=1.5, start angle=0, end angle=-350];
+\end{tikzpicture}
+\caption{A circle (manifold), as shown on the left, cannot be properly mapped to $\mathbb{R}^{1}$. But if we have a hole, as shown on the right, then it can be embedded to $\mathbb{R}^{1}$. } \label{fig:M1}
+\end{figure}
+ 
+\item For what kinds of manifolds does Isomap work? When can geodesic paths become Euclidean paths?
   \begin{itemize}
-  \item Underlying manifold needs to be (globally) isometric some
+  \item Underlying manifold needs to be (globally) isometric to some Euclidean space 
     $\mathbb{R}^n$; that is, it has no intrinsic curvature. For
     example, a spherical cap (a hemisphere) cannot be embedded into
     Euclidean space without distorting distances (imagine trying to
     flatten the northern hemisphere of a globe without
     stretching/ripping the map).  
+    
+\begin{figure}
+\centering
+\includegraphics[width=1.0\textwidth]{chapter_7/files/isometric.jpeg}
+\caption{The middle transformation has no stretch/shrink, but the rightmost transformation (a spherical cap) has stretch/shrink. }
+\end{figure}
+    
   \item Parametrization space should be convex. For example, if there
     is a missing/hole at the center of a manifold, an embedding will
     `fill in' the space and shorten the distance between two points
     that were originally across each other in the original manifold. 
   \end{itemize}
-\end{itemize}
 
+\end{itemize}
 
 \subsection{LLE(Locally Linear Embedding)}
 \subsubsection*{Goal}
