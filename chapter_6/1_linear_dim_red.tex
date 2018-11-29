@@ -59,14 +59,14 @@ Compressive Sampling" \cite{duarte}.
 
 \section{PCA~(Principal Component Analysis)}
 \subsection{Outline}
-Data: $x_1,x_2,...,x_n \in \mathbb{R}^d$\\
+Input Data: $x_1,x_2,...,x_n \in \mathbb{R}^d$\\
 
 \noindent Goal: Find the best linear transformation $\phi:
 \mathbb{R}^d \rightarrow \mathbb{R}^k$ that best maintains
 reconstruction accuracy. Equivalently, minimize aggregate residual
 error.\\ 
 
-\noindent Define: $\Pi^k: \mathbb{R}^d \rightarrow \mathbb{R}^d$
+\noindent Define: $\Pi^k: \mathbb{R}^d \rightarrow \mathbb{R}^d$ to
 minimize $\frac{1}{n} \sum_{i=1}^n ||x_i - \Pi^k (x_i)||^2$\\
 
 \begin{figure}[h!]
@@ -75,27 +75,27 @@ minimize $\frac{1}{n} \sum_{i=1}^n ||x_i - \Pi^k (x_i)||^2$\\
 \caption{An illustration of PCA}
 \end{center}
 \end{figure}
-\subsubsection{Method}
-
+\subsection{Method}
 A $k$ dimensional subspace can be represented by $q_1,...,q_k \in
-\mathbb{R}^d$ orthonormal vectors.\\ 
-The projection of any $x\in \mathbb{R}^d$ in the $span(q_1,...,q_k)$
+\mathbb{R}^d$ orthonormal vectors. 
+The projection of any $x\in \mathbb{R}^d$ into $span\{q_1,...,q_k\}$
 is given by 
 \[
-\underbrace{(\sum_{i=1}^k q_i q_i^T)x}_{\Pi^k} = \sum_{i=1}^k
+\underbrace{(\sum_{i=1}^k q_i q_i^T)}_{\Pi^k}x = \sum_{i=1}^k
 (q_i\cdot x)q_i 
 \]
-To represent it in $\mathbb{R}^k$ (using basis $q_1,...,q_k$) the
-coefficients simply are: $(q_1,x),...,(q_k,x)$.\\ 
-\subsection{The $k$ = 1 case}
+To represent it in $\mathbb{R}^k$ (corresponding to basis $\{q_1,...,q_k\}$), the
+coefficients are: $(q_1,x),...,(q_k,x)$.
+
+\subsubsection{The $k$ = 1 case}
 In $k=1$ case, the objective is the following:\\
 
-$\textrm{minimize}_{||q||=1} \frac{1}{n} \sum_{i=1}^n
-||x_i - (qq^T)x_i||^2$\\
+$$\underset{||q||=1}{\min} \frac{1}{n} \sum_{i=1}^n
+||x_i - (qq^T)x_i||^2$$
 
 \noindent Equivalently,\\
 
-$\textrm{maximize}_{||q||=1}q^T(\frac{1}{n} XX^T)q$, \\
+$$\underset{||q||=1}{\max}q^T(\frac{1}{n} XX^T)q$$
 
 \noindent where $\frac{1}{n}XX^T$ is the covariance of data, if the
 data is mean-centered. The solution is the top eigenvector
@@ -104,75 +104,100 @@ $(1/n)XX^T$.\\
 \noindent \textbf{Remark}: For any $q$, the quadratic form
 $q^T(\frac{1}{n}XX^T)q$ is the empirical variance of data in the
 direction $q$. 
+
 \subsubsection{General $k$ case}
-The general $k$ case is similar and the solution is basically the top
-$k$ eigenvectors of the matrix $XX^T$.\\ 
+The optimization problem is the following
+\begin{align*}
+\min & \quad tr(XQQ^TX^T)\\
+s.t. & \quad Q^TQ = I\\
+ &  \quad rank(Q) = k
+\end{align*}
+And the solution is basically the top $k$ eigenvectors of the matrix $XX^T$. 
 
 \section{LDA~(Linear Discriminate Analysis)}
 \subsection{Motivation}
-The goal of PCA is to minimize the reconstruction error. However, this
-is not necessarily going to help for classification purposes. 
+\subsubsection{Input Data}
+Suppose our data $X$ have two labels $+$ and $-$, the group of data labeled $+$ is defined as $C_{+}$ and similarly define $C_{-}$.
+
+\subsubsection{Goal}
+The goal of \textbf{LDA} is to project the means of the two groups onto a $1$-dimensional subspace that separating their distance as much as possible.
+
+
 \subsection{Method}
-Define $\mu_1=\frac{1}{|C_1|} \sum_{x\in C_1} x$ and
-$\mu_2=\frac{1}{|C_2|} \sum_{x\in C_2} x$. Define $\bar{\mu}_1=w^T
-\mu_1$ and $\bar{\mu}_2=w^T \mu_2$\\ 
-One intuitive formulation would be:
-\[
-\max_{w,s.t.||w||=1} L(w) = |\bar{\mu}_1 - \bar{\mu}_2| = |w^T\mu_1 - w^T\mu_2|
-\]
-It is easy to see that $w^*=\frac{\mu_1 - \mu_2}{||\mu_1-\mu_2||}$.\\
+ Define the group means of $C_{+}$ and $c_{-}$:
+\begin{center}
+	$\mu_{+} = \frac{1}{|C_{+}|}\sum\limits_{x \in C_{+}}x$\\
+	$\mu_{-} = \frac{1}{|C_{-}|}\sum\limits_{x \in C_{-}}x$
+\end{center}
+Our optimization function would be:
+\begin{align*}
+\max & \ |q^T(\mu_{+}-\mu_{-})|\\
+s.t. & \ ||q|| = 1
+\end{align*}
+It is easy to see that the optimal solution is $\hat{q} = \frac{\mu_{+}-\mu_{-}}{||\mu_{+}-\mu_{-}||}$.\\
 
 \noindent Problem: Maintaining the distance between the means is not
-sufficient. What we want are for the: 
+sufficient. Furthermore we want to find a direction so that: 
 \begin{itemize}
 \item class means to be as far as possible after projection, and
 \item class variances to be as small as possible.
 \end{itemize}
-After projection, denote $\bar{s}_1^2 = \sum_{\bar{x}\in C_1}
-(\bar{x}-\bar{\mu}_1)^2$, $\bar{s}_2^2 = \sum_{\bar{x}\in C_2}
-(\bar{x}-\bar{\mu}_2)^2$. The formulation according to our criteria
+Denote $\bar{x} = q^Tx$. After projection, denote $\bar{s}_{+}^2 = \sum_{\bar{x}\in C_{+}}
+(\bar{x}-\bar{\mu}_{+})^2$, $\bar{s}_{-}^2 = \sum_{\bar{x}\in C_{-}}
+(\bar{x}-\bar{\mu}_{-})^2$. The formulation according to our criteria
 would be the following: 
 \[
-\max_{w} L(w)=\frac{(\bar{\mu}_1 - \bar{\mu}_2)^2}{\bar{s}_1^2+\bar{s}_2^2}
+\max_{q} L(q)=\frac{(\bar{\mu}_{+} - \bar{\mu}_{-})^2}{\bar{s}_{+}^2+\bar{s}_{-}^2}
 \]
-We will expand each term in this equation in the following:\\
+We will expand each term in this equation in the following:
 \begin{align*}
-\bar{s}_1^2
-&= \sum_{\bar{x}\in C_1} (\bar{x}-\bar{\mu}_1)^2\\
-&= \sum_{\bar{x}\in C_1} (w^Tx-w^T\mu_1)^2\\
-&= w^T\Big (\sum_{\bar{x}\in C_1} (x-\mu_1)(x-\mu_1)^T \Big ) w\\
-&= w^TS_1w \textrm{ where } S_1 \textrm{ is the scatter matrix for }1
+\bar{s}_{+}^2
+&= \sum_{\bar{x}\in C_{+}} (\bar{x}-\bar{\mu}_{+})^2\\
+&= \sum_{\bar{x}\in C_{+}} (q^Tx-q^T\mu_{+})^2\\
+&= q^T\left (\sum_{\bar{x}\in C_1} (x-\mu_{+})(x-\mu_{+})^T \right ) q\\
+&= q^TS_{+}q 
 \end{align*}
-Similarly, $\bar{s}_2^2=w^TS_2w$\\
+Here we denote the sum of matrices as $S_{+}$, which represents the squared distance between the $+$ group. And similarly to define $S_{-}$ and $\bar{s}^2_{-} = q^TS_{-}q$. To present the squared distance between two means, we define $S_B$ as:
 \begin{align*}
 (\bar{\mu}_1-\bar{\mu}_2)^2
 &= (w^T (\mu_1 - \mu_2))^2\\
 &= w^T(\mu_1-\mu_2)(\mu_1-\mu_2)^Tw\\
-&= w^TS_Bw \textrm{ where } S_B \textrm{ is the between class scatter
-    matrix} 
+&= w^TS_Bw 
 \end{align*}
 Note: rank of $S_B = 1$.\\
 Thus,
 \[
-L(w)=\frac{w^T S_B w}{w^T S_w w}
+L(q)=\frac{q^T S_B q}{q^T S_w q}
 \]
-It follows that it has derivative (if we ignore its denominator):
+The optimal $\hat{q}$ would satisfy the condition that it's derivative equals to zero.  Let $D(q)$ demote the denominator:
 \[
-\frac{d}{dw}L(w)=w^TS_w w2S_B w - w^T S_B w 2 S_w w
+0 = \frac{d}{dq}L(q)=\frac{1}{D(q)} \left(q^TS_w q2S_B q - q^T S_B q 2 S_q q \right)
 \]
-When we divide it by $2w^TS_ww$, we get:
+Divide it by $2q^TS_wq$ on both sides:
 \[
-S_Bw - \frac{w^T S_B w}{w^T S_w w} (S_w w)=S_Bw - L(w)(S_w w)
+0 = S_Bq - \frac{q^T S_B q}{q^T S_w q} (S_w q)=S_Bq - L(q)(S_w q)
 \]
-If we let it equal to 0, we get:
+Thus
 \[
-S_B w = S_w L(w) w \Leftrightarrow S_w^{-1} S_B w = L(w) w
+S_B q = S_w L(q) q \Leftrightarrow S_w^{-1} S_B q = L(q) q
 \]
-Maximizing $L(w) \Leftrightarrow$ finding eigenvector corresponding to
+Which implies maximizing $L(w) \Leftrightarrow$ finding eigenvector corresponding to
 the largest eigenvalues of $S_w^{-1} S_B$.\\ 
 
 \noindent \textbf{Remark}: When you have $c$-classes, LDA will find a
-$c-1$ subspace. \\ 
+$c-1$ subspace. 
+
+\subsection{Labeled Data with Metric Settings}
+Within metric settings, the aim is to find a subspace such that the prediction accuracy is maximized. Suppose the original distance between $x$ and $x'$ is $\rho(x,x') = ||x-x'||_{2}^{2}$ and the distance between the projections of them under the projection matrix $Q$ is $\rho_{Q}(x,x') = ||Qx-Qx'||_{2}^{2}$. Further we define the similar sets $\mathcal{S}$ and the dissimilar sets $\mathcal{D}$.
+\begin{center}
+	$(x,x') \in \mathcal{S} \quad if \quad y=y'$\\
+	$(x,x') \in \mathcal{D} \quad if \quad y \neq y'$
+\end{center}
+The goal is to minimize the distance in the similar sets while maximizing the distance in the dissimilar set, and by further adding a constraining parameter $\lambda$, the corresponding optimization function is:
+\begin{center}
+	$J(q) = \min\limits_{Q} \sum\limits_{(x,x') \in \mathcal{S}}\rho_{Q}(x,x') - \lambda  \sum\limits_{(x,x') \in \mathcal{D
+	}}\rho_{Q}(x,x')$
+\end{center}
 
 \section{MDS~(Multi-dimensional Scaling)}
 \subsection{Motivation} MDS is useful when you don't have a Euclidean representation of the
