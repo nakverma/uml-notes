@@ -58,15 +58,15 @@ To learn more about this process, see "Single-Pixel Imaging via
 Compressive Sampling" \cite{duarte}.
 
 \section{PCA~(Principal Component Analysis)}
-\subsection{Outline}
-Data: $x_1,x_2,...,x_n \in \mathbb{R}^d$\\
+\subsection{Outline}\\
+Input Data: $x_1,x_2,...,x_n \in \mathbb{R}^d$\\
 
 \noindent Goal: Find the best linear transformation $\phi:
 \mathbb{R}^d \rightarrow \mathbb{R}^k$ that best maintains
 reconstruction accuracy. Equivalently, minimize aggregate residual
 error.\\ 
 
-\noindent Define: $\Pi^k: \mathbb{R}^d \rightarrow \mathbb{R}^d$
+\noindent Define: $\Pi^k: \mathbb{R}^d \rightarrow \mathbb{R}^d$ to
 minimize $\frac{1}{n} \sum_{i=1}^n ||x_i - \Pi^k (x_i)||^2$\\
 
 \begin{figure}[h!]
@@ -75,27 +75,27 @@ minimize $\frac{1}{n} \sum_{i=1}^n ||x_i - \Pi^k (x_i)||^2$\\
 \caption{An illustration of PCA}
 \end{center}
 \end{figure}
-\subsubsection{Method}
-
+\subsection{Method}\\
 A $k$ dimensional subspace can be represented by $q_1,...,q_k \in
-\mathbb{R}^d$ orthonormal vectors.\\ 
-The projection of any $x\in \mathbb{R}^d$ in the $span(q_1,...,q_k)$
+\mathbb{R}^d$ orthonormal vectors. 
+The projection of any $x\in \mathbb{R}^d$ into $span\{q_1,...,q_k\}$
 is given by 
 \[
-\underbrace{(\sum_{i=1}^k q_i q_i^T)x}_{\Pi^k} = \sum_{i=1}^k
+\underbrace{(\sum_{i=1}^k q_i q_i^T)}_{\Pi^k}x = \sum_{i=1}^k
 (q_i\cdot x)q_i 
 \]
-To represent it in $\mathbb{R}^k$ (using basis $q_1,...,q_k$) the
-coefficients simply are: $(q_1,x),...,(q_k,x)$.\\ 
-\subsection{The $k$ = 1 case}
+To represent it in $\mathbb{R}^k$ (corresponding to basis $\{q_1,...,q_k\}$), the
+coefficients are: $(q_1,x),...,(q_k,x)$.
+
+\subsubsection{The $k$ = 1 case}
 In $k=1$ case, the objective is the following:\\
 
-$\textrm{minimize}_{||q||=1} \frac{1}{n} \sum_{i=1}^n
+$\underset{||q||=1}{\min} \frac{1}{n} \sum_{i=1}^n
 ||x_i - (qq^T)x_i||^2$\\
 
 \noindent Equivalently,\\
 
-$\textrm{maximize}_{||q||=1}q^T(\frac{1}{n} XX^T)q$, \\
+$\underset{||q||=1}{\max}q^T(\frac{1}{n} XX^T)q$, \\
 
 \noindent where $\frac{1}{n}XX^T$ is the covariance of data, if the
 data is mean-centered. The solution is the top eigenvector
@@ -104,9 +104,15 @@ $(1/n)XX^T$.\\
 \noindent \textbf{Remark}: For any $q$, the quadratic form
 $q^T(\frac{1}{n}XX^T)q$ is the empirical variance of data in the
 direction $q$. 
+
 \subsubsection{General $k$ case}
-The general $k$ case is similar and the solution is basically the top
-$k$ eigenvectors of the matrix $XX^T$.\\ 
+The optimization problem is the following
+\begin{equation*}
+\min && \quad tr(XQQ^TX^T)\\
+s.t. && \quad Q^TQ = I
+ && rank(Q) = k
+\end{equation*}
+And the solution is basically the top $k$ eigenvectors of the matrix $XX^T$. 
 
 \section{LDA~(Linear Discriminate Analysis)}
 \subsection{Motivation}
