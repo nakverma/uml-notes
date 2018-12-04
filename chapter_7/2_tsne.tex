@@ -44,14 +44,17 @@ high-dimensional space, but this often fails to correctly capture a
 portion of the ambiguous points that could belong several to local
 neighborhoods. SNE aims to best capture neighborhood identity by
 considering the probability that one point is the neighbor of all
-other points. Formally, it defines $n\times n$ similarity matrix $P$
+other points. It first models a distribution over the neighbors for
+each data point, then minimizes the distance between the original 
+distribution and the distribution induced by the mapped data points.
+Formally, it defines $n\times n$ similarity matrix $P$
 in the high dimensional space whose entries are 
 \[ p_{j\vert i} = \frac{exp(-\vert \vert x_i -x_j \vert \vert^2 /
   2\tau_i^2)}{\sum_{k\neq i} exp(-\vert \vert x_i -x_k \vert \vert^2 /
-  2\tau_i^2)}\] 
-where $\tau_i^2$ is the variance for the Gaussian distribution
-centered around $x_i$. And $n\times n$ similarity matrix $Q$ in the
-low dimensional space whose entries are 
+  2\tau_i^2)}\] where $\tau_i^2$ is the variance for the Gaussian distribution
+  centered around $x_i$, which normalizes the distribution based on the size of
+  the neighborhood. And $n\times n$ similarity matrix $Q$ in the low dimensional
+  space whose entries are 
 \[
 q_{j\vert i} = \frac{exp(-\vert \vert y_i - y_j \vert
   \vert^2)}{\sum_{k\neq i} exp(-\vert \vert y_i -y_k \vert \vert^2)} 
@@ -102,9 +105,10 @@ Intuitively, there is less space in a lower dimension to accommodate moderately 
 
 \begin{center}
     \includegraphics[scale=0.4]{chapter_7/files/fig2.png}
-    \captionof{figure}{An embedding from 2D (left) to 1D
-      (right). Although the distances between the closest points AB
-      and BC are preserved, the global distance AC has to shrink.} 
+    \captionof{figure}{An embedding from 2D (left) to 1D (right). Although the
+      distances between the closest points AB and BC are preserved, the global
+      distance AC has to increase. We therefore want to shrink the distances of
+      AB and BC by a small amount so that AC is not as distorted}. 
 \end{center}
 
 As a result, globally distinct clusters in high dimensional space
@@ -112,10 +116,11 @@ would get pushed closer to each other and often times cannot be
 distinguished from each other in 2D or 3D embedding. 
 
 \subsection{t-Distributed Stochastic Neighbor Embedding (t-SNE)}
-To address the crowding problem and make SNE more robust to outliers, t-SNE was introduced. Compared to SNE, t-SNE has two main changes: 1) a symmetrized version of the SNE cost function with simpler
-gradients 2) a Student-t distribution rather than a Gaussian to
-compute the similarity in the low-dimensional space to alleviate the
-crowding problem.\\
+To address the crowding problem and make SNE more robust to outliers, t-SNE was
+introduced. Compared to SNE, t-SNE has two main changes: 1) a symmetrized
+version of the SNE cost function with simpler gradients 2) a Student-t
+distribution rather than a Gaussian to compute the similarity in the
+low-dimensional space to alleviate the crowding problem.\\
 
 \noindent Notice that in SNE, $p_{ij}$ is not necessarily equal to
 $p_{ji}$, because $\tau_{ij}$ is not necessarily equal to
@@ -127,9 +132,8 @@ defined instead as
 p_{ij} = \frac{p_{j \vert i}+p_{i \vert j}}{2n}
 \]
 In this way, $\sum_j p_{ij} > \frac{1}{2n}$ for all data points
-$x_i$. As a result, each $x_i$ makes a significant contribution to the
-cost function, and that also gives a simpler gradient, as shown
-later. \\ 
+$x_i$, and is symmetric for $p_{ij}$ and $p_{ji}$. As a result, each $x_i$ makes a significant contribution to the cost function, and that also gives a simpler gradient, 
+as shown later. \\ 
 
 \noindent Moreover, t-SNE uses the Student's t-distribution instead of
 the Gaussian to define Q 
@@ -227,6 +231,9 @@ embedding alone.
 
 With these three caveats in mind, we conclude the limitations of tSNE.
 \begin{itemize}
+  \item tSNE can sometimes create extra (spurious) clusters. However,
+    if the density of clusters in the higher dimension is constant, then
+    tSNE will work and give the same number of clusters.
   \item tSNE does not work well for general dimensionality problem
     where the embedded dimension is greater than 2D or 3D but the
     meaning of distances between points needs to be preserved as well
