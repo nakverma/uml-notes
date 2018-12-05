@@ -303,7 +303,7 @@ Intuitively, we want this notion of similarity to be anti-proportional to distan
 \textbf{Answer}: What ends up getting used is a Gaussian type function. 
 
 \begin{definition} Similarity. \\
-$w_{ij} = \txt{sim}(x_i, x_j) = \txt{exp}(-\|x_i - x_j\|^2/\sigma^2)$ where $\sigma$ is a scaling parameter. 
+$w_{ij} = \textrm{sim}(x_i, x_j) = \textrm{exp}(-\|x_i - x_j\|^2/\sigma^2)$ where $\sigma$ is a scaling parameter. 
 \end{definition}
 
 But we're on a manifold, why are you talking about Euclidean distances and not geodesics? Well, there will be some sort of scaling parameter $\sigma$. If $\sigma$ is at the same level as a local neighbor, then locally it'll be linear anyways, so you can compute the Euclidean distance as a good approximation. Outside the neighborhood, it'll be a geodesic distance. But since it's far away, the similarity will be small. But the Euclidean distance will \textit{also} be small. Since the distance is dropping off quite sharply either way, it might be an ok approximation. $\sigma$ determines where this drop off occurs. Thus, $\sigma$ is taken at the scale of ``local neighbor''. This is a mystery in itself. There might be a paper by Larry Wasserman which could tell you. Maybe different regions of space will have different notions of locality. This is based on some notion of curvature, so the question boils down to how you can estimate the curvature of a manifold. Little work has been done, but there is some work. That's where the state of the art is. 
