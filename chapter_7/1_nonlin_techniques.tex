@@ -34,7 +34,7 @@ Input data is $X \in \mathbb{R}^{D\times n}$. Output data $Y \in
 \item Approximate the geodesic distances by computing the shortest
   path on a $k$-nearest neighbor ($k$-NN) graph constructed on the input data
   (note that the $k$-NN graph needs to be connected). Use ASSP (All Source Shortest Path algorithm) to compute the shortest paths.
-\item Construct a "distance" matrix $D^{(G)}_{n\times n}$.
+\item Construct a ``distance" matrix $D^{(G)}_{n\times n}$.
 \item Run (classical/metric) MDS (multidimensional scaling) on $D^{(G)}_{n\times n}$ to find
   the corresponding low dimension embedding of $X$ ($\min_{Y} \sum_{i<j}||y_i - y_j|| -
   D^{(G)}_{ij}$). 
@@ -142,6 +142,8 @@ Similarly, in higher-dimensional space, it's possible for all the neighbors of p
 \centering
 \includegraphics[width=0.5\textwidth]{chapter_7/files/no_linear_comb_case.png}
 \end{figure}
+
+The point of all these algorithms is to come up with a representation (embedding) of the data. However, this is only giving you part of the story: How are you related to your neighbors is in a linear fashion. Once this relationship is learned, now what you can do is find in a lower dimension the mapping of the data points and that respects exactly the same criteria. Now, once you have learned the relationship, find the configuration of these data points in low dimensions which respects the same relationships.
 
 \subsection*{Details}
 \subsubsection*{Step 2}
@@ -293,12 +295,35 @@ We can solve this by taking the eigenvalue decomposition of $M$, and then takes 
 
 \subsection*{LE (Laplacian Eigenmaps)}
 \subsubsection*{Goal}
-Find a Low-Dimensional embedding of the original input data that preserves ``local geometry" in terms of maximally preserving similarity
-between points. 
+Our goal remains the same: Find a low-dimensional representation of our high-dimensional data, which preserves local structure in the data. LLE we had the data points be related to their near neighbors in a linear fashion. The question is how do you define local structure? The answer the authors of Laplacian Eigenmaps give is a little different. They will compute some sort of similarity between data points, and once you have a notion of similarity, they will optimize for position of the low-dimensional datapoints, which will keep the same similarity. 
+To summarize: Find a Low-Dimensional embedding of the original input data that preserves ``local geometry" in terms of maximally preserving similarity
+between points.\\ 
 \textbf{Question}: How do we measure similarity?\\
-\textbf{Answer}: Can estimate local distances define similarity
-proportional to the distance. 
+Intuitively, we want this notion of similarity to be anti-proportional to distance. In other words, we want the value of similarity to be high if the data points are a short distance apart, and we want the value of similarity to be low if the data points are far apart.\\
+\textbf{Answer}: What ends up getting used is a Gaussian type function. 
+
+\begin{definition} Similarity. \\
+$w_{ij} = \txt{sim}(x_i, x_j) = \txt{exp}(-\|x_i - x_j\|^2/\sigma^2)$ where $\sigma$ is a scaling parameter. 
+\end{definition}
+
+But we're on a manifold, why are you talking about Euclidean distances and not geodesics? Well, there will be some sort of scaling parameter $\sigma$. If $\sigma$ is at the same level as a local neighbor, then locally it'll be linear anyways, so you can compute the Euclidean distance as a good approximation. Outside the neighborhood, it'll be a geodesic distance. But since it's far away, the similarity will be small. But the Euclidean distance will \textit{also} be small. Since the distance is dropping off quite sharply either way, it might be an ok approximation. $\sigma$ determines where this drop off occurs. Thus, $\sigma$ is taken at the scale of ``local neighbor''. This is a mystery in itself. There might be a paper by Larry Wasserman which could tell you. Maybe different regions of space will have different notions of locality. This is based on some notion of curvature, so the question boils down to how you can estimate the curvature of a manifold. Little work has been done, but there is some work. That's where the state of the art is. 
+
+So now we have a notion of similarity. We want to come up with a configuration of our low-dimensional data points which will respect this similarity. So we have to come up with a cost function.\\
+
 \subsubsection*{How?}
+For Laplacian Eigenmaps, it is the following cost: 
+\begin{definition} Laplacian Eigenmaps Cost Function. \\
+\[
+\psi(Y) := \sum_j W_{ij}\|Y_i - Y_j\|^2
+\]
+We want to minimize this with respect to $Y$. 
+\end{definition}
+
+If $W_{ij}$ is large, then $Y_i$ and $Y_j$ need to be close to each other. If they are dissimilar (e.g., $W_{ij} = 0$) then we don't care what happens. In this sense, the local neighborhood is preserved. What will happen in that case? Then everything gets mapped to the same thing to minimize. So you have to add a condition: We require $Y^TY = I$. 
+
+Now, this looks like a Graph Laplacian! The cost function $\psi(Y)$ is proportional to Tr$(Y^TLY)$, where $L$ is the Graph Laplacian. In particular, it's $D - W$. $D$ is the diagonal matrix, and $W$ is the similarity matrix. Here we need to set the constraint $YY^{\top}=I$ because otherwise, we can place all points on top of each other, so that $\psi(Y)=0$.
+ 
+
 \begin{itemize}
 \item Define $W_{ij}=e^{-||x_i-x_j||^2}{2\sigma^2}$.
 \item 
@@ -313,30 +338,45 @@ $\Rightarrow$
 \end{align*}
 \end{itemize}
 \subsubsection*{Observations}
-If points $x_i$ and $x_j$ are far apart, $W_{ij}$ is close to 0 so
-$y_i$ and $y_j$ can be mapped anywhere. If $x_i$ and $x_j$ are close,
-then $w_{ij}$ is large so it encourages $y_i$ and $y_j$ to be mapped
-close. In this sense, it is local neighborhood preserved. 
+We can compare this to LLE. This is also the Laplacian! Since we have that the row sum of the $W$ is $1$, we end up getting a $I - W$ instead of $D - W$. So the solution type is the same for both of these methods.
 
 \subsection*{Discussion}
-We can put most linear dimensionality reduction algorithms in a
-unified framework. Essentially, they are all special cases of
-Kernel-PCA. 
+We can put most linear dimensionality reduction algorithms in a unified framework. Essentially, they are all special cases of Kernel-PCA. Basically, we are just changing the kernel based on the particular instantiation. 
+
+What are we doing with PCA again? Finding a linear projection of data which is maximizing variance or minimizing distance to subspace by orthogonal projection. Kernel is saying there is a nonlinear transformation (maybe in high dimensions, maybe not) mapping $\phi$ which takes your data from the original space to another space nonlinearly. Now, we're going to do PCA in the transformed nonlinear space. 
+
+So one way of doing it is writing down SVD. Then $X = U\Sigma V^T$, and $XX^T = U\Sigma^2 U^T$, or the eigen-decomposition of the thing. $X^TX = V\Sigma^2 V^T$. Now the interesting thing is: What will this look like? The interesting thing is that the eigenvalues of the two matrices match, but the eigenvectors don't match. But there is a relationship between them. Let us note the following: In PCA, you're taking the higher-order spectra of the data point which you want to project to. So the data would look like $U^Tx$, in PCA. If into $k$ dimensions, you take $U_k^Tx$. That is what we want to compute, but we only have the vectors $V$. But there is a relationship between them. From SVD, we have $U = XV\Sigma^{-1}$. Now if you have vectors $V$ and $\Sigma$, you can compute this. Then you get, for a new data point, $\Sigma^{-1}V^TX^Tx$. This is in terms of the inner product, which can now be generalized to kernels. So we take the kernel matrix $K = X^TX$. We can easily swap this out to our own kernel, instead of the linear inner product kernel. We just need some reasonably properties on $K$ hold true (e.g., it needs to be PSD). That is, $K(x_i, x_j) = \phi(x_i)^T\phi(x_j)$ for some nonlinear transformation $\phi$, as encoded in the matrix $K$. The punchline is that all these nonlinear dimensionality reduction techniques (IsoMap, LLE, Laplacian Eigenmaps, and others) essentially apply implicitly some sort of a nonlinearity and doing PCA. So, the only thing that changes is $K$, because the nonlinearity changes. Here we list the various cases:
+
 \begin{itemize}
 \item PCA: $K=X^\intercal X$(Linear Kernel).
-\item Classical-MDS: $K=\frac{-1}{2} HD^{Euclidean}H$ where $H$ is the
-  centering matrix. 
-\item Isomap: $K=\frac{-1}{2} HD^{Geodesic}H$.
-\item LLE: once $W$ is learned, $K=M^{-1}$ or $K=(\lambda_{max} I -
-  M)$, where $M=(I-W)(I-W)^\intercal$. (Difference is in the scale of
-  coordinate of the embedding. $K=\wedge^{1/2} V$). 
-\item LE: $K=L^{-1}$ or $K=(\lambda_{max} I - L)$ and the result is
-  also off in the scale of coordinate of the embedding as LLE. 
+\item Classical-MDS: $K=\frac{-1}{2} HD^{Euclidean}H$ where $H$ is the centering matrix. 
+\item Isomap: $K=\frac{-1}{2} HD^{Geodesic}H$. For geodesic distance, we mean the shortest-path distance on the manifold.
+\item LLE: In LLE, suppose we were to use $K = (I - W)(I - W)^T$. But now, we are looking at the lower order spectra, not the higher one. So we need to do some massaging to get the right kernel. Once $W$ is known (it gets learned), then essentially we compute $A = (I - W)(I - W)^T$. We need to flip the spectrum of the matrix: We could do inverse and say $K = A^{-1}$. That's option one. Another way we could do it is define $K = \lambda_{\max}I - A$. Typically, this option gets used because inverses can be bad news in terms of stability. The point is that LLE is kernel PCA with this particular kernel.  
+\item Laplacian Eigenmaps (LE): $K=L^{-1}$ or $K=(\lambda_{max} I - L)$ and the result is also off in the scale of coordinate of the embedding as LLE. Also note that we can either assume the weight matrix to be known or learned.
 \end{itemize}
 
+The point is to say that all these are special cases of kernel PCA from a different kernel. So (essentially) all these nonlinear dimension reduction methods are just a matter of finding the right kernel.
+
+There's a reason I'm telling you this story. One point is that it unifies it, but that's not the main thing. The million dollar question is: Some of these methods give you one answer, and some give you another answer. So why can you not \textit{learn} the right kernel, and see what happens. That gives rise to yet another nonlinear dimensionality reduction technique, which is called \textit{Maximum Variance Unfolding} (MVU).
+
 \subsection*{MVU(Maximum Variance Unfolding) (aka. Semi-Definite Embedding(SDE))}
+
+This used to be called Semidefinite Embedding (SDE). Why are we talking about this specific one? Multiple reasons. Our story began a certain way. We want to preserve local structure, this is what structure should be, here's an algorithm. Now we are not taking this recipe. What's the right way of defining local structure? MVU is by Lawrence Saul and one of his students Killian Weinberger. Around 2006, there was a lot of interest developed in terms of SDP optimization. So there were some advances made there, and machine learning people wanted to adopt those optimization techniques for machine learning problems. In terms of dimensionality reduction, you can formulate it as finding the positive semidefinite matrix itself. So there was a big rush at this time. In the early 90s, the rush was kernelizing every single method in machine learning. The mini-rush in 2006 was can we adopt the new technique of SDPs into machine learning, and this was one early incarnation where this happened in terms of nonlinear dimensionality reduction.
+
+We're going to just formulate the problem, after it is an SDP, we just run SDP methods to get a kernel out. Then we can use kernel PCA. We need to formulate a problem to find the kernel. The question should be, what properties should hold for that particular kernel? What do you want for manifold learning? We'll list them out, and formulate it mathematically. 
+
+\begin{enumerate}
+
+\item Question 1: Say you want to preserve local geometry. What should hold true after applying the nonlinear transformation? How about nearest neighbors? That is, if $j \in N(i)$, we want the distances to match up: $\|\phi(x_i) - \phi(x_j)\| = \|x_i - x_j\|$. So this is one constraint. The problem is, it better be the case so that the RHS is a constant from data, and the LHS has a parameter $\phi$. It had better be the case that distances can be written as dot products. This is the key constraint!
+
+\item What do you want for the non-neighbors to hold true? They should be far away. We'll maximize the variance subject to these kinds of constraints. This is basically doing PCA on the map. 
+
+\end{enumerate}
+
+Here we lay it out formally: 
+
 \subsubsection*{Goal} Find a low-dimensional embedding of the given
-data which preserves "local geometry" in terms of finding the best
+data which preserves ``local geometry" in terms of finding the best
 kernel.\\
 Define Local Geometry in terms of distance between data points in a
 local neighborhood. Denote $D\times n$ matrix
@@ -382,7 +422,7 @@ volume of the manifold, Vol$(M)=V$ and global bound on curvature
 $K(M)=k$. $\exists f: \mathbb{R}^D \rightarrow \mathbb{R}^d$ where
 $d=O(\frac{n}{\epsilon^2}\log (Vk) )$. $\forall p,q \in M$ and
 $G(p,q)$ is the geodesic path between $p,q$. Let $L(\cdot)$ be the
-"length" function. $\forall p,q,n$, 
+``length" function. $\forall p,q,n$, 
 \[
 1-\epsilon \leq \frac{L(G(f(p),f(q)))}{L(G(p,q))} \leq 1+\epsilon
 \]
