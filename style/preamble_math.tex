@@ -32,7 +32,8 @@
   innerbottommargin=\topskip
 ]{problem}
 
-\newtheorem{theorem}{Theorem}[subsection]
+\newtheorem{theorem}{Theorem}[section]
+\renewcommand{\thetheorem}{\arabic{chapter}.\arabic{section}.\arabic{theorem}}
 \newtheorem{exercise}[theorem]{Exercise}
 \newtheorem{conj}[theorem]{Conjecture}
 \newtheorem{lemma}[theorem]{Lemma}
