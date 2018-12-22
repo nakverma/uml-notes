@@ -1,0 +1,168 @@
+% CONTRIBUTORS: Max Aalto
+
+The nearest neighbor problem is defined as follows: given a set $P$ of $n$ points in a metric
+space $(X, d)$, pre-process $P$ to efficiently answer queries for finding the point in $P$
+closest to $\textit{any}$ query point $q \in X$. This problem is of major importance in various
+fields, such as data compression, databases, data mining, information retrieval, machine learning,
+and so on. Unfortunately, as the dimension of the embedding space grows, algorithms that solve the
+nearest neighbor problem become less and less efficient. For instance, take the two naive solutions
+to the problem:
+
+\begin{itemize}
+    \item Compute the distance $D(p, q)$ for all $p \in P$ upon each query, or
+    \item Precomputing arg $\min_{p \in P} D(p, q)$ for every $q \in X$.
+\end{itemize}
+
+The first solution requires $O(n)$ space to hold $P$, and $\Omega(n)$ time for each query. The second
+requires only $O(1)$ query time, but $\Omega(|X|)$ space. These are the two extremes of the space-time
+tradeoff in data structures. If we allow for more space usage, we can often find data structures that
+are more time-efficient, and vice versa. However, if we instead loosen the requirements of the problem,
+and allow for an $\textit{approximate}$ solution, we can make improvements in both the time and space
+complexity. In particular, we can define the $\textit{approximate near neighbor}$ problem:
+
+\begin{definition}[$(c, r, \delta)$-Approximate Near Neighbor]
+Let $q \in X$ be a query point such that $q$ is within a distance $r$ from some $p \in P$. A
+$(c, r, \delta)$-approximate near neighbor data structure $\mathcal{A}$ is one that takes any
+query point $q \in X$, and with probability $1 - \delta$ returns a point $p \in P$ within distance
+$cr$ of $q$.
+\end{definition}
+
+In the approximate near neighbor (ANN) problem, we are looking now for any $\textit{near}$ neighbor,
+not necessarily the nearest point to our query. Specifically, we require a point to be within some
+distance $r$ from the query point, where $r$ is the $\textit{scale parameter}$ (we assume that such a solution exists for any given $q$). Furthermore, we allow
+for any $\textit{approximate}$ near neighbor: any point within $cr$ from the query point, where $c > 1$
+is the $\textit{approximation factor}$. Since we are no longer returning the optimal solution
+to the nearest neighbor problem, we would like to both discuss efficient methods for computing ANN, as well
+as bounds on its time and space complexity.
+
+\section{Constructing ANN Data Structures: Dimensionality Reduction}
+
+Consider $X = (\mathbb{R}^k, \ell_2)$. We can build a simple $(1+\epsilon, r)$-ANN data structure as follows.
+Tile $\mathbb{R}^k$ into cubes of side-length $\frac{\epsilon r}{\sqrt{k}}$; if a cube intersects with $B(p, r)$
+for any $p \in P$, set the cube to be a key for corresponding $p$ in a hash table. Now, when we are given any
+query point $q \in \mathbb{R}^k$, such $q$ must lie in exactly one cube, and we can check to see if this cube
+is saved in the hash table, and return the corresponding $p$ if so. \\
+
+Note that because the diameter of these cubes is $\epsilon r$, we have a $1 + \epsilon$ approximation factor.
+Each ball $B(p, r)$ is covered by $(1/\epsilon)^{\Omega(k)}$ cubes, and thus the size of the hash table is at
+least $n \cdot (1/\epsilon)^{\Omega(k)}$. This size is exponential in dimension, but can be reduced by applying
+the Johnson-Lindenstrauss lemma to make the number of entries in the hash table dimension independent. \\
+
+Recall that the Johnson-Lindenstrauss lemma states that a set of $m$ points in a high-dimensional space can be embedded
+into a space of dimension $O(\frac{\log m}{\epsilon^2})$ in such a way that distances between the points are
+preserved up to a factor of $1 \pm \epsilon$. More formally:
+
+\begin{lemma}[Johnson-Lindenstrauss]
+Fix $d \geq 1$ and $k < d$. Let $A : \mathbb{R}^d \to \mathbb{R}^k$ be the projection of $\mathbb{R}^d$ onto a $k$-dimensional subspace, chosen uniformly at random. Let $f: \mathbb{R}^d \to \mathbb{R}^k$ be $f(x) = \frac{\sqrt{d}}{\sqrt{k}} Ax$.  Then, there is a universal constant $C$ such that for any $\epsilon \in (0,1/2)$ and any $x,y \in \mathbb{R}^d$,
+\[\Pr_A \left[1 - \epsilon < \frac{\|f(x) - f(y)\|}{\|x - y\|} < 1 + \epsilon\right] \geq 1 - \exp\left(- C\epsilon^2 k\right).\]
+\end{lemma}
+
+We would like to approximately preserve $O(n)$ pairs of distances (between $q$ and each $p \in P$). It follows that with probability $1 - \delta$, a random projection from $\mathbb{R}^d$ to a subspace $\mathbb{R}^k$ where $k = O_\delta\left(\frac{\log n}{\epsilon^2}\right)$ suffices (omitting a $\log \frac{1}{\delta}$ term). It follows that:
+
+\begin{theorem}
+Fix $\epsilon \in (0,1/2)$ and $d \geq 1$. There is a $(1 + O(\epsilon),r, \delta)$-ANN data structure over $(\mathbb{R}^d, \ell_2)$ achieving $Q = O(d \cdot \frac{\log n}{\epsilon})$ query time and $S = n^{O(\log (1 / \epsilon)/\epsilon^2)} + O(d (n + k))$ space. The time needed to build the data structure is $O(S + ndk)$.
+\end{theorem}
+
+However, this method of computing an ANN data structure still requires polynomial space in $n$. To reduce the amount of space,
+at the cost of increased query time, we can use a method known as $\textit{locality-sensitive hashing}$ (LSH).
+
+\section{Locality Sensitive Hashing}
+
+In this section, we describe an algorithm based on the concept of locality-sensitive hashing (LSH). The
+basic idea is to hash the data and query points in a way that the probability of collision is much higher for
+points that are close to each other than for those which are far apart. Formally, we require the following.
+
+\begin{definition}[Locality-Sensitive Hashing (LSH) Family]
+Let $(X, \mathsf{D})$ be a metric space. Let the scale parameter and approximation factor be $r > 0$ and $c > 1$. Let $U$ a set. A distribution $\mathcal{H}$ over maps $h: X \to U$ is called $(r, cr, p_1,p_2)$-\emph{sensitive} if for all $x, y \in X$,
+\begin{itemize}
+    \item if $\mathsf{D}(x,y) \leq r$, then $\Pr_{h \sim \mathcal{H}}\left[ h(x) = h(y) \right] \geq p_1$,
+    \item if $\mathsf{D}(x,y) > cr$, then $\Pr_{h \sim \mathcal{H}} \left[ h(x) = h(y) \right] \leq p_2$.
+\end{itemize}
+The distribution $\mathcal{H}$ is called an \emph{LSH family}, and it has \emph{quality} $\rho = \frac{\log 1/p_1}{\log 1/p_2}$.
+\end{definition}
+
+In order for the LSH family to be useful, we need $p_1 > p_2$. This implies $\rho < 1$. Also, notice that given a LSH family of $(r,cr,p_1,p_2)$-sensitive maps $h: X \to U$, we can construct a new LSH family of $(r,cr,p_1^k, p_2^k)$-sensitive maps $h : X \to U^k$, by just picking $k$ i.i.d. hash functions $h_1,\dotsc, h_k$, and defining:
+\[g(x) = (h_1(x),\dotsc, h_k(x)).\]
+Note that the quality of this new hash family does not change. \\
+
+Suppose that we had access to an LSH family. Then, we can apply a hash $h: X \to U$ onto all of $P$. Given a query $q \in X$ within $r$ of some $p^*$, we just need check the distances between $q$ and $p$ for $p \in h^{-1}(P)$. Because the probability that a point $cr$ away from $q$ is hashed to $h(q)$, the expected number of points we need to check is $np_2$. However, because it's possible that $p^*$ is the only near neighbor, $h$ might not hash $p^*$ into $h(q)$. In fact, the probability of success is then just $p_1$. \\
+
+But we can boost the probability of success to be arbitrarily close to 1 by repeated trials; it is not too hard to derive from a tail concentration bound that with constant probability, it suffices to perform $L = O(1/p_1)$ trials. Because of our note that we can obtain a new LSH family by combining $k$ i.i.d. hashes to get new probabilities $p_1^k$ and $p_2^k$, we have more generally:
+\[L = O\left(\frac{1}{p_1^k}\right) \textrm{ hash tables}\] \\
+where each hash table stores $n$ entries. Furthermore, if it takes $\tau$ time to compute $h(\cdot)$ and $O(\tau)$ time to compute the distance between two points, the expected query time is:
+\[Q = O\left(L \cdot \left(k \tau  + n \cdot p_2^k \cdot \tau\right)\right).\] \\
+The value of $k$ that minimizes $Q$ is $k = \lceil \log_{1/p_2} n\rceil \leq \log_{1/p_2} n + 1$. This implies that $L = O(n^\rho / p_1)$. It follows that space is at least:
+\[S = O\left(\frac{n^{\rho + 1}}{p_1}\right).\] \\
+Formally, we have:
+\begin{theorem}
+Let $(X,\mathsf{D})$ be a metric space, scale $r > 0$, approximation factor $c > 1$. Suppose the metric admits a $(r,cr,p_1,p_2)$-sensitive LSH family $\mathcal{H}$, where the map $h(\cdot)$ can be stored in $\sigma$ space, and for any $x$, $h(x)$ can be computed in $\tau$ time. Suppose that computing distances takes $O(\tau)$ time.
+
+There exists a $(c,r,\delta)$-ANN data structure over $X$ achieving query time $Q$ and space $S$:
+\[Q = O\left(n^\rho \cdot \tau \frac{\log_{1/p_2} n}{p_1}\right)\quad\quad S = O\left(\frac{n^{1 + \rho}}{p_1} + \frac{n^\rho}{p_1} \cdot \sigma \log_{1/p_2}n\right).\]
+It takes $O(S \cdot \tau)$ time to build this data structure.
+\end{theorem}
+
+
+
+\begin{example}[Hamming space]
+Let $X = \{0,1\}^d$ be the Boolean hypercube with the $\ell_1$-distance. Let $\mathcal{H}$ be the LSH family of projections onto a random coordinate $i$, $\mathcal{H} = \{h_i: h_i(x) = x_i\}$.
+
+If two points are within $r$ of each other, this means that all but $r$ of their coordinates coincide. Thus, the probability that they get sent to the same bucket is $1 - r / d$. Similarly, if two points are at least $cr$ from each other, they coincide on at most $d - cr$ points, so the probability they collide is $1 - cr / d$. It follows that $\mathcal{H}$ is $(r,cr,1 - r/d, 1 - cr/d)$-sensitive and $\rho \leq 1 / c$.
+\end{example}
+
+
+\begin{example}[Euclidean space]
+On $(\mathbb{R}^d, \ell_2)$, it is possible to obtain LSH quality $\rho = 1/c^2 + \frac{O(\log \log n)}{(\log n)^{1/3}}$. The high level picture is to perform \emph{ball carving}, where we cover the whole space with a sequence of balls of radius $wr$, for some parameter $w > 1$. The hash of $q$ returns the index of the first ball that contains $q$. Of course, the space $\mathbb{R}^d$ is not compact, so it seems that we can't cover the whole space in finite time. To get around this, let $s \in [0,4w]^d$ be a vector chosen uniformly at random. Then, we cover $\mathbb{R}^d / (s + \mathbb{Z}^d)$. This can be further improved by performing dimensionality reduction with JL first.
+\end{example}
+
+It turns out that these two examples are near-optimal:
+\begin{theorem}
+Fix dimension $d \geq 1$ and approximation factor $c \geq 1$. Let $\mathcal{H}$ be a $(r,cr,p_1,p_2)$-sensitive LSH family over the Hamming space, and suppose $p_2 \geq 2^{-o(d)}$. Then, $\rho \geq 1 / c - o_d(1)$.
+\end{theorem}
+
+And because $\|x - y\|_1 = \|x - y\|_2^2$ for Boolean vectors, this implies a lower bound $\rho \geq 1 / c^2 - o(1)$ for Euclidean space.
+
+\section{Data-Dependent Approach}
+So far, we've looked only at data-independent approaches, i.e. the hashes were oblivious to the data $P$. It turns out to be possible to improve on the bounds by taking the data into account.
+
+\begin{theorem}
+For every $c > 1$, there exists a data structure for $(c,r,\delta)$-ANN over $(\mathbb{R}^d, \ell_2)$ with space $n ^{1 + \rho} + O(nd)$ and query time $n^\rho + dn^{o(1)}$, where:
+\[\rho \leq \frac{1}{2c^2 - 1} + o(1).\]
+\end{theorem}
+
+This is much better than the best LSH-based data structure, which has $\rho = \frac{1}{c^2} + o(1)$. So, for $c = 2$, data-dependence improves query time from $n^{1/4 + o(1)}$ to $n^{1/7 + o(1)}$ while using less memory. To do this, we'll first look at data-independent LSH on the sphere.
+
+\subsection{Data-Independent LSH for a Sphere}
+On the unit sphere $(S^{d-1},\ell_2)$, we can somewhat extend the ball-carving idea. What we'll do is take a sequence of random directions and carve out a half-space that's lifted off the origin by some parameter $\eta$. More formally, consider a sequence of i.i.d. Gaussians $g_1, g_2, \dotsc, \sim \mathcal{N}(0, I_{d \times d})$. The hash maps a point $x \in S^{d -1}$ to:
+\[h(x) = \min_t \{t \geq 1 : \langle x, g_t\rangle \geq \eta\}.\]
+It turns out that this LSH family yields:
+\[\rho = \frac{4 - c^2 r^2}{4 - r^2} \cdot \frac{1}{c^2} + \delta(r,c,\eta),\]
+where $\delta(r,c,\eta) > 0$ and $\delta (r,c,\eta) \to 0$ as $\eta \to \infty$. There are three main regimes to consider here:
+\begin{itemize}
+    \item $r = o(1)$, so $\rho = \frac{1}{c^2} + o(1)$
+    \item $r \approx 2/c$, so $\rho$ is close to 0; notice that any point serve as an answer to any valid query
+    \item $r \approx \frac{\sqrt{2}}{c}$, where $\rho \approx \frac{1}{2c^2 - 1}$.
+\end{itemize}
+
+Notice that on the sphere, the distance between two random points is $\sqrt{2}$ with high probability. Thus, in the last regime, we are essentially asking for a neighbor that is slightly closer than the `typical' point.
+
+\subsection{Data-Dependent LSH for a Sphere}
+The main idea for data-dependent LSH is to recursively remove \emph{dense low-diameter clusters}. In particular, iteratively find points $u_t \in S^{d-1}$ such that the ball $B(u, \sqrt{2} - \epsilon) \cap P_{t-1}$ contains at least a $\tau$-fraction of $P$,
+\[|B(u,\sqrt{2} - \epsilon) \cap P_{t-1} | \geq \tau n,\]
+where $P_t := P_t \setminus B(u,\sqrt{2} - \epsilon)$ and $P_0 := P$. Continue carving out $S^{d-1}$ until there are no dense clusters left.
+
+For now, suppose that our query $q$ is close to near some point in $P_T$, with scale $r < \sqrt{2}/c$. We can now perform the data-independent LSH on this sphere for $P_T$; there are at most $\tau n$ points within $\sqrt{2} - \epsilon$ of the query, and so the hash will have in expectation at most $(\tau + p_2)n$ points.
+
+\section{ANN in General Metric Spaces}
+
+The ANN data structure we have constructed utilizes the convenient geometric and algebraic structure of Euclidean space
+in order to solve the ANN problem effectively. However, if we instead want to operate in any general metric space,
+how can we construct an ANN data structure? \\
+
+It turns out that one effective method for this is as follows: throw a grid on a metric space (ie a cover of that metric space),
+and iteratively refine it by subdividing each element of the cover into two or more elements. Organize this cover in a hierarchical
+manner, so that subdivided cells are children of the cells they were constructed from in the hierarchy. Then, given any query point,
+we can filter through the refinement until the query point is in the same cell as one our points $p \in P$. \\
+
+This is known in the literature as a $k-d$ tree, and is a special case of a binary space partitioning tree. Success of the ANN algorithm
+is not guaranteed under this data structure; to circumvent this, we can use a navigating net, or random projection tree.
