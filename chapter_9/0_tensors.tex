@@ -145,7 +145,7 @@ So far, we've learned that all bilinear maps $f : V \times W \to \mathbb{R}$ can
 \begin{equation}\label{bilinear-map-representation}
   f(v,w) = \sum_{i \in [n], j \in [m]} M_{ij} v_i w_j.
 \end{equation}
-Looking at this formula from the context of the movie preference example from earlier, we  see how bilinear maps enable us to capture more interaction between two viewers. Unfortunately, it seems much harder to work with bilinear maps than it is with linear maps; for example, $\mathrm{Bilin}(V,W;\mathbb{R})$ is no longer dual to $V \times W$, unlike $\mathrm{Hom}(V;\mathbb{R})$ and $V$.
+Looking at this formula from the context of the movie preference example from earlier, we  see how bilinear maps enable us to capture more interaction between two viewers. Unfortunately, it seems much harder to work with bilinear maps than it is with linear maps; for example, $\mathrm{Bilin}(V,W;\mathbb{R})$ is no longer dual to $V \times W$, unlike $\mathrm{Hom}(V;\mathbb{R})=V^{*}$ and $V$ (see earlier exercise asking "What is $\mathrm{Hom}(V;\mathbb{R})$?").
 
 But is there a way we can `linearize' the bilinear maps? That is to say, although a bilinear map $f: V \times W \to \mathbb{R}$ is not linear over $V \times W$, can we somehow lift $f$ to a different space on which the same computation becomes linear?
 
@@ -344,7 +344,7 @@ Note that eigenvectors for tensors are slightly different from matrix eigenvecto
 
 \begin{definition}
 A \emph{robust eigenvector} of $T$ is $u \in \mathbb{R}^n$ such that there exists an $\epsilon > 0$ such that for all $\theta \in B(u,\epsilon)$, repeated iteration of the map
-\[\bar{\theta} \mapsto \frac{T(I,\bar{\theta},\bar{\theta}}{\|T(I,\bar{\theta},\bar{\theta}\|}\]
+\[\bar{\theta} \mapsto \frac{T(I,\bar{\theta},\bar{\theta})}{\|T(I,\bar{\theta},\bar{\theta})\|}\]
 starting from $\theta$ converges to $u$.
 \end{definition}
 
@@ -352,7 +352,7 @@ starting from $\theta$ converges to $u$.
 Let $T$ be odeco.
 \begin{itemize}
     \item the set of $\theta \in \mathbb{R}^n$ which do not converge to some $v_i$ under repeated iterations of the above map has measure zero.
-    \item the set of rubusts eigenvectors of $T$ is equal to $\{v_1,\dotsc, v_n\}$.
+    \item the set of robust eigenvectors of $T$ is equal to $\{v_1,\dotsc, v_n\}$.
 \end{itemize}
 \end{theorem}
 
