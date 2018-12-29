@@ -12,6 +12,7 @@ title="\title{Unsupervised Learning}
 \author{Nakul Verma}
 \date{}"
 
+
 REGEX_RANGE='([0-9]+)-([0-9]+)'
 for ((i=$FIRST_CHAPTER;i<=$LAST_CHAPTER;i++)); do
     CHAPTERS[$i]=0
@@ -110,6 +111,12 @@ if [[ include_part -eq 1 || all_one -eq 1 ]]; then
     echo "" >> main.tex
 fi
 
+### Preface
+if [[ include_part -eq 1 ]]; then
+    echo "\include{preface/preface}" >> main.tex
+    echo "" >> main.tex
+fi
+
 ### Part 1
 if [[ include_part -eq 1 ]]; then
     echo "\part{Clustering}" >> main.tex
@@ -178,6 +185,14 @@ done
 
 echo "" >> main.tex
 echo "" >> main.tex
+
+### Appendix
+
+if [[ include_part -eq 1 ]]; then
+    echo "\part*{Appendices}" >> main.tex
+    echo "\include{appendix}" >> main.tex
+    echo "" >> main.tex
+fi
 
 ### Index
 
