@@ -1,0 +1,22 @@
+\titleformat{\chapter}[display]{\large\scshape}{\textcolor{gray75}{appendix \thechapter}}{0pt}{\Huge\bfseries}[\vspace{3cm}]
+\renewcommand{\thetheorem}{\Alph{chapter}.\arabic{section}.\arabic{theorem}}
+
+\begin{appendices}
+\chapter{Statistics}
+\begin{refsection}
+  \input{appendix_a/statistics.tex}
+\printbibliography[heading=subbibliography]
+\end{refsection}
+
+\chapter{Linear Algebra}
+\begin{refsection}
+  \input{appendix_b/linear_algebra.tex}
+\printbibliography[heading=subbibliography]
+\end{refsection}
+
+\chapter{Graph Theory}
+\begin{refsection}
+  \input{appendix_c/graph_theory.tex}
+\printbibliography[heading=subbibliography]
+\end{refsection}
+\end{appendices}
