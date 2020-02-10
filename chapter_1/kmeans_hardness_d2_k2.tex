@@ -1,0 +1,150 @@
+% Contributers: Carolina Zheng
+\section{Hardness of $k$-means when $k=2$}
+We will prove that $k$-means is NP-hard when $k=2$. There is a simple proof by (CITE) that is a reduction from densest cut. Densest cut is equivalent to sparsest cut on the complement graph, which is known to be NP-complete (CITE).\\
+
+\begin{definition}[Densest cut]
+    For a given graph $G=(V,E)$, find a bipartition $(P,Q)$ of the vertices in $G$ that maximizes $|E(P,Q)/(|P||Q|)$, where $E(P,Q)$ denotes the edge set of the cut.
+\end{definition}
+
+We will follow the proof of Theorem 1 in the paper and explain the steps.\\
+
+\begin{theorem}
+    $k$-means clustering in general dimension is NP-hard for $k=2$.
+\end{theorem}
+
+Suppose we wish to compute the densest cut for a graph $G$ with no parallel edges. Define the $|V|\times|E|$ matrix $M$ as follows: entry $M[v,e]$ is zero if $e\in E$ is not incident on $v\in V$; otherwise, it is $+1$ for one endpoint $e$ and $-1$ for the other (it does not matter which endpoint is which).
+
+Run $k$-means with $k=2$ on the set of points corresponding to the rows in $M$, of dimension $|E|$. Note that each point represents a vertex in $G$. Given an optimal solution to this $k$-means instance, we claim that two returned clusters correspond to the optimal bipartition $(P,Q)$ in densest cut. It is sufficient to show that minimizing the $k$-means cost on this instance is equivalent to maximizing the densest cut objective.
+
+Let us compute the $k$-means cost for the two clusters $P$ and $Q$, where $|P|=p$, $|Q|=q$, and $p+q=n$. Denote points as $x\in \R^{|E|}$, where $x=(x_1,\dots,x_{|E|})$. Let $\mu^p$ be the centroid for $P$ and $\mu^q$ be the centroid for $Q$. Then $\mu^p=\frac{1}{p}\sum_{v\in P}M[v,:]$.
+
+Consider $\mu^p_e$. If $e\not\in E(P,Q)$, then $\mu^p_e=0$, since if $e\in E(P,P)$, the nonzero values at the two endpoints will be summed together and cancel, and if $e\in E(Q,Q)$, all values that are summed are zero. If $e\in E(P,Q)$, then $\mu^p_e$ is either $\frac{1}{p}$ or $-\frac{1}{p}$, since the vertex incident on $e$ in $P$ will contribute either $1$ or $-1$ to the sum, and the vertex incident on $e$ in $Q$ will not be summed. Computing $\mu^q$ is analogous. In short,
+
+\begin{equation*}
+    \mu_e^p=\begin{cases}\frac{1}{p}\text{ or }-\frac{1}{p},&e\in E(P,Q)\\
+                         0,&\text{otherwise}
+            \end{cases}
+\end{equation*}
+
+Now let's compute the $k$-means cost. Let $c(v)=p$ if $v\in P$ and $q$ if $v\in Q$. We have
+\begin{align}
+    \text{cost}=\sum_{v\in P}\|M[v,:]-\mu^p\|^2+\sum_{v\in Q}\|M[v,:]-\mu^q\|^2 &= \sum_{e=1}^{|E|}\sum_{v=1}^{|V|}(M[v,e]-\mu_e^{c(v)})^2
+\end{align}
+
+Suppose $e\not\in E(P,Q)$. Fix $v$. Then $\mu_e^{c(v)}=0$, and $M[v,e]$ is nonzero iff $v$ is incident on $e$; in that case it is either $1$ or $-1$. Therefore $e$ contributes a total cost of 2.
+
+Suppose $e\in E(P,Q)$. Fix $v$. Suppose $v$ is not incident on $e$. Then $M[v,e]=0$ and $\mu^{c(v)}_e=\frac{1}{c(v)}$, so the cost is $\frac{1}{c(v)^2}$. There are $p-1$ such $v\in P$ and $q-1$ such $v\in Q$, so the total cost is $(p-1)\frac{1}{p^2}+(q-1)\frac{1}{q^2}$. Suppose $v$ is incident on $e$. There are two such $v$, one of which is in $P$ and one of which is in $Q$. If $M[v,e]=1$, then $\mu^{c(v)}_e=\frac{1}{c(v)}$, and if $M[v,e]=-1$, then $\mu^{c(v)}_e=-\frac{1}{c(v)}$. Therefore the total cost is $(1-\frac{1}{p})^2+(1-\frac{1}{q})^2$.
+
+So Equation 1 corresponds to the form given in the paper, i.e.
+\begin{align}
+    \text{cost} &= \sum_{e\in E(P,Q)}[(p-1)\frac{1}{p^2}+\left(1-\frac{1}{p}\right)^2+(q-1)\frac{1}{q^2}+\left(1-\frac{1}{q}\right)^2] + \sum_{e\not\in E(P,Q)}2 \\
+    &= \left(2-\frac{1}{p}-\frac{1}{q}\right)|E(P,Q)|+2|E(P,P)|+2|E(Q,Q)| \\
+    &= 2|E| - \frac{n}{pq}|E(P,Q)|
+\end{align}
+
+Minimizing this cost is equivalent to maximizing the densest cut objective $|E(P,Q)|/(|P||Q|)$.\qed
+
+\section{Hardness of $k$-means when $d=2$}
+
+We will prove that $k$-means is NP-hard when $d=2$ and $k=\Theta(n^\epsilon)$ for $\epsilon>0$. We'll try to provide some intuition around the proof structure as well as a summary of the results presented in (CITE).
+
+\subsection{Setup}
+
+This paper considers the $k$-means clustering problem with weighted points. This is without loss of generality, since a point $x$ with weight $w$ can be replaced by $w$ distinct points very close to $x$. The following is the decisional version of the weighted $k$-means clustering problem.\\
+
+\begin{definition}[Decisional weighted $k$-means]
+    Given a multiset $S\subseteq \R^d$, an integer $k$ and $L\in\R$, is there a subset $T\subset\R^d$ with $|T|=k$ such that $\sum_{x\in S}\min_{t\in T}\|x-t\|^2\le L$?
+\end{definition}
+
+Analogously to what was noted in class, we can restate the cost of a cluster $C$ in terms of the points belonging to $C$, without referring to $T$. Specifically, let $w(x)$ denote the weight of point $x$. Then
+
+$$\text{cost}(C)=\frac{1}{\sum_{x\in C} w(x)}\sum_{\{x,y\}\in\binom{C}{2}}w(x)w(y)\|x-y\|^2$$
+
+The reduction will be from Exact Cover by 3-Sets (X3C), which is known to be NP-complete (CITE).\\
+
+\begin{definition}[Exact cover by 3-sets]
+    Given a finite set $U$ containing exactly $3n$ elements and a collection $\cC=\{S_1,\dots,S_l\}$ of subsets of $U$, each of which contains exactly 3 elements, are there $n$ sets in $\cC$ such that their union is $U$?
+\end{definition}
+
+\subsection{Overview}
+
+The bulk of the paper goes to proving the following theorem.\\
+
+\begin{theorem}
+The $k$-means clustering problem is NP-hard for $k=\Theta(n^\gamma)$ for some $0<\gamma<1$.
+\end{theorem}
+
+We will first give a high level overview of the reduction from X3C. The difficulty is the construction of a suitable $k$-means instance, so we will give some intuition here.
+
+Let $l$ and $n$ be fixed (determined by the X3C instance). We set $k$ to be a
+magic quantity $l(3n+2)+(l-1)3n$. Then we place some points into the plane to
+form a grid, $H_{l,n}$. We define $w \overset{\text{\tiny d}}{=} \text{poly}(l, n)$ where $w$ is
+``large enough'' relative to $l,n$, and define the distances and weights in
+$H_{l,n}$ in terms of $w$ as well. We then argue that there are ``nice'' ways
+to cluster these points, such that the cost incurred is ``small'' relative to
+other clusterings. The minimal cost is $L_1-l\alpha$, where $L_1$ and $\alpha$
+are defined in terms of $l,n$.
+
+Then we add some more points $X$ to $H_{l,n}$ to create $G_{l,n}\cup X$. These
+new points are related to the elements in $S_i$ for $S_i\in\cC$. We then argue
+that iff the X3C instance is satisfiable, these new points can be clustered so
+that the total cost increases by an amount $L_2+(l-n)\alpha$ ($L_2$ defined in
+terms of $l,n$). Therefore our cost limit in the decision problem will be $L_1+L_2-n\alpha$.
+
+We will explain the above more rigorously in the next section. Given this construction, the $k$-means instance $G_{l,n}$ will contain exactly $l(6n+3)+(l-1)9n$ points, for which $k=\Theta(n^\gamma)$ for some $0<\gamma<1$ (according to the magic quantity for $k$ mentioned above; also note that the second $n$ here refers to the number of points in the $k$-means instance, not the $n$ in the 3XC instance). There is a simple reduction to the more general $k=\Theta(n^\epsilon)$ for $\epsilon>0$.\\
+
+\begin{theorem}
+    Suppose Theorem 1 is true. Then the $k$-means clustering problem is also NP-hard for $k=\Theta(n^\epsilon)$ for any $\epsilon>0$.
+\end{theorem}
+
+We reproduce the proof almost verbatim from the paper. Fix $\epsilon>0$, and take a hard instance with $n$ points and $k$ centers, with $k=\Theta(n^\gamma)$ as in Theorem 1.
+
+Suppose $\gamma<\epsilon$. Add $n^\epsilon$ points very far from the original
+instance and very far from each other, and $n^\epsilon$ centers. The optimal
+solution will use the new centers to cluster the new points, and the optimum
+in the original instance will not change. Therefore this is a hard instance with
+$m \overset{\text{\tiny d}}{=} n+n^\epsilon=\Theta(n)$ points and
+$k' \overset{\text{\tiny d}}{=} k+n^\epsilon=\Theta(n^\epsilon)$ centers.
+
+Suppose $\gamma>\epsilon$. Add $n^{\gamma/\epsilon}$ points very close to each
+other and far from the original instance, and 1 center. The optimal solution
+will use the new center to cluster the new points, and the optimum in the
+original instance will not change. Therefore this is a hard instance with
+$m \overset{\text{\tiny d}}{=} n+n^{\gamma/\epsilon}=\Theta(n^{\gamma/\epsilon})$ points and
+$k' \overset{\text{\tiny d}}{=} k+1=\Theta(n^\gamma)=\Theta(m^\epsilon)$ centers.\qed
+
+\subsection{Walking through the proof}
+
+Now we will present the paper's proof of Theorem 1. Instead of re-typing everything, we will instead try to expand on explanations and provide some more intuition, and refer the reader to the paper for the technical details.
+
+We will start by reading the paper's description of the grid $H_{l,n}$ under section 2, Reduction, as well as \textbf{Definitions 4 and 5 and Lemma 6}.
+
+Definition 5 allows us to see where the number of clusters $k=l(3n+2)+(l-1)3n$ comes from. A nice clustering corresponds naturally to this $k$, since there are $l-1$ $M$ rows, each with $3n$ points in singleton clusters, and $l$ $R$ rows, with $3n+2$ clusters each, corresponding to $3n+1$ clusters with two consecutive points and 1 cluster with one point (whether $s_i$ or $f_i$ is the singleton cluster depends on whether $R_i$ is in an $A$ or $B$ clustering, respectively). Note an $A$ clustering saves exactly $\alpha$ cost compared to a $B$ clustering.
+
+Let's discuss \textbf{Lemma 7}. The purpose of this lemma is to establish the fact that for $w$ large enough, any optimal clustering of $H_{l,n}$ must be ``nice.'' In fact, Lemma 6 allows us to make the stronger statement that the optimal clustering will be nice \textit{and} all $R_i$'s will be grouped in $A$ clusterings, for a total cost of $L_1-l\alpha$.
+
+(However, soon we will be adding more points to create $G_{l,n}\cup X$, and for this augmented instance, we will argue that iff the corresponding X3C instance is satisfiable, the optimal clustering will have exactly $n$ $R_i$ in the $A$ clustering and the remaining $R_i$ in the $B$ clustering.)
+
+The proof of Lemma 7 is simply via casework and calculating the costs for each case.
+
+Now let's construct $G_{l,n}\cup X$, the $k$-means instance corresponding to the reduction. Let's read up until \textbf{Definition 8 and Lemma 9}. Note that the points we are adding to $H_{l,n}$ correspond to $\cC$ from X3C. The construction seem a bit strange, but just note for now that (1) we have added $6n(l-1)$ points and (2) if $j\in S_i$, then the corresponding $x'_{i,j}$ and $y'_{i-1,j}$ will only have a ``good'' cluster in $R_i$ if $R_i$ has a $B$ clustering, whereas $j\not\in S_i$ does not impose this restriction on the corresponding $x_{i,j}$ and $y_{i-1,j}$, i.e. $R_i$ can have either an $A$ or $B$ clustering.
+
+Definition 8 and Lemma 9 justify the choice of $L_2=6n(l-1)h^2\frac{2w}{2w+1}$; looking at the figure, we can see that the ``good" clusters mentioned in Lemma 9 are indeed the closest clusters, and minimize the cost of each of the $6n(l-1)$ new points to be $h^2\frac{2w}{2w+1}$, if they are added to one of these existing clusters.
+
+\textbf{Lemma 10} goes further and states that any optimal $k$-clustering of $G_{l,n}\cup X$ must retain the ``nice'' clustering on the $H_{l,n}$ instance, and further, each $x\in X$ must be assigned to a different ``good'' cluster. The proofs of Lemmas 9 and 10 simply add up the costs according to the construction.
+
+Now we're ready for the reduction. I think this part was the trickiest to understand, so I'll try to provide some intuition.
+
+\textbf{Lemma 11.} \textit{The set $G_{l,n}\cup X$ has a $k$-clustering of cost less or equal to $L$ if and only if there is an exact cover $\mathcal{F}\subseteq \cC$ for the X3C instance.}
+
+$(\implies)$ Suppose we have an optimal $k$-clustering with cost $\le L$. The
+lemma argues that $\mathcal{F} \overset{\text{\tiny d}}{=} \{S_i:R_i\text{ is grouped in an $A$ clustering}\}$
+is an exact cover of $U$. Note that $|\mathcal{F}|\ge n$, due to the definition
+of $L \overset{\text{\tiny d}}{=} L_1+L_2-n\alpha$. It is sufficient to prove that the sets in
+$\mathcal{F}$ do not overlap, since this means that $|\mathcal{F}|\le n$,
+and therefore $\bigcup_{S\in\mathcal{F}}S=U$. 
+
+The key idea is to consider $S_i\in\mathcal{F}$, and some $j\in S_i$. Since we know that $R_i$ has an $A$-clustering, the $j$th cluster of $R_i$ is not a good cluster for any point in $X$ (see point (2) mentioned above). Then we make a pigeonhole-like argument: each $j$ corresponds to $2(l-1)$ points in $X$. For these points, there are $l-1$ ``good'' clusters in $M$ rows and $l$ ``good'' clusters in $R$ rows (corresponding to the $j$th cluster in $R_i$ for $1\le i\le l$). So if the $j$th cluster in $R_i$ is not occupied by any point, then the $j$th cluster in all $R_{i'}$, $i'\ne i$, must be occupied by some point. The only candidates are the points in $X$ with the subscript $_{i',j}$, and therefore it must be that either $R_{i'}$ has a $B$-clustering (allowing for both $x/y$ or $x'/y'$ points) or $j\not\in S_{i'}$, and then we know that the points will be the less restrictive $x/y$ type. This proves that $j\not\in S_{i'}$ for any $S_{i'}\in\mathcal{F}$ where $i'\ne i$.
+
+$(\impliedby)$ Suppose X3C has an exact cover $\mathcal{F}$. We need to show that the $k$-means construction described in the lemma has cost at most $L$. We know this will happen if we have a ``nice" clustering on the points in $G_{l,n}$, there are $n$ $R_i$ rows in $A$ clusterings, and all points in $X$ are assigned to different good clusters. The first two are explicitly satisfied in the construction; we only need to verify that in cases where we assigned $x'_{i,j}$ where $1\le i < i(j)$, it was indeed to a good cluster. However, if $x'_{i,j}\in X_i$, then $j\in S_i$, and since the sets in $\mathcal{F}$ are nonoverlapping, this means $S_i\not\in\mathcal{F}$, and therefore $R_i$ is a $B$ clustering. The argument is analogous for $y'_{i,j}$ where $i \ge i(j)$, replacing $S_i$ and $R_i$ with $S_{i+1}$ and $R_{i+1}$.\qed
+
