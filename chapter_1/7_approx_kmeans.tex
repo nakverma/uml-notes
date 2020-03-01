@@ -25,7 +25,18 @@ Let $X \subset \R^d$ be an n-point set, let $k \geq 3$ be fixed and let $\epsilo
 
 We thus see that we achieve a near-linear time algorithm for both (1 + $\epsilon$)-approximate 2-means and k-means.
 
-\subsection{Preliminaries and definitions.}
+However, for all the technical guarantees of this approach, it is not often used in practice
+with heuristic algorithms typically used instead of it. One primary reason is that,
+despite having $O(n \log n)$ runtime, for a constant factor $\epsilon$, the multiplicative
+constant is exponential in the number of dimension. Consider a case where
+$\epsilon=0.25$ and $d=5$ dimensions. The multiplicative constant
+will thus be $0.25^{-2 \cdot 5} \log (1/0.25) \approx 1,500,000$. This gets
+exponentially worse as dimensions increase or more precision is desired. Thus,
+as in practice heuristic algorithms typically generate reasonable approximations
+this runtime cost negates the practical benefits of the guaranteed approximate
+optimality.
+
+\subsection{Preliminaries and definitions}
 
 This approach requires some additional preliminary terminology and cost definitions which are themselves interesting ideas for this problem space.
 \begin{definition}[$\epsilon$-near]
@@ -115,8 +126,16 @@ Let $j \geq 0$ be the integer sutch that $\sigma = R/2^j \in [3\rho(S),6\rho(S)]
 The authors provide a tighter bound on the size of C to $O(n\epsilon^{-d}\log(1/\epsilon)$ and generalize the finding for any size cluster.
 \end{remark}
 \newpage
-\subsection{$(1+\epsilon)$-approximate 2-means clustering.}
-We will first address the easier subproblem of developing an $O(n \log n)$ (1+$\epsilon$) approximate 2-clustering. We provide a straight forward algorithm below.
+\subsection{$(1+\epsilon)$-approximate 2-means clustering}
+We will first address the easier subproblem of developing an $O(n \log n)$
+(1+$\epsilon$) approximate 2-clustering. At a high-level, the algorithm uses
+the concepts of $\epsilon$-complete sets explored above to generate a set of
+pairs of points of $C$ such that at least one of the pairs has a cost that
+is (1+$\epsilon$) of the optimal cost. The algorithm then need only loop through
+each of the pairs and then intelligently compute the approximate cost (using the
+approximate range searching methodology) of using the pair as centroids. The
+algorithm then ultimately returns the pair with the lowest approximate cost.
+We provide the technical pseudocode below.
 
 \begin{algorithm}[H]
   \caption{(1+$\epsilon$) $2$-means algorithm:}
@@ -159,8 +178,6 @@ $$\norm{x-c_2}\leq \norm{x-c_2'} - \epsilon \delta \leq \delta/2 - \epsilon \del
 which implies $\delta \leq \frac{2}{1-2\epsilon}\norm{x-c_2}\leq 3 \norm{x-c_2}$. Using the bound on $\norm{x-c_2}$ and $\delta$, we have $\norm{x-c_1} \leq (1+ 6\epsilon)\norm{x-c_2}$ as required. 
 \end{proof}
 
-% We have already shown that for an $\epsilon$-approximate centroid set, the cost of a Voronoi partition for some pair of centroids is at most $(1+\epsilon)cost(\Pi)$ where $\Pi$ is any $2$-clustering. As the algorithm performs an exhaustive search of all pairs of centroids in the computed $\epsilon$-approximate centroid set, it is clear that it will thus try the least cost pairing and thus satisifes the $(1+\epsilon)$ approximation requirement.
-
 It remains to show that this algorithm can be performed in near-linear time.
 In a direct implementation of this algorithm, we must consider $|C|^2$ pairs
 $(c_1,c_2)$ and for each pair, we need $O(n)$ time for computing the cost of
@@ -172,9 +189,25 @@ $O(n^2)$ for a fixed $\epsilon$.
 
 Further, using approximate range searching, computing the approximate cost can be done in $O(\log n)$ time (down from $O(n)$). As each preprocessing step takes at most $O(n \log n)$ and the main for loop takes $O(n \log n)$ for a fixed $\epsilon$, the algorithm can thus run in $O(n \log n)$.
 
-\subsection{$(1+\epsilon)$-approximate k-means clustering.}
+\subsection{$(1+\epsilon)$-approximate k-means clustering}
 
 The full k-clustering algorithm builds on the intuition of the 2-clustering version and employs a recursive approach for finding the $(1+\epsilon)$ approximate solution to the full k-means problem.
+
+Before delving into the technical details, intuitively, the algorithm works by employing recursion to test each possible split of
+reasonable subsections, specifically, not only computing the best approximate pair for
+directly performing a $k$-clustering, but also the approximate cost of a ($k-1$)-clustering.
+For this ($k-1$) clustering the algorithm then performs a $2$-clustering on one
+of the clusters to produce a full $k$ clustering. This recursive approach is
+performed from 2 to $k$. This recursive nature allows testing all the combinatorial possibilities
+for how the approximately optimal clustering could be formed. The algorithm mitigates
+the computational overhead of this approach by virtue of intelligently determining
+the order which the variously sized clusters are computed and continuing the
+approximate computation methods used in the $2$-clustering algorithm. By using
+this recursive approach, it allows the approximation to be quite rough as it needs only
+to hold for one of the possible pairings.
+
+We now switch away from this intuitive explanation and provide the technical
+pseudocode for the algorithm below:
 
 \begin{algorithm}[H]
   \caption{(1+$\epsilon$) $k$-means algorithm:}
@@ -202,7 +235,7 @@ The full k-clustering algorithm builds on the intuition of the 2-clustering vers
       \STATE Find the combination
       ($k_1,k_2,...,k_{k^*}$),$k_1+k_2+...+k_{k^*}=k$ for which the
       $k$-clusting of $X$ obtained by combining the comptuer
-      $k_i$-culsterings of the $X_i$'s has the smallest cost.
+      $k_i$-clusterings of the $X_i$'s has the smallest cost.
     \ENDIF
   \ENDFOR
 \ENDFOR
