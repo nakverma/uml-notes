@@ -1,16 +1,3 @@
-\section{Consistency and Rates for Clustering with DBScan}
-
-There is a simple and efficient modification of the DBSCAN algorithm that can detect the most interesting vertical threshold level in an automated way with consistency and optimal learning rates.
-
-The clustering algorithm approximates the optimal level $\rho^*$ and estimates the corresponding clusters by using a kernel density estimator. 
-
-\begin{figure}[H]
-    \centering
-    \includegraphics{chapter_2/files/consistency_dbscan.png}
-    \caption{The algorithm here loops until it is able to find a level where there is more than one connected component. Then it returns the optimal level and the corresponding clusters.}
-    \label{fig:consistency_dbscan}
-\end{figure}
-
 \section{Robustness Guarantees for Density Based Clustering}
     
     Very recently, there has been work done to show that a modified version of DBSCAN (Robust DBSCAN) can be shown to have robustness and consistency guarantees against possible (adversarial) contamination. An example to show how applicable this is can be taken from \cite{pmlr-v89-jiang19a}, where there are several horizontal and vertical white lines across an image. Robust DBSCAN can perform the image segmentation while DBSCAN over segments the image due to the corruption.
@@ -49,8 +36,8 @@ The clustering algorithm approximates the optimal level $\rho^*$ and estimates t
   
   As a whole the paper aims to provide certain guarantees:
   \begin{enumerate}
-      \item If the hyper-parameters are chosen appropriately depending on the number of samples $n$, and the number of possibly adversarial added samples, $l$ , then with high probability, the number of clusters will not change when adding these samples and that furthermore, there exists a one-to-one correspondence between the clusters and obtained on the original data-set and the clusters obtained on the contaminated data-set such that the distances between the corresponding clusters is bounded. 
-      \item Then it is shown that if the data has a E-fraction of contamination (i.e. $l \approx E \cdot n$) with sufficiently small E, then as the number of points that we are considering goes to infinity, the procedure is robust up to an error of $\mathcal{O}(E^{\alpha/(\beta\cdots\alpha+\beta\cdot D)})$  where D is the dimension of the data.
+      \item If the hyper-parameters are chosen appropriately depending on the number of samples $n$, and the number of possibly adversarial added samples, $l$ , then with high probability, the number of clusters will not change when adding these samples and that furthermore, there exists a one-to-one correspondence between the clusters obtained on the original data-set and the clusters obtained on the contaminated data-set such that the distances between the corresponding clusters is bounded. 
+      \item Then it is shown that if the data has a E-fraction of contamination (i.e. $l \approx E \cdot n$) with sufficiently small E, then as the number of points that we are considering goes to infinity, the procedure is robust up to an error of $\mathcal{O}(E^{\alpha/(\beta\cdot\alpha+\beta\cdot D)})$  where D is the dimension of the data.
   \end{enumerate}
   
   To derive these results we consider the following assumptions:
@@ -122,9 +109,10 @@ where $\oplus$ denotes a tube around a set (i.e. $A \oplus r := \{x\in\mathcal{X
 \begin{equation*}
     \tilde{r}:=C\cdot\left(\left(\frac{l}{n\epsilon^D}\right)^{\frac{1}{\beta}} + \frac{\log(1/\delta)^{\frac{1}{\beta}}\cdot(\log n)^\frac{1}{2\beta}}{(k-l)^{\frac{1}{2\beta}}} + \left(\frac{k}{n}\right)^{\frac{\alpha}{\beta\cdot D}}\right)
 \end{equation*}
-\end{theorem}\\
+\end{theorem}
 
-\textit{Proof:} The key ideas in this proof is to leverage our lemma and our assumptions in order to bound a quantity that will ensure that there are no new core points created.
+\begin{proof}
+The key ideas in this proof is to leverage our lemma and our assumptions in order to bound a quantity that will ensure that there are no new core points created.
 
 This is the proof that we are going to dissect:
 
@@ -187,7 +175,7 @@ In order to have our two conditions agree, we then have:
 \end{equation*}
 
 which will hold for a sufficiently large choice of C as desired.
-
+\end{proof}
 \subsection{Guarantees on Clusters}
 
 Our first result bounds the distance between the new core points that appear after adding $l$ samples and the original core points. With this distance guarantee, we can show that the original clustering remains after the addition of $l$ new samples.
@@ -200,8 +188,16 @@ Suppose that the conditions of Theorem 1 hold. Let $\mathcal{C}$, $\mathcal{C'}$
 \end{equation*}
 
 Then $|\mathcal{C}|=|\mathcal{C'}|$ (i.e. the number of clusters does not change) and there exists a one-to-one mapping of the clusters $\sigma: \mathcal{C} \rightarrow \mathcal{C'}$ such that $C\subseteq \sigma(C)$ for all $C\in \mathcal{C}$ (i.e. original clusters are preserved).
-\end{theorem}\\
+\end{theorem}
 
-\textit{Proof:} We know that by the first theorem that all new points in $\mathcal{C}'$ will be at a distance at most $\tilde{r}$ from a point appearing originally in $\mathcal{C}$. Therefore if $\tilde{\epsilon}\geq\tilde{r}$, then these new points will automatically become reconnected to a cluster in $\mathcal{C}$. Also since $\tilde{\epsilon}\leq\frac{1}{2}R-\tilde{r}$, this means that no two distinct clusters in $\mathcal{C}$ will become merged in $\mathcal{C}'$.
+\begin{proof}
+We know that by the first theorem that all new points in $\mathcal{C}'$ will be at a distance at most $\tilde{r}$ from a point appearing originally in $\mathcal{C}$. Therefore if $\tilde{\epsilon}\geq\tilde{r}$, then these new points will automatically become reconnected to a cluster in $\mathcal{C}$. Also since $\tilde{\epsilon}\leq\frac{1}{2}R-\tilde{r}$, this means that no two distinct clusters in $\mathcal{C}$ will become merged in $\mathcal{C}'$.
+\end{proof}
 
 These results are then further extended to recover bounds (under the Hausdorff metric) between clusterings of data with the Robust DBSCAN algorithm given a specific proportion of inserted points ($0<E<1$).
+
+\section{Consistency and Rates for Clustering with DBSCAN}
+
+There is a simple and efficient modification of the DBSCAN algorithm that can detect the most interesting vertical threshold level in an automated way with consistency and optimal learning rates.
+
+The clustering algorithm approximates the optimal level $\rho^*$ and estimates the density from the points by using a kernel density estimator (rather than our proof above which uses a k-NN density estimator) while obtaining certain statistical guarantees \cite{pmlr-v22-sriperumbudur12}.
