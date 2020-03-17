@@ -1,11 +1,12 @@
-%Contributer: Kendal Sandridge
+%Contributer: Kendal Sandridge, Colin Tan
 {\parindent0pt
 \section{Spectral Clustering}
 
 As of late Spectral Clustering has become exceedingly popular due to the quality of its clusters compared to other clustering algorithms.   It is possible to turn clustering into a graph problem, then solve it by figuring out the cut that splits our graph into the groups with high intracluster weights. One of the benefits of this formulation is that the data can be in any space, not just euclidean, and we can still perform clustering. \\
 
-We can formulate the problem of spectral clustering with well defined inputs and outputs 
-\textbf{Input:} 
+We can formulate the problem of spectral clustering with well defined inputs and outputs
+
+\textbf{Input:} \\
 - $x_1,...,x_n$ data points\\
 - $w_{ij}$ similarity between points $x_i, x_j$ \\
 
@@ -153,13 +154,52 @@ It is also important to have a notion of size for a set of vertices. The first i
 	
 	\begin{theorem}[Variational Characterization]
 		Let $M \in Sym(\mathbb R^{n\times n})$\\
-		$\lambda_1 \leq ... \leq \lambda_n$ eigenvalues of M\\
-		$\lambda_1 = min_{v \in S^{n-1}} Rank (v)$ let $v_1 = argmin$\\
-		$\vdots$\\
-		$\lambda_i = min_{\substack{ v \in S^{n-1}\\
-				v \perp < v_1 ... v_{i-1} >}} $
+		$\lambda_1 \leq ... \leq \lambda_n$ eigenvalues of $M$ \\
+		$\lambda_1 = \min_{v \in S^{n-1}} Rank (v)$\\
+		$\vdots$ \\
+		$\lambda_i = \min_{\substack{ v \in S^{n-1}\\
+				v \perp < v_1 ... v_{i-1} >}} Rank (v)$ \\
+		$\vdots$ \\
+		$\lambda_m = \max_{v \in S^{n-1}} Rank (v)$
 	\end{theorem}
-	Pf.
+	
+	\subsection{Spectral Clustering Algorithm}
+	
+	The algorithm needs predefined number of clusters, and the similarity matrix.
+	
+	\textbf{Input:} $S$: $n\times n$ similarity matrix (on $n$ datapoints), $k$: number of clusters.
+	
+	\textbf{Output:} the partition of $n$ datapoints returned by $k$-means as the clustering.
+	
+	\begin{enumerate}
+		\item Compute the degree matrix $D$ and adjacency matrix $W$ from the weighted graph induced by $S$.
+		\item Compute the graph Laplacian $L = D - W$.
+		\item Compute the bottom $k$ eigenvectors $u_1,\ldots,u_k$ of the generalized eigensystem $\mathbf{Lu} = \lambda \mathbf{Du}$.
+		\item Let $U$ be the $n \times k$ matrix containing vectors $u_1,\ldots,u_k$ as columns.
+		\item Let $y_i$ be the $i$-th row of $U$; it corresponds to the $k$ dimensional representation of the datapoint $x_i$.
+		\item Cluster points $y_1,\ldots,y_n$ into $k$ clusters via a centroid-based algorithm like $k$-means.
+	\end{enumerate}
+	
+	One can calculate similarity from distance using a drop off function $e^{-\mathrm{dist}^2/\sigma^2}$.
+	
+	\subsection{Planted Partitions Model}
+	
+	The need to calculate the eigenvector of the $n\times n$ Laplacian puts the spectral clustering algorithm at $O(n^3)$ runtime. There is an $O(n \log^3 n + m \log n)$ algorithm for Planted Partitions Model problem, as described in \cite{bsh10}.
+	
+	The Planted Partitions Model problem: for a $(p,q)$-clusetered graph $G(V,E)$, vertices are divided into disjoint clusters $C_1, \ldots, C_t$. Edges between members within clusters are included with probability $p$, and between members across clusters with probability $q$.
+	
+	Note that $C(v)$ is the cluster containing vertex $v$, and $N(G,v)$ are the neighbors of $v$.
+	
+	For $p \geq 1/2$, the following Subsquare algorithm described in \cite{bsh10} finds partitions $U_1, \ldots, U_s$ with probability $1-1/\mathrm{poly}(n)$ that for each input cluster $C_i$ of size $\Omega(\max \{qn, \log n \})$, contains a cluster $U_j$ such that $C_i=U_j$. The algorithm takes three parameters, $c_0$, $c_1$, and $\delta$.
+	
+	\begin{itemize}
+		\item Randomly order the the vertices with a bijection $\pi : V \rightarrow \{1, \ldots, n\}$.
+		\item Run two passes of the following for each $v$:
+		\begin{enumerate}
+			\item If $|N(G,v)|<c_0 \log(n/\delta)$, assign $v$ to its own cluster and continue to the next $v$.
+			\item 
+		\end{enumerate}
+	\end{itemize}
 	
 	\begin{exercise}
 		let $M \in Sym(\mathcal R^{n \times n})$
