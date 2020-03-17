@@ -197,9 +197,60 @@ It is also important to have a notion of size for a set of vertices. The first i
 		\item Run two passes of the following for each $v$:
 		\begin{enumerate}
 			\item If $|N(G,v)|<c_0 \log(n/\delta)$, assign $v$ to its own cluster and continue to the next $v$.
-			\item 
+			\item Let $R_{temp}$ be the neighbors of $v$ that have been clustered.
+			\item For each element of $R_{temp}$, include it in $R$ with probability $\min \left\{\frac{c_{0} \log (n / \delta)}{\left|R_{t e m p}\right|}, 1\right\}$.
+			\item For each element of $N(G,v)$, include it in $S$ with probability $\frac{c_{0} \log (n / \delta)}{|N(G, v)|}$. Similarly for each element of $N(G,w)$, include it in $S_w$ with probability $\frac{c_{0} \log (n / \delta)}{|N(G, w)|}$.
+			\item Initialize a candidate cluster set $\mathcal{D}$ for $v$ to empty set.
+			\item For each $w \in R$, if
+				\begin{enumerate}
+					\item $|S \cap N(G, w)| \geq c_{1} \log (n / \delta)$,
+					\item $|N(G, w)| \geq c_{0} \log (n / \delta)$ and $\left|S_{w} \cap N(G, v)\right| \geq c_{1} \log (n / \delta)$,
+				\end{enumerate}
+				add $w$'s cluster $\hat{C}(w)$ to $\mathcal{D}$.
+			\item If $\mathcal{D}$ is not empty, set $\hat{C}(v)=\hat{C}\left(\operatorname{argmin}_{w^{\prime} \in \cup_{C \in \mathcal{D}}} \pi\left(w^{\prime}\right)\right)$. Else, assign $v$ to its own cluster.
 		\end{enumerate}
 	\end{itemize}
+	
+	The correctness and runtime are bounded by the following theorems:
+	
+	\begin{theorem}
+		There are constants $c, \delta_{0}, m_{0}$ and $n_{0}$ such that, for all $p \in[1 / 2,1], q \in[0,1], m \geq m_{0}$, $n \geq n_{0},$ and $0<\delta \leq \delta_{0},$ if $G$ is a $(p, q)$ clustered graph with clusters $C_{1}, \ldots, C_{t},$ then, with probability $1-\delta$, Algorithm Subsquare, when run with $c_{0}=c / 2$ and $c_{1}=c / 2^{5},$ outputs a partition $U_{1}, \ldots, U_{s}$ of the vertices of $G$ such that, for all cluster indices $i$ such that
+			\begin{equation}\label{eq:bsh10-eq1}
+				\left|C_{i}\right| \geq c \max \{q n, \log (n / \delta)\}
+			\end{equation}
+			there is a output cluster index $j$ such that $C_{i}=U_{j}$.
+	\end{theorem}
+	
+	Define the edge test to be a check of the conditions in the algorithm step 6. If the conditions are satisfied, and $C(v)=C(w)$, or the conditions are not satisfied and $C(v) \neq C(w)$, then the edge test succeeds, otherwise it fails.
+	
+	\begin{lemma}
+		With probability $1-\delta/\mathrm{poly}(n)$, for any vertex $v$ whose cluster $C(v)$ satisfies (\ref{eq:bsh10-eq1}), at least half of $v$’s neighbors are in $C(v)$.
+	\end{lemma}
+	
+	\begin{lemma}
+		For a pair $\{ v, w \}$ of vertices, if $C(v) = C(w)$, and the cluster satisfies (\ref{eq:bsh10-eq1}), and an edge test is conducted for $v$ and $w$, then, with probability $1-\delta/\mathrm{poly}(n)$, this edge test succeeds.
+	\end{lemma}
+	
+	Which can be deduced using Chernoff bound from the test condition defined in algorithm step 6. Symmetrically,
+	
+	\begin{lemma}
+		For any pair $\{ v, w \}$ of vertices, if $C(v)$ satisfies (\ref{eq:bsh10-eq1}), and an edge test is conducted between $v$ and $w$, and $C(v) \neq C(w)$, then with probability $1-\delta/\mathrm{poly}(n)$ the edge test is successful.
+	\end{lemma}
+	
+	Then it proves that during the first pass, the first identified member (the head) of a cluster indeed forms a good cluster around it, i.e. for any vertex $v$ with an edge to the head $v_C$ of $C$, with probability $1-\delta/\mathrm{poly}(n)$, $C(v) = C(v_C)$. Reader can refer to the original paper for the full length of the proof.
+	
+	\begin{theorem}
+		The expected running time of Subsquare is $O(n(\log ^{2}(n / \delta))(\log n)+m \log n)$.
+	\end{theorem}
+	
+	Because the algorithm:
+	
+	\begin{itemize}
+		\item Create a structure in $O(m \log n)$ time, like a balanced binary tree, to test neighborhood membership, i.e. if a vertex $w$ is in $N(G,v)$, in $O(\log n)$ time.
+		\item For each vertex at most $O(\log(n/\delta))$ candidate clusters are examined, and each candidate requires neighbor lookups for $O(\log(n/\delta))$ neighbors.
+	\end{itemize}
+	
+	
 	
 	\begin{exercise}
 		let $M \in Sym(\mathcal R^{n \times n})$
