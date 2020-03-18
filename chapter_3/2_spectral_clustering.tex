@@ -129,7 +129,7 @@ It is also important to have a notion of size for a set of vertices. The first i
 		\item let $A \subset V$. $\mathbbm 1_A^T L \mathbbm 1_A = \sum_{(i,j) \in E} w_{ij} (\mathbbm  1_A(i - \mathbbm 1_A(j)) )^2 = weight(E(A, \bar{A})) $
 	\end{enumerate}
 	
-	\subsection{Review of Spectral Theory: Geometric \& Variational Characterization of Eigenvalues}
+	\subsection{Review of Spectral Theory: Geometric \& the collection of all Borel sets on Characterization of Eigenvalues}
 	
 	\begin{definition}
 		Let $M \in \mathbb R^{n \times n}$. An eigenvector $v \in \mathbb R^n$ satisfies $v \neq 0, \exists\lambda \in \mathbb R $ s.t. $Mv = \lambda v$
@@ -165,7 +165,7 @@ It is also important to have a notion of size for a set of vertices. The first i
 	
 	\subsection{Spectral Clustering Algorithm}
 	
-	The algorithm needs predefined number of clusters, and the similarity matrix.
+	After introducing the graph Laplacian, we present the spectral clustering algorithm that projects data onto lower dimension space. The algorithm needs predefined number of clusters, and the similarity matrix.
 	
 	\textbf{Input:} $S$: $n\times n$ similarity matrix (on $n$ datapoints), $k$: number of clusters.
 	
@@ -344,9 +344,52 @@ It is also important to have a notion of size for a set of vertices. The first i
 	
 	\subsection{Convergence of Spectral Clustering}
 	
-	An assumption that could be made is that the sample data we are clustering comes from an underlying distribution that is partitionable. Thus we can investigate if spectral clustering converges to the true clusters as sample size $n$ grows.
+	An assumption that could be made is that the sample data we are clustering comes from an underlying distribution that is partitionable. Thus we can investigate if spectral clustering converges to the true clusters as sample size $n$ grows. The paper \cite{vlux04} shows that normalized graph Laplacian cases usually converges (to some intuitive partition), while unnormalized ones are difficult to achieve strong convergence.
+	
+	\subsubsection{Review of Spectral and Perturbation Theory for Bounded Operators}
+	
+	Denote $\sigma(T)$ the spectrum of a linear operator $T$.
+	
+	\begin{enumerate}
+		\item \textbf{Spectrum of a compact operator:} If $T$ is a compact operator on a Banach space, then $\sigma(T)$ is at most countable and has at most one limit point, namely 0.
+		\item \textbf{Spectrum of a multiplication operator:} For a bounded function $g \in$ $L_{\infty}(P)$ consider the multiplication operator $M_{g}: L_{2}(P) \rightarrow L_{2}(P), f \mapsto g f$, $M_{g}$ is a bounded linear operator whose spectrum coincides with the essential range of the multiplier $g$.
+		\item \textbf{Perturbation of symmetric matrices:} Let $A$ and $B$ be two symmetric matrices in $\mathbb{R}^{n\times n}$, then the Hausdorff distance $d(\sigma(A), \sigma(B))$ between the two spectra satisfies $d(\sigma(A), \sigma(B)) \leq\|A-B\|$.
+		\item \textbf{Perturbation of bounded operators:} Let $\left(T_{n}\right)_{n}$ and $T$ be bounded operators on a Banach space $E$ with $T_{n} \rightarrow T$ in operator norm, and $\lambda$ an isolated eigenvalue of $T$ with finite multiplicity. Then, for $n$ large enough, there exist isolated eigenvalues $\lambda_{n} \in \sigma\left(T_{n}\right)$ such that $\lambda_{n} \rightarrow \lambda,$ and the corresponding spectral projections converge in operator norm.
+		\item \textbf{Perturbation of the essential spectrum:} Let $A$ be a bounded and $V$ a compact operator on some Banach space. Then $\sigma_{e s s}(A+V)=\sigma_{e s s}(A)$.
+	\end{enumerate}
 	
 	\subsubsection{Normalized Laplacian}
+	
+	The first eigenvectors of the normalized Laplacian converge to the eigenfunctions of some limit operator on $L_2 (P)$. Let $(\mathcal{X}, \text { dist})$ be a metric space, $\mathcal{B}$ the Borel $\sigma$-algebra on $\mathcal{X}$ (the collection of all Borel sets on the space $\mathcal{X}$. Borel set is any set in a topological space that can be formed from open sets through countable union, countable intersection, and relative complement), $P$ a probability measure on $(\mathcal{X}, \mathcal{B})$, and $L_{2}(P):=L_{2}(\mathcal{X}, \mathcal{B}, P)$ the space of square-integrable functions.
+	
+	Define a ``true degree function'' on $\mathcal{X}$ as $d(x)=\int k(x, y) d P(y)$, and an empirical (sample) degree function $d_n(x)=\int k(x, y) d P_{n}(y)$. Define the empirical similarity matrix $H_n'$. Define the normalized similarity functions
+	
+	\begin{equation}
+		\begin{split}
+			h_{n}(x, y):=k(x, y) / \sqrt{d_{n}(x) d_{n}(y)} \\
+			h(x, y):=k(x, y) / \sqrt{d(x) d(y)}
+		\end{split}
+	\end{equation}
+	
+	and the operators
+	
+	\begin{equation}
+		\begin{split}
+			T_{n}: L_{2}\left(P_{n}\right) \rightarrow L_{2}\left(P_{n}\right), T_{n} f(x)=\int h(x, y) f(y) d P_{n}(y) \\
+			T_{n}^{\prime}: L_{2}\left(P_{n}\right) \rightarrow L_{2}\left(P_{n}\right), T_{n}^{\prime} f(x)=\int h_{n}(x, y) f(y) d P_{n}(y) \\
+			T: L_{2}(P) \rightarrow L_{2}(P), T f(x)=\int h(x, y) f(y) d P(y)
+		\end{split}
+	\end{equation}
+	
+	The paper proves that $d_n$ converges to $d$ uniformly on the sample, and $\left\|T_n'-T_n\right\|_{L_{2}\left(P_{n}\right)}$ converges to 0. With sufficiently large sample size $n$, we can then get $d_n(x)$ arbitrarily close to $d(x)$. Thus $\left\|T_{n}-T_{n}'\right\|$ and $\left\|H_{n}-H_{n}'\right\|$ almost surely converges to 0.
+	
+	They relate the operators $T_n$ defined on $L_2 (P_n)$, to some operators $S_n$ on the space $L_2 (P)$ such that their spectra are preserved, so that it could be used as a middle ground to prove $T_n$ converges to $T$. The problem that the operators $T_n$ and $T$ are not deﬁned on the same space has been circumvented by considering bilinear forms instead of the operators themselves.
+	
+	Then it is proven that the second eigenvector of $H_n'$ converge to the second eigenfunction of the limit operator almost surely.
+	
+	\subsubsection{Unnormalized Laplacian}
+	
+	It's hard to measure the convergence of unnormalized Laplacian's eigenvectors, since the perturbation theory only allows statement of convergence results for isolated parts of the spectra. But when it does converge, it is suggested that it converges to a sensible limit clustering.
 	
 	\begin{exercise}
 		let $M \in Sym(\mathcal R^{n \times n})$
