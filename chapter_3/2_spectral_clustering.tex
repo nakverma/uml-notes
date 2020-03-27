@@ -129,7 +129,7 @@ It is also important to have a notion of size for a set of vertices. The first i
 		\item let $A \subset V$. $\mathbbm 1_A^T L \mathbbm 1_A = \sum_{(i,j) \in E} w_{ij} (\mathbbm  1_A(i - \mathbbm 1_A(j)) )^2 = weight(E(A, \bar{A})) $
 	\end{enumerate}
 	
-	\subsection{Review of Spectral Theory: Geometric \& the collection of all Borel sets on Characterization of Eigenvalues}
+	\subsection{Review of Spectral Theory: Geometric \& Variational Characterization of Eigenvalues}
 	
 	\begin{definition}
 		Let $M \in \mathbb R^{n \times n}$. An eigenvector $v \in \mathbb R^n$ satisfies $v \neq 0, \exists\lambda \in \mathbb R $ s.t. $Mv = \lambda v$
@@ -167,18 +167,21 @@ It is also important to have a notion of size for a set of vertices. The first i
 	
 	After introducing the graph Laplacian, we present the spectral clustering algorithm that projects data onto lower dimension space. The algorithm needs predefined number of clusters, and the similarity matrix.
 	
-	\textbf{Input:} $S$: $n\times n$ similarity matrix (on $n$ datapoints), $k$: number of clusters.
+	\textbf{Input:} $S$: $n\times n$ similarity matrix (on $n$ data points), $k$: number of clusters.
 	
-	\textbf{Output:} the partition of $n$ datapoints returned by $k$-means as the clustering.
+	\textbf{Output:} the partition of $n$ data points returned by $k$-means as the clustering.
 	
-	\begin{enumerate}
-		\item Compute the degree matrix $D$ and adjacency matrix $W$ from the weighted graph induced by $S$.
-		\item Compute the graph Laplacian $L = D - W$.
-		\item Compute the bottom $k$ eigenvectors $u_1,\ldots,u_k$ of the generalized eigensystem $\mathbf{Lu} = \lambda \mathbf{Du}$.
-		\item Let $U$ be the $n \times k$ matrix containing vectors $u_1,\ldots,u_k$ as columns.
-		\item Let $y_i$ be the $i$-th row of $U$; it corresponds to the $k$ dimensional representation of the datapoint $x_i$.
-		\item Cluster points $y_1,\ldots,y_n$ into $k$ clusters via a centroid-based algorithm like $k$-means.
-	\end{enumerate}
+	\begin{algorithm}
+		\caption{Spectral Clustering}
+		\begin{algorithmic}
+			\STATE Compute the degree matrix $D$ and adjacency matrix $W$ from the weighted graph induced by $S$.
+			\STATE Compute the graph Laplacian $L = D - W$.
+			\STATE Compute the bottom $k$ eigenvectors $u_1,\ldots,u_k$ of the generalized eigensystem $\mathbf{Lu} = \lambda \mathbf{Du}$.
+			\STATE Let $U$ be the $n \times k$ matrix containing vectors $u_1,\ldots,u_k$ as columns.
+			\STATE Let $y_i$ be the $i$-th row of $U$; it corresponds to the $k$ dimensional representation of the datapoint $x_i$.
+			\STATE Cluster points $y_1,\ldots,y_n$ into $k$ clusters via a centroid-based algorithm like $k$-means.
+		\end{algorithmic}
+	\end{algorithm}
 	
 	One can calculate similarity from distance using a drop off function $e^{-\mathrm{dist}^2/\sigma^2}$.
 	
@@ -192,24 +195,25 @@ It is also important to have a notion of size for a set of vertices. The first i
 	
 	For $p \geq 1/2$, the following Subsquare algorithm described in \cite{bsh10} finds partitions $U_1, \ldots, U_s$ with probability $1-1/\mathrm{poly}(n)$ that for each input cluster $C_i$ of size $\Omega(\max \{qn, \log n \})$, contains a cluster $U_j$ such that $C_i=U_j$. The algorithm takes three parameters, $c_0$, $c_1$, and $\delta$.
 	
-	\begin{itemize}
-		\item Randomly order the the vertices with a bijection $\pi : V \rightarrow \{1, \ldots, n\}$.
-		\item Run two passes of the following for each $v$:
-		\begin{enumerate}
-			\item If $|N(G,v)|<c_0 \log(n/\delta)$, assign $v$ to its own cluster and continue to the next $v$.
-			\item Let $R_{temp}$ be the neighbors of $v$ that have been clustered.
-			\item For each element of $R_{temp}$, include it in $R$ with probability $\min \left\{\frac{c_{0} \log (n / \delta)}{\left|R_{t e m p}\right|}, 1\right\}$.
-			\item For each element of $N(G,v)$, include it in $S$ with probability $\frac{c_{0} \log (n / \delta)}{|N(G, v)|}$. Similarly for each element of $N(G,w)$, include it in $S_w$ with probability $\frac{c_{0} \log (n / \delta)}{|N(G, w)|}$.
-			\item Initialize a candidate cluster set $\mathcal{D}$ for $v$ to empty set.
-			\item For each $w \in R$, if
-				\begin{enumerate}
-					\item $|S \cap N(G, w)| \geq c_{1} \log (n / \delta)$,
-					\item $|N(G, w)| \geq c_{0} \log (n / \delta)$ and $\left|S_{w} \cap N(G, v)\right| \geq c_{1} \log (n / \delta)$,
-				\end{enumerate}
-				add $w$'s cluster $\hat{C}(w)$ to $\mathcal{D}$.
-			\item If $\mathcal{D}$ is not empty, set $\hat{C}(v)=\hat{C}\left(\operatorname{argmin}_{w^{\prime} \in \cup_{C \in \mathcal{D}}} \pi\left(w^{\prime}\right)\right)$. Else, assign $v$ to its own cluster.
-		\end{enumerate}
-	\end{itemize}
+	\begin{algorithm}
+		\caption{Planted Partition Clustering}
+		\begin{algorithmic}
+			\STATE Randomly order the the vertices with a bijection $\pi : V \rightarrow \{1, \ldots, n\}$.
+			\FORALL{$v$, for two passes}
+			\STATE If $|N(G,v)|<c_0 \log(n/\delta)$, assign $v$ to its own cluster and continue to the next $v$.
+			\STATE Let $R_{temp}$ be the neighbors of $v$ that have been clustered.
+			\STATE For each element of $R_{temp}$, include it in $R$ with probability $\min \left\{\frac{c_{0} \log (n / \delta)}{\left|R_{t e m p}\right|}, 1\right\}$.
+			\STATE For each element of $N(G,v)$, include it in $S$ with probability $\frac{c_{0} \log (n / \delta)}{|N(G, v)|}$. Similarly for each element of $N(G,w)$, include it in $S_w$ with probability $\frac{c_{0} \log (n / \delta)}{|N(G, w)|}$.
+			\STATE Initialize a candidate cluster set $\mathcal{D}$ for $v$ to empty set.
+			\FORALL{$w \in R$}
+				\IF{$|S \cap N(G, w)| \geq c_{1} \log (n / \delta)$, $|N(G, w)| \geq c_{0} \log (n / \delta)$ and $\left|S_{w} \cap N(G, v)\right| \geq c_{1} \log (n / \delta)$}
+					\STATE add $w$'s cluster $\hat{C}(w)$ to $\mathcal{D}$.
+				\ENDIF
+			\ENDFOR
+			\ENDFOR
+			\STATE If $\mathcal{D}$ is not empty, set $\hat{C}(v)=\hat{C}\left(\operatorname{argmin}_{w^{\prime} \in \cup_{C \in \mathcal{D}}} \pi\left(w^{\prime}\right)\right)$. Else, assign $v$ to its own cluster.
+		\end{algorithmic}
+	\end{algorithm}
 	
 	The correctness and runtime are bounded by the following theorems:
 	
@@ -383,7 +387,7 @@ It is also important to have a notion of size for a set of vertices. The first i
 	
 	The paper proves that $d_n$ converges to $d$ uniformly on the sample, and $\left\|T_n'-T_n\right\|_{L_{2}\left(P_{n}\right)}$ converges to 0. With sufficiently large sample size $n$, we can then get $d_n(x)$ arbitrarily close to $d(x)$. Thus $\left\|T_{n}-T_{n}'\right\|$ and $\left\|H_{n}-H_{n}'\right\|$ almost surely converges to 0.
 	
-	They relate the operators $T_n$ defined on $L_2 (P_n)$, to some operators $S_n$ on the space $L_2 (P)$ such that their spectra are preserved, so that it could be used as a middle ground to prove $T_n$ converges to $T$. The problem that the operators $T_n$ and $T$ are not deﬁned on the same space has been circumvented by considering bilinear forms instead of the operators themselves.
+	They relate the operators $T_n$ defined on $L_2 (P_n)$, to some operators $S_n$ on the space $L_2 (P)$ such that their spectra are preserved, so that it could be used as a middle ground to prove $T_n$ converges to $T$. The problem that the operators $T_n$ and $T$ are not defined on the same space has been circumvented by considering bilinear forms instead of the operators themselves.
 	
 	Then it is proven that the second eigenvector of $H_n'$ converge to the second eigenfunction of the limit operator almost surely.
 	
