@@ -1,6 +1,10 @@
+%Contributors: Jayant Subramanian, Jonathan Baquero, William Wang, Asif Mallik
+
 \section{A Uniqueness Theorem for Clustering}
 
-\subsection*{Introduction}
+\subsection{Introduction}
+
+\medskip
 
 Recall from class Kleinberg's impossibility result, which states that a clustering algorithm cannot satisfy the three axioms of \textbf{scale-invariance}, \textbf{richness}, and \textbf{consistency} simultaneously. This gives some insight on why most clustering algorithms seem to be inadequate for some applications. Recall the definitions of the axioms:
 
@@ -30,10 +34,10 @@ Let $X$ be a set of points and $d$ be some distance metric. Then let $f(X,d) \ri
 While it is impossible to satisfy all three of these axioms simultaneously, by relaxing these axioms a bit, we can come up with a clustering algorithm that satisfies the relaxed axioms. Moreover, in a paper by Reza Bosagh Zadeh and Shai Ben-David, they propose some additional abstract properties of clustering algorithms and obtain a uniqueness theorem, showing that only the Single-Linkage algorithm satisfies the resulting set of properties.
 
 
-\newpage
 
+\subsection{Single-Linkage \& Uniqueness Theorem}
 
-\subsection*{Single-Linkage \& Uniqueness Theorem}
+\medskip
 
 Firstly, we outline the Single-Linkage clustering algorithm:
 
@@ -156,9 +160,9 @@ This leads us to our Uniqueness Theorem:
     \begin{enumerate}
         \item $d_1$ is defined such that $F(d_1,k) = \Gamma$
         \item Shrink all edges in $p$ until they become the $t$ shortest edges. This does not affect $\Gamma$ since $F$ is Consistent, and we are only shrinking intra-cluster distances. Call this distance $d_2$
-        \item Reorder the first $t$ edges of such that the edges are in the same order as $e^*$. Since all the edges are inner edges, rearranging them makes no difference to $\Gamma$ by Lemma 4. Call this distance $d_3$. Thus, the first $t$ edges in $e^*_3$ are the same (in identity) to the first $t$ edges in $e^*$
+        \item Reorder the first $t$ edges of such that the edges are in the same order as $e^*$. Since all the edges are inner edges, rearranging them makes no difference to $\Gamma$ by Lemma 2.2.10. Call this distance $d_3$. Thus, the first $t$ edges in $e^*_3$ are the same (in identity) to the first $t$ edges in $e^*$
         \item Expand all outer edges until they are larger than all inner edges (even redundant ones). $\Gamma$ does not change by Consistency. Call this distance $d_4$
-        \item Reorder all the outer edges until they are in the same order as in $e^*$; again this does not affect $\Gamma$ by Lemma 4. Call this distance $d_5$
+        \item Reorder all the outer edges until they are in the same order as in $e^*$; again this does not affect $\Gamma$ by Lemma 2.2.10. Call this distance $d_5$
         \item Now we need to put the redundant inner edges in their correct order in $e^*$. By MST-Coherence, if we just expand these edges by any amount, the MST will not change and thus $\Gamma$ remains the same. Let the distance after doing this be $d_6$.
         \item The edges are now in the same order as they would be under $d$, but they may not have the same weights. By Order-Consistency, we can adjust the weights as much as we want as long as we do not change the order, and maintain $\Gamma$. We adjust the edge weights to make them identical to $d$. Let this final distance be $d_7$
     \end{enumerate}

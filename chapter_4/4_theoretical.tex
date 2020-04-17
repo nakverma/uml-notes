@@ -53,17 +53,21 @@
     Moreover, this result holds for any loss function $\mathcal{L}$ on a center based clustering. We first present an algorithm for finding a clustering that is $\epsilon$-close to optimal, and then prove the result.
     
     \begin{algorithm}[H]
-    \SetAlgoLined
-    \textbf{Algorithm 1:} \textit{Finding a Near-Optimal Clustering}\\
+    \noindent \textbf{Algorithm 1:} \textit{Finding a Near-Optimal Clustering}\\
     \textbf{Input:} dataset $X$, $k,l\geq1$\;
     \textbf{Output:} a clustering $C_A$ of $X$\;
     $C_A = \emptyset$\;
-    \For{each $k$-tuple of $l$-sequences}{
+    
+    \begin{algorithmic}
+        \FOR{each $k$-tuple of $l$-sequences}
+        \STATE{
         Find the centers of the $l$-sequences, call this set $S$\;
         Find the clustering $\hat{C}$ that $S$ induces on $X$\;
         If $C_A=\emptyset$ or $\mathcal{L}(\hat{C})<\mathcal{L}(C_A)$ then set $C_A = \hat{C}$
-    }
-    \Return{$C_A$}
+        }
+        \ENDFOR
+        \RETURN{$C_A$}
+    \end{algorithmic}
     \end{algorithm}
     
 Now we prove the theorem:
