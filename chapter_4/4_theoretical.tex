@@ -1,0 +1,151 @@
+\section{Comparing Clusterings}
+    This paper attempts to introduce some criteria for comparing different clusterings. Different clusterings are viewed as elements of a lattice and the distances between clusterings are analyzed based on their relationships in the lattice. Then other distances between partitions are examined and finally, an impossiblility result is proven: There is no "sensible" criterion for comparing clusterings that is simultanously aligned with the lattice of partitions, convexly additive, and bounded. \\\\A cluster is defined as a partition of a data set $D$ into a set of clusters $\mathcal{C} = \{C_k\}_1^K$ such that all $C_k$ are disjoint and their union is $D$. Let $|D|=n$ and $|C_k|=n_k$. We then obviously have that $\sum_k n_k = n$. We can also consider a second clustering $\mathcal{C}' = \{C'_{k'}\}^{K'}$. Let $n_{k k'} = |C_k \cap C'_{k'}|$. We can represent all the clusterings of a finite dataset as the nodes of a graph. If $\mathcal{C}'$ can be obtained by splitting a cluster of $\mathcal{C}$ into two parts, then an edge $(\mathcal{C}, \mathcal{C}')$ will exist in the graph. We can use this graph to define additivity properties of the distances between clusterings $d(\mathcal{C}, \mathcal{C}')$.\\
+    \begin{enumerate}
+        \item[1) AR: ]
+        If $\mathcal{C}'$ is obtained by splitting one or more clusters from $\mathcal{C}$, then we say $\mathcal{C}'$ is a refinement of $\mathcal{C}$. A distance is additive w.r.t. refinement iff for any clusterings $\mathcal{C}, \mathcal{C}', \mathcal{C}''$, such that $\mathcal{C}'$ is a refinement of $\mathcal{C}$ and $\mathcal{C}''$ is a refinement of $\mathcal{C}'$, we have:
+        $$d(\mathcal{C},\mathcal{C}'') = d(\mathcal{C},\mathcal{C}')+d(\mathcal{C}',\mathcal{C}'')$$
+        
+        \item[2) AJ: ]
+        The join of two clusterings $\mathcal{C}, \mathcal{C}'$ is defined as the clustering formed from all the nonempty intersections of clusters in $\mathcal{C}$ with clusters in $\mathcal{C}'$. A distance is said to be additive w.r.t. the join iff for any $\mathcal{C},\mathcal{C}'$, we have:
+        $$d(\mathcal{C},\mathcal{C}') = d(\mathcal{C},\mathcal{C}\times \mathcal{C}')+d(\mathcal{C}', \mathcal{C}\times \mathcal{C}')$$
+        
+        \item[3) CA: ] Let $\mathcal{C}$ be a clustering and $\mathcal{C}', \mathcal{C}''$ be refinements of $\mathcal{C}$. Let $\mathcal{C}'_k$ be the partitioning induced by $\mathcal{C}'$ on the cluster $C_k \in \mathcal{C}$, and let $P(k)$ be the proportion of data points belonging to $C_k$. THen:
+        $$d(\mathcal{C}',\mathcal{C}'') = \sum_{k=1}^K P(k)d(\mathcal{C}'_k,\mathcal{C}''_k)$$
+    \end{enumerate}
+    
+    Melia then introduces the variation of information as a distance measure (denoted $d_{VI}$) between two clusters. It is defined as the following:
+    $$d_{VI}(\mathcal{C},\mathcal{C}') = H(\mathcal{C})+H(\mathcal{C}') - 2I(\mathcal{C},\mathcal{C}')$$
+    Where $H$ denotes entropy and $I$ denotes mutual information. She shows that $d_VI$ satisfies AR, AJ, CA, symmetry, and scale by basic algebra and properties of entropy and mutual information.
+    Melia then introduces the Classification Error ($d_{CE}$), Mirkin ($d_M$) and Van Dongen ($d_{VD}$) metrics which satisfy subsets of the 5 axioms.
+    $$d_M(\mathcal{C},\mathcal{C}') = 2N_{disagree}(\mathcal{C},\mathcal{C}')$$
+    $$d_{VD}(\mathcal{C},\mathcal{C}') = 2n-\sum_k \max_{k'} n_{k k'} - \sum_{k'} \max_{k} n_{k k'}$$
+    $$d_{CE}(\mathcal{C},\mathcal{C}') = 1-\frac{1}{n}\max_{\sigma}\sum_{k=1}^K n_{k,\sigma(k)}$$
+    where $N_{disagree}$ is the number of points in the same cluster in $\mathcal{C}$ but different clusters in $\mathcal{C}'$ or vice versa.
+    Lastly, she proves an impossibility result, namely that $d_{VI}$ is the only distance measure satisfying all 5 axioms. From this, it immediately follows that there is no "sensible" criterion for comparing clusterings that is simultanously aligned with the lattice of partitions, convexly additive, and bounded. This proof is done by algebra, using the lemma that $h(n) = C\log n \forall n$ for any nondecreasing function $h: \mathbb{N} \mapsto \mathbb{R}^+$.
+
+
+\section{Clusterability: A Theoretical Study}
+    
+    The main results of this paper deal with two things: a notion of \textit{well-clusterable} datasets, and the fact that well-clusterable datasets are clusterable in a feasible amount of time (as opposed to being NP hard as clustering is in general).\\
+    
+    \textbf{Definitions:}
+    \begin{itemize}
+        \item A \textit{k-clustering} of $X$ is a set of $k$ disjoint, nonempty subsets of $X$ whose union is $X$. 
+        \item A \textit{clustering} of $X$ is a $k$-clustering of $X$ with $k\geq 1$.
+        \item For $x,y\in X$ and a clustering $C$ of $X$, $x\sim_C y$ if $x,y$ are in the same cluster with respect to $C$. $x\not\sim_C y$ otherwise.
+        \item A \textit{notion of clusterability} is a function that maps a dataset $X$ to a real value.
+        \item A clustering $C = \{X_1,...,X_k\}$ of $X\subseteq \mathbb{R}^m$ is \textit{center-based} if there exist points $c_1,...,c_k \in \mathbb{R}^m$ (called the \textit{centers}) such that $\forall i,\forall x\in X_i, \forall i\neq j$, we have $||x-c_i||\leq||x-c_j||$. The Voronoi partition induced by the centers matches the clustering $C$.
+        \item Given a loss function $\mathcal{L}$, we denote the optimal clustering of dataset $X$ under $\mathcal{L}$ as:
+        $$OPT_{\mathcal{L},k}(X) = \{\mathcal{L}(C)|C\text{ a clustering of }X\}$$
+    \end{itemize}
+    
+    The authors present notions of clusterability divided into two main types:
+    \begin{enumerate}
+        \item[1)] Based on a clustering quality measure, which takes a dataset and returns a real number. The clusterability of a dataset is the optimal clustering quality of a dataset over all possible clusterings.
+        
+        \item[2)] Based on an existing clustering loss function such as $k$-means.
+    \end{enumerate}
+    \subsection*{Center Perturbation Clusterability}
+    This notion of clusterability is meant to capture the robustness of a dataset clustering to center perturbation. This notion is used in tandem with loss functions of clustering algorithms that are center-based. If a dataset is well-clusterable (i.e. the optimal clustering is 'good'), then perturbing the centers of the optimal clustering should have very little effect on the clustering loss. Two clusterings $C,C'$ are said to be \textit{$epsilon$-close} if there exist centers $c_1,...,c_k$ of $C$ and $c'_1,...,c'_k$ of $C'$ such that $\forall i\leq k$, $||c_i-c'_i||\leq \epsilon$. We say that a dataset is \textit{$(\epsilon,\delta)$ CP-clusterable} if for every clustering $C$ of $X$ that is epsilon close to some optimal $k$-clustering of $X$
+    $$\mathcal{L}(C \leq (1+\delta)OPT_{\mathcal{L},k}(X)$$
+    We can now prove that a near-optimal clustering of $X$ can be efficiently computed. Let $rad(X)$ denote the radius of the smallest hypersphere containing all points in dataset $X$. Then we claim that given an $n$-point dataset $X\subset \mathbb{R}^m$ and some $l\geq 1$, there exists an algorithm such that for every $k\geq 2$ and $\delta \geq 0$, if $X$ is $(\frac{rad(X)}{\sqrt{l}})$-CP clusterable for $k$, then the algorithm runs in time polynomial in $n$, and outputs a clustering $C$ of $X$ with at most $k$ clusters such that:
+    $$\mathcal{L}(C \leq (1+\delta)OPT_{\mathcal{L},k}(X)$$
+    Moreover, this result holds for any loss function $\mathcal{L}$ on a center based clustering. We first present an algorithm for finding a clustering that is $\epsilon$-close to optimal, and then prove the result.
+    
+    \begin{algorithm}[H]
+    \noindent \textbf{Algorithm 1:} \textit{Finding a Near-Optimal Clustering}\\
+    \textbf{Input:} dataset $X$, $k,l\geq1$\;
+    \textbf{Output:} a clustering $C_A$ of $X$\;
+    $C_A = \emptyset$\;
+    
+    \begin{algorithmic}
+        \FOR{each $k$-tuple of $l$-sequences}
+        \STATE{
+        Find the centers of the $l$-sequences, call this set $S$\;
+        Find the clustering $\hat{C}$ that $S$ induces on $X$\;
+        If $C_A=\emptyset$ or $\mathcal{L}(\hat{C})<\mathcal{L}(C_A)$ then set $C_A = \hat{C}$
+        }
+        \ENDFOR
+        \RETURN{$C_A$}
+    \end{algorithmic}
+    \end{algorithm}
+    
+Now we prove the theorem:
+\begin{proof}
+    We use a result from Maurey (1981) that for any fixed $l\geq 1$ and each $x'$ in the convex hull of $X$, there exist $x_1,...,x_l\in X$ such that $||x'-\frac{1}{l}\sum_{i=1}^l x_i|| \leq \frac{rad(X)}{l}$ to show that there exists a clustering $\hat{C}$ examined by algorithm 1 that is $\frac{rad(X)}{l}$-close to optimal. Directly from the workings of the algorithm (which returns $C_A$), we see that since $\mathcal{L}(\hat{C})>\mathcal{L}(C_A)$ and $\hat{C}$ is $(\frac{rad(X)}{\sqrt{l}})$-close to the optimal, our result holds. We see that Algorithm 1 runs in $O(kmn^{lk+1})$ time, which is polynomial in $n$.
+\end{proof}
+    
+\subsection*{Worst Pair Clusterability}
+    Consider a clustering $C$ of $X$. Let the maximum distance between two points within the same cluster in $C$ be denoted as $width_C(X)$ and the minimum distance between two points in different clusters in $C$ be denoted $split_C(X)$. Then we can define the \textit{Worst-Pair Ratio} as:
+    $$WPR(C,X) = \frac{split_C(X)}{width_C(X)}$$
+    Then, the worst-pair clusterability with respect to $k$ of $X$ is:
+    $$WPR_k(X) = \max_{C} WPR(C,X)$$
+    The authors show that when $WPR_k(X)$ is sufficiently high, the clustering that optimizes this clusterability notion can be efficiently found.
+    \begin{proof}
+        We first note that there is at most one $k$-clustering $C$ of $X$ with $split_C(X)>width_C(X)$. This is easily shown. Therefore, we can run the single linkage clustering algorithm until $k$ clusters are formed, which will return exactly $C$ in $O(n^2\log n)$ time.
+    \end{proof}
+    
+    The authors then provide multiple other notions of clusterability along with simple proofs of efficient computability corresponding to each notion. Most of these proofs are very trivial/simple and don't include any interesting proof techniques, so they are left out of this scribe. However, the notion definitions and correponding theorem statements are listed below:
+    
+    \subsection*{Separability}
+    A dataset $X$ is \textit{$(k,\epsilon)$-separable} if $OPT_{\text{$k$-means}}(X) \leq \epsilon OPT_{\text{$(k-1)$-means}}(X)$. $S_k(X)$ is defined as the smallest $\epsilon$ for which $X$ is $(k,\epsilon)$-separable. 
+    \begin{theorem}
+    Given a $(2,\epsilon^2)$-separable $n$-point dataset $X \subset \mathbb{R}^m$, we can find a 2-clustering with k-means loss at most $\frac{OPT_2(X)}{1-\rho}$ with probability at least $1-O(\rho)$ in time $O(nm)$, where $\rho = \Theta(\epsilon^2)$.
+    \end{theorem}
+    
+    \subsection*{Variance Ratio Clusterability}
+    Consider a clustering $C=\{X_1,...,X_k\}$ of $X$. Let $c$ denote the global mean of dataset $X$, let $c_i$ denote the mean of cluster $X_i$, and let $p_i=\frac{|X_i|}{|X|}$. The \textit{between cluster variance} is denoted $B_C(X) = \sum_{i=1}^k p_i||c_i-c||^2$ and the \textit{within cluster variance} is denoted $W_C(X) = \sum_{i=1}^k p_i$ Then the \textit{variance ratio} of $C$ is:
+    $$VR(C,X) = \frac{B_C(X)}{W_C(X)}$$
+    and the variance ratio clusterability of $X$ is given by
+    $$VR_k(X) = \max_{C} \frac{B_C(X)}{W_C(X)}$$
+    By algebra, the authors show that $VR_2(X) = \frac{1}{S_2(X)}-1$, which means we can directly apply the separability theorem to arrive at an efficient 2-clustering for $X$ with sufficiently high $VR_2(X)$.
+    
+    \subsection*{Strict Separation Clusterability}
+    A clustering $C = \{C_1,...,C_k\}$ of $X$ satisfies \textit{strict separability} if every point is closer to every point in its own cluster than any point in a different cluster (max intracluster distance $<$ min intercluster distance). The \textit{strict separation} of a clustering is given by
+    $$StrS(C,X) = \max_{x\in X}\frac{\max_{x  \sim_C y} ||x-y||}{\min_{x \not\sim_C y} ||x-y||}$$
+    and the \textit{strict separation clusterability} of $X$ is given by
+    $$StrS(X) = \min_C StrS(C,X)$$. 
+    \begin{theorem}
+    If $StrS(X)>1$, then we can efficiently construct a tree such that every clustering $C$ with $Strs(C,X)\geq 1$ is a pruning of this tree.
+    \end{theorem}
+    
+    \subsection*{Target Clusterability}
+    Given a target clustering $C$, let the \textit{error} of a clustering $C'$ be the number of points it labels differently than $C$. A dataset satisfies \textit{$(\mathcal{L},c,\epsilon)$-target-clusterability} if for any near-optimal $k$-clustering $C$, where $\mathcal{L}(C)\leq OPT_{\mathcal{L},k}(X)$ has error at most $\epsilon$ w.r.t the target clustering.
+    \begin{theorem}
+    If a dataset satisfies $(k-means, 1+\alpha, \epsilon)$-target-clusterability, then we can efficiently find a clustering that is $O(\frac{\epsilon}{\alpha})$-close to the target clustering.
+    \end{theorem}
+    
+    \subsection*{Comparison of Notions of Clusterability}
+    The authors provide some results on comparing variance ratio clusterability and separability. The proofs are omitted as they are done directly by simple algebra, assumptions given in other papers, the other theorems in this section, and the fact that $VR_2(X) = \frac{1}{S_2(X)}-1$.
+    \begin{theorem}
+    $W_K(X) = S_2(X)S_3(X)...S_k(X)\sigma^2(X)$ for any $k\geq 2, X\subset \mathbb{R}^m$
+    \end{theorem}
+    \begin{theorem}
+    $VR_k(X) = \frac{VR_{k-1}(X)+1}{S_k(X)}-1 \geq \frac{1}{S_k(X)}-1$ 
+    \end{theorem}
+    \begin{theorem}
+    For any $\epsilon>1, \exists X,k\geq 3$ such that $S_k(X) \geq \epsilon$ and $VR_k(X)$ is arbitrarily high.
+    \end{theorem}
+    
+    \subsection*{Computational Complexity of Clustering}
+    This section gives results on the complexity of determining the clusterability of a dataset $X$ according to the notions presented in the paper.
+    \begin{theorem}
+    Given $X\subset \mathbb{R}^m, k\geq 2, 0<\epsilon <1$, it is NP-hard to determine whether $X$ is $(k,\epsilon)$-separable.
+    \end{theorem}
+    \begin{proof}
+        This is done by applying some algebra to show that determining whether a dataset is $(2,\epsilon)$-separable is reducible to finding whether or not $OPT_{k-means, 2}(X)\leq \mu$, which is NP-hard. We can then reduce the $k\geq 3$ case to the $k=2$ case to show that it is NP-hard for all $k\geq 2$.
+    \end{proof}
+    
+    \begin{theorem}
+    Given $X\subset \mathbb{R}^m, k\geq 2, r>0$, it is NP-hard to determine if $VR_k(X) \geq r$
+    \end{theorem}
+    \begin{proof}
+        This is done by applying some algebra to show that this task is reducible to finding whether or not $OPT_{k-means, k}(X)\leq \mu$ for any $\mu>0$, which is NP-hard.
+    \end{proof}
+    
+    \begin{theorem}
+    Given $k\geq 2$ and a dataset $X\subset \mathbb{R}^m$ with $WPR_k(X)>1$, it is possible to determine $WPR_k(X)$ in polynomial time.
+    \end{theorem}
+    \begin{proof}
+        We have already shown that if $WPR_k(X)>1$, we can find a clustering $C$ that minimizes split over width in $O(n^2 \log n)$ time. We can find the split and width of this clustering in $O(n^2)$ additional operations.
+    \end{proof}
