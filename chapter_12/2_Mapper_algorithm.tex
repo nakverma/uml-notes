@@ -1,0 +1,16 @@
+%Contributor: Yixuan Li 
+\section{The Mapper algorithm}
+\textbf{Definition 2.} Let $f: X \rightarrow \mathbb{R}^d, d\geq 1$, be a continuous real valued function and let $U = (U_i)_{i\in I}$ be a cover of $\mathbb{R}^d$. The pull back cover of $X$ induced by $(f, U)$ is the collection of open sets $(f^{-1}(U_i))_{i\in I}$. The refined pull back is the collection of connected components of the open sets $f^{-1}(U_i), i \in I$.
+\begin{algorithm}[H]
+\SetAlgoLined
+Input: : A data set $\mathbb{X}$ with a metric or a dissimilarity measure between data points, a function $f: \mathbb{X} \rightarrow \mathbb{R}^d$, and a cover $U$ of $f(\mathbb{X})$.\\
+For each $u \in U$, decompose $f^{-1}(u)$ into clusters $C_{u,1}, \cdots, C_{u, k_u}$.\\
+Compute the nerve of the cover of $X$ defined by the $C_{u,1},\cdots, C_{u, k_u}, u \in U$.\\
+Output: a simplicial complex, the nerve (often a graph for well-chosen covers $\rightarrow$ easy to visualize):\\
+- a vertex $v_{u,i}$ for each cluster $C_{u,i}$.\\
+- an edge between $v_{u,i}$ and $v_{u',j}$ iff $C_{u,i} \cap C_{u',j} \neq \emptyset$
+ \caption{The Mapper algorithm}
+\end{algorithm}
+\noindent The idea of the Mapper algorithm is, given a data set X and well-chosen real valued function $f: X \rightarrow \mathbb{R}^d$, to summarize X through the nerve of the refined pull back of a cover $U$ of $f(\mathbb{X})$.
+For well-chosen covers $U$ (see below), this nerve is a graph providing an easy and convenient way to visualize the summary of the data.\\\\
+\textbf{The choice of the clusters.} The Mapper algorithm requires to cluster the preimage of the open sets $u \in U$. There are two strategies to compute the clusters. A first strategy consists in applying, for each $u \in U$, a cluster algorithm, chosen by the user, to the premimage $f^{-1}(u)$. A second, more global, strategy consists in building a neighboring graph on top of the data set $\mathbb{X}$, e.g. $k$-NN graph or $\epsilon$-graph, and for each $u \in U$, taking the connected components of the subgraph with vertex set $f^{-1}(u)$.

@@ -1,0 +1,66 @@
+%Contributor: Ben Brimacombe
+\section{Geometry and Homology Inference}
+The nerve theorem is a powerful result which we can use for several more analyses of the topology of data. The first of these techniques covers $X_n$ by a union of balls of fixed radius centered on the $x_i$. This construction has 
+’s. Under some regularity
+assumptions on M, one can relate the topology of this union of balls to the one of M;
+2. From a practical and algorithmic perspective, topological features of M are inferred from
+the nerve of the union of balls, using the Nerve Theorem.
+
+
+\subsection{Offsets and Sublevels} 
+
+\begin{definition}[Sublevel Set]
+Given a function $f$ with domain $X$, the sublevel set for $f$ at a constant r is given by $\{(x_1, x_2, ... x_n) \: | \: f(x_1, x_2, ... x_n) \leq r\}$
+\end{definition}
+
+\begin{definition}[r-offset]
+Given a compact subset K of $\bbR^d$ and a non-negative
+real number r, the r-offset of $K$, called $K^r$, is the the r-sublevel set of the distance function $d_K:\bbR^d \rightarrow \bbR$, such that $d_K(x) = \text{inf}_{y\in K}||x-y||$. That is, $K^r = \cup_{x\in{K}}B(x, r) = d_{k}^{-1}([0, r])$, the preimage of the radius interval.
+\end{definition}
+
+
+Change:
+This remark allows us to compare the topology of the offsets of compact sets that are close to each other. For example, the offsets of Xn and the support of the measure $\mu$, M, by their compactness and with a few mild assumptions on their Hausdorff difference, can be related up to homotopy equivalence. Specifically When M is a smooth compact submanifold there exists an r for which the offsets of Xn are homotopy equivalent to M.
+
+
+The r-offset 
+
+\begin{definition}
+A function $\phi:\bbR^d \rightarrow \bbR_+$ is called distance like if $x\rightarrow ||x||^2 -\phi^2(x)$ is convex and if the pre-image of any compact set in $\bbR$ is a compact set in $\bbR^d$. 
+\end{definition}
+
+
+Mention Isotopy Lemma Grove (1993)
+
+\begin{theorem}[Reconstruction Theorem]
+Let $\phi, \psi$ be two distance-like functions. Given $||\phi - \psi||_\infty < \epsilon$ and that $\text{reach}_\alpha(\phi) \geq R$ for some positive $\epsilon$ and $\alpha$, then $\forall{r} \in [4\epsilon/\alpha^2, R-3\epsilon]$ and $\forall{\eta}\in(0, R)$, the sublevel sets $\psi^r$ and $\phi^\eta$ are homotopy equivalent if $$\epsilon \leq \frac{R}{5+4/\alpha^2}$$
+\end{theorem}
+
+The Reconstruction theorem and the Nerve Theorem allow us to infer the topology of data from a simplicial complex built on top of an approximating finite sample. However, the Reconstruction Theorem requires a regularity assumption (through the $\alpha$-reach condition and the choice of a radius r for the ball used to build Cech$_r(\mathbb{X})$). Additionally, Cech$_r(\mathbb{X})$
+provides a simplicial complex that, while provably related to the underlying topological space, is often not computationally useful. As a solution, we introduce the idea of homology. Homology is a more general approach which associates algebraic objects to the properties of the topological space, allowing for more computable statistics over our constructed simplicial complexes. 
+
+
+Change:
+$\text{reach}_\alpha(\phi) \geq R$ can be interpreted as regularity condition on M.
+The Reconstruction Theorem combined with the
+Nerve Theorem tell that, for well-chosen values of r, η, the η-offsets of M are homotopy equivalent
+to the nerve of the union of balls of radius r centered on Xn, i.e the Cech complex Cechr(Xn).
+From a statistical perspective, the main advantage of these results involving Hausdorff distance is that the estimation of the considered topological quantities boil down to support estimation questions that have been widely studied
+
+Add citations to usefulness and different approaches. 
+
+
+\subsection{Introduction to Homology} 
+
+Homology was developed as a way to analyse and classify manifolds according to their cycles –  submanifolds that can be drawn on a given n dimensional manifold but not continuously deformed into each other. For example, a 1 dimensional sub-manifold cycle is a closed loop. In $\bbR^d$ all closed loops can be continuously deformed into any other closed loop, so this tells us that the space is contractible to a point and that it has no holes. In some spaces, such as the torus, not all loops can be continuously homotoped (deformed) into other loops. By defining equivalence classes on the homotopic loops, a group algebra can be constructed on the space. Homology is an abelianization of these groups in dimension 1. In higher dimensions Homology generalizes these ideas, allowing algebraic objects to be associated with the structure of a space, based on its disconnections, holes, cavities, etc. 
+
+
+\begin{definition}[Simplicial homology group and Betti numbers]
+The $k^{\text{th}}$ simplicial homology group of K is the quotient vector space $$H_k(K) = Z_k(K)/B_k(K)$$
+The $k^{\text{th}}$ Betti number of K is the dimension $\beta_k(K) = dim(H_k(K))$ of the vector space $H_k(K)$
+\end{definition}
+
+
+\begin{theorem}[Betti number equivalences]
+pass
+\end{theorem}

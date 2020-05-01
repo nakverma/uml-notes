@@ -1,0 +1,71 @@
+%Contributor: Erica Wei
+\section{Persist Homology}
+
+\subsection{Definition}
+Persistent homology is an algebraic method for measuring topological features of shapes and of functions defined on a topological space. Features come on all scale-levels and can be nested or in more complicated relationships. Persist homology means to quantizes the changes in homology as the subsets with increasing value of features defined in the functions.
+
+
+\subsection{Basic Concepts}
+Before we move to the algorithm and theorem under persistent homology, let's introduce with the key concepts. 
+
+\subsubsection{Filtration} A \textit{filtration of a simplicial complex} K is a nested family of subcomplexes $(K_r)_{r \in T}$, where T $\in \R $ such that for any $r', r \in T$, if $r' \leq r $, then $K_{r'} \subseteq K_r$, and $ K = \bigcup_{r \in T} K_r$. In another word, for a function $ f : K \rightarrow \R $, we require that f to be \textit{monotonic}, which means for every subset $K_{r'} \subseteq K_r, f(K_{r'}) 
+\leq f(K_r)$. \\ 
+Denoting $K_i = f^{-1}(\infty, a_i]$, we get a nested sequences of subcomplexes of K which is called filtration here:
+\begin{equation*}
+    \emptyset = K_0 \subseteq K_1 \subseteq K_2 ... \subseteq K_n = K
+\end{equation*}
+A \textit{sublevel sets filtration} is the family of subcomplexes $K_r = {\sigma \in K, \text{where} f(\sigma) \leq r}$. And an upperlevel sets filteration is the similarly definition. 
+
+\subsubsection{Persistence}
+The p-th persistent homology groups are the images of the homomorphisms; $H^{ij}_p = im f^{ij}_p, for 1 \leq i \leq j \leq n.$ The p-th persistent betti numbers are the ranks $\beta^{ij}_p = rank H^{ij_p}$\\ 
+The p-th persistent homology groups indicates information about when a class is born and when it dies. When a new class is born, many other classes that are sum of this new class and any other existing class also are born. Similarly when a class no longer exists, many other classes also dies along with it.
+
+\subsubsection{Birth and Death}
+A p-th homology class $[c]$ is born at $K_i$ if $[c] \in H_p(K_i)$, but $[c] \not\in H_p(K_{i-1})$. It dies entering $K_j$ if it merges with a class that is born earlier. Formally, $f^{i, j-1}([c]) \not\in H^{i-1, j-1}_p$, but $f^{i,j} \in H^{i-1, j}_p$. 
+The definition of birth is very simple. 
+For definition of dies is when a class is merged with another class, the latest one will be killed. This canonical choice of killing the latest class when merging happens. We define the persistence of a class as $Pers([c]) = t_j - t_i$ where the class [c] is born at function value $t_i$ and dies at the function value $t_j$. 
+
+\subsection{Persistence Modules}
+
+\begin{definition} Let $Filt = (F_r)_r \in T$ be a filtration of a simplicial complex or a topological space. Given a non negative integer k and considering the homology groups $H_k(F_r)$ we obtain a sequence of vector spaces where the inclusions $Fr \subset F_{r'}, r \leq r'$ induce linear maps between $H_k(F_r)$ and $H_k(F_{r‘})$. Such a sequence of vector spaces together with the linear maps connecting them is called a \textit{persistence module}.
+\end{definition}
+From Chazal et al., 2016a, Theorem 2.8, the results give some necessary conditions for a persistence module to be decomposable as a direct sum of interval modules.
+\begin{theorem}
+Let $\V$ be a persistence module indexed by T $\subset$ R. If T is a finite set or if all
+the vector spaces $V_r$ are finite-dimensional, then V is decomposable as a direct sum of interval
+modules.
+\end{theorem}
+As both conditions above are satisfied for the persistent homology of filtrations of finite
+simplicial complexes. 
+
+\subsection{Persistence Diagram}
+We can create a visualization  of the the persistent homology by drawing a collection of points on the plane. Consider the plane $( \R \bigcup \{\infty\})^2$ on which we represent a birth paired with the death as a point with two coordinates. Some of the classes may never die and thus represented as points at infinity. Some others may have same coordinates because they may be born and die at the same time. This happens only when we allow mutiple homology classes being created or destroyed at the same function value or filtration point.
+
+Persistence diagrams can be defined as soon as the following simple condition is satisfied.
+\begin{definition}
+A persistence module V indexed by T $\subset$ R is q-tame if for any r < s in T, the rank of the linear map $v^r_s : V_r → V_s$ is finite.
+\end{definition}
+
+There are some facts we want to mention here: \\
+1. \textit{If a class has persistence s, then the point representing it will be at distance s from the diagonal D.} \\ 
+2. \textit{Since all points (i, j) representing a class have i < j, they lie above the diagonal.} \\ 
+3. \textit{ $\beta^{k,l}_p$ is the number of points in the upper left quadrant of the corner (k, l). A class that is born at $K_i$ and dies enetering $K_j$ is counted for $\beta^{k,l}_p$ iff i $\leq$ k and j > l. The quadrant is therefore closed on the right and open on the bottom.}
+\begin{definition}
+For every pair of indices $0 \leq k \leq l \leq n$ and every p, the p-th persistent Betti number is $\beta^{k,l}_p = \sum_{i \leq k} \sum_{j > l} \mu_p^{i, j}$.  
+\end{definition}
+
+\subsection{Properties of Persist Homology}
+A fundamental property of persistence homology is that persistence diagrams of filtrations built on top of data sets turn out to be very stable with respect to some perturbations of the data.
+\begin{definition}(Bottleneck distance)
+Let B = {b} denote the set of all bijections $b : Dgm_p( f ) \rightarrow Dgm_p(g)$. Consider the distance between two points x = (x1, x2) and y = (y1, y2) in $L_\infty$-norm $\lVert x-y \rVert _\infty$ = max $ \{ |x1-y1|, |x2-y2| \} $. The bottleneck distance between the two diagrams is:
+\begin{equation*}
+    W_\infty(Dmg_p(f), Dmg_p(g)) = inf_{b \in B} sup_{x \in Dmg_p(f)} \lVert x- b(x) \rVert_\infty
+\end{equation*}
+\end{definition}
+
+\begin{theorem}
+Let $f,g : K \rightarrow R$ be two monotonic functions defined on a simplicial complex K. Then, for every $p \geq 0$,
+\begin{equation*}
+    W_\infty(Dmg_p(f), Dmg_p(g)) \leq \lVert f - g \rVert_\infty
+\end{equation*}
+\end{theorem}

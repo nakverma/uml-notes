@@ -1,0 +1,21 @@
+%Contributor: Yixuan Li, Erica Wei
+\section{Introduction}
+Topological Data Analysis aims at providing well-founded mathematical, statistical and algorithmic methods to infer, analyze and exploit the complex topological and geometric structures underlying data that are often represented as point clouds in Euclidean or more general metric spaces. It provides a set of mature and efficient tools that can be used in combination or complementary to data sciences tools.
+\subsection{The TDA Pipeline.}
+There now exist a large variety of methods inspired by topological and geometric approaches and most of them rely on the following basic and standard pipeline:
+\begin{enumerate}
+    \item[1.]The input is assumed to be a finite set of points coming with a notion of distance - or similarity - between them. The distance could be defined in a metric space, or  come as an intrinsic metric defined by a pairwise distance matrix.
+    \item[2.]A “continuous” shape is built on top of the data in order to highlight the underlying topology or geometry. This is often a simplicial complex or a nested family of simplicial complexes, called a filtration, that reflects the structure of the data at different scales.
+    \item[3.]Topological or geometric information is extracted from the structures built on top of the data.  This may either results in a full reconstruction, typically a triangulation, of the shape underlying the data or, in crude summaries or approximations from which the extraction of relevant information requires specific methods, such as e.g. persistent homology.
+    \item[4.]The extracted topological and geometric information provides new families of features and descriptors of the data. They can be used to better understand the data or they can be combined with other kinds of features for further analysis and machine learning tasks. 
+\end{enumerate}
+\subsection{TDA and statistics.}
+A statistical approach to TDA means that we consider data as generated from an unknown distribution, but also that the inferred topological features by TDA methods are seen as estimators of topological quantities describing an underlying object. The main goals of a statistical approach to topological data analysis can be summarized as the following list of problems:
+\begin{enumerate}
+    \item[\textbf{Topic 1:}] proving consistency and studying the convergence rates of TDA methods.
+    \item[\textbf{Topic 2:}] providing confidence regions for topological features and discussing the significance of the estimated topological quantities.
+    \item[\textbf{Topic 3:}] selecting relevant scales at which the topological phenomenon should be considered, as a function of observed data.
+    \item[\textbf{Topic 4:}] dealing with outliers and providing robust methods for TDA.
+\end{enumerate}
+This chapter will include a brief and comprehensive introduction to the mathematical and statistical foundations of TDA. The focus is put on a few selected, but fundamental, tools and topics:
+simplicial complexes (Section 2) and their use for exploratory topological data analysis (Section 3), geometric inference Section 4) and persistent homology theory (Section 5) that play a central role in TDA.
