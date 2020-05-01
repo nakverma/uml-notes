@@ -27,7 +27,8 @@ reconstruction loss forces a representation in $H$ to retain
 information about the original input. Encoder and decoder functions
 can be as simple as linear layers, or as complex as deep neural
 networks with non-linear activations in order to learn richer or more
-abstract representations.
+abstract representations. Optimization of autoencoders is generally
+done by stochastic gradient descent.
 
 To better understand the process of autoencoding, it may be helpful
 to view $f(x)$ as projecting points onto a manifold $H$, and $g(x)$
@@ -36,7 +37,8 @@ this conceptualization, training an autoencoder is the process of
 finding a low-dimensional manifold which can best represent the data
 the data in $X$. Indeed, when the encoder and decoder are linear, the
 optimal autoencoder recovers the PCA subspace, which we know to be
-the optimal linear manifold for dimensionality reduction \cite{alain2014regularized}
+the optimal linear manifold for dimensionality reduction
+\cite{alain2014regularized}.
 
 
 In de-noising applications, the full auto-encoder $g(f(x))$ is used
@@ -98,45 +100,92 @@ model the dataset as being sampled from a well structured latent
 distribution, generally a latent normal distribution $h \in H =
 N(0,I)$. Using this distribution as a prior, the VAE encoder then
 maps each datapoint $x \in X$ to a posterior distribution
-$N(\vec{\mu}, \vec{\Sigma})$ \cite{doersch2016tutorial}.
+$N(\vec{\mu}, \Sigma)$ \cite{doersch2016tutorial}.
 
-VAEs achieve this modeling by making two changes to the standard
+Formally, we are aiming to maximize the probability of the data
+$P(X)$ over a latent space $h \in H$:
+
+\begin{align*}
+    P(X) = \int P(X \mid h) P(h) dh
+\end{align*}
+
+$P(h)$ is a model of the prior (which we will constrain to $N(0,I)$),
+and $P(X \mid h)$ models the posterior (which we will also constrain
+to a normal distribution), and the VAE attempts to optimize the
+posterior such that probability of all the data in the dataset is
+maximized. Optimizing this directly is generally computationally
+intractable because of the size of the latent space, but by observing
+that most latent variables $h$ will not produce a given datapoint $x$
+(i.e. each datapoint is mapped to a small region of the latent
+space), we can re-formulate the problem such that we sample a more
+limited region of the latent space. Namely, re-write the optimization
+in terms of the KL-divergence $D_{KL}$ and introducing an additional
+probability distribution, $Q$:
+
+\begin{align*}
+    \log P(X) - D_{KL}[Q(h \mid X) \mid P(h \mid X)] \\
+    = E_{h \sim Q} [\log P(X \mid h)] - D_{KL}[Q(h \mid X) \mid P(h)]
+\end{align*}
+
+(A formal derivation of this can be found in
+\cite{doersch2016tutorial} – the derivation is relatively simple, but
+is not in itself illustrative for intuition and is therefore omitted
+here.) In this formulation, the distribution $Q(h \mid X)$ is modeled
+by the encoder, and the distribution $P(X \mid h)$ is modeled by the
+decoder. Additionally, re-writing the optimization in terms of the
+KL-Divergence displays an important intuition: the KL-Divergence is a
+similarity measure between probability distributions, so any
+minimization over a KL-Divergence forces the two probability
+distributions to be similar.
+
+Intuitively, $E_{h \sim Q} [\log P(X \mid h)]$ maximizes the
+probability of the data $X$ given $h \in Q$, as required by the
+original optimization problem. $D_{KL}[Q(h \mid X) \mid P(h)]$ forces
+the encoded latent space distribution for the data to be similar to
+the prior distribution, making it a reasonable distribution over
+which to sample. We also note that the $D_{KL}[Q(h \mid X) \mid P(h
+\mid X)]$ vanishes when $Q$ is sufficiently high-capacity (i.e. the
+encoder and decoder distributions will naturally tend to match during
+training), leaving a maximization over $\log P(X)$ as desired.
+
+VAEs achieve model this by making two changes to the standard
 autoencoder: encoding each datapoint to a multivariate Gaussian
 distribution rather than a single point (i.e. the posterior), and
 applying a KL-divergence loss to the resulting distribution (i.e.
 enforcing the prior). Formally, the encoder is modified to output a
-$\vec{\mu}_i$ and $\vec{\Sigma}_i$ of a distribution, and during
-training the decoder is fed a vector from the latent space sampled
-from the distribution $N(\vec{\mu}_i, \vec{\Sigma}_i)$. That is, the
-encoder and decoder are re-formulated as:
+$\vec{\mu}_i$ and $\Sigma_i$ of a distribution, and during training
+the decoder is fed a vector from the latent space sampled from the
+distribution $N(\vec{\mu}_i, \Sigma_i)$. That is, the encoder and
+decoder are re-formulated as:
 
 \begin{align*}
-    &f(x_i ;\theta_f) = \vec{\mu}_i, \vec{\Sigma}_i \\
+    &f(x_i ;\theta_f) = \vec{\mu}_i, \Sigma_i \\
     &\gamma \in N(0,I) \\
-    &g(\vec{\mu}_i + \gamma \vec{\Sigma}_i; \theta_g) = \hat{x}_i \\
+    &g(\vec{\mu}_i + \gamma \Sigma_i; \theta_g) = \hat{x}_i \\
 \end{align*}
 
 And the loss is reformulated as:
 
 \begin{align*}
-    L_{VAE}(x, x') = l(x_i, x') + D_{KL}(N(\vec{\mu}, \vec{\Sigma}) \mid N(0,I))
+    L_{VAE}(x_i, \hat{x}) = l(x_i, \hat{x}_i) - D_{KL}[N(\vec{\mu}, \Sigma) \mid N(0,I)]
 \end{align*}
 
-Where $D_{KL}$ is the KL-divergence, which is used to measure the
-similarity of two probability distributions, and $l$ is again the
-reconstruction loss. The KL-divergence is added to the loss term in
-order to force the distribution of the input in the latent space to
-be $0$-mean and unit standard deviation (i.e. similar to the prior),
-allowing for sampling when used generatively and preventing the
-latent distribution for each datapoint from collapsing on a single
-point.
+Where $l$ is again the reconstruction loss. Intuitively, the
+KL-divergence enforces the prior distribution and prevents each
+datapoint from collapsing to a single point representation in the
+latent space, and models $D_{KL}[Q(h \mid X) \mid P(h)]$. Further,
+computing the reconstruction loss over a single point sampled from
+the predicted distribution $N(\vec{\mu}_i, \Sigma_i)$ serves as a way
+to tractable approximate $E_{h \sim Q} [\log P(X \mid h)]$ and over
+which one can apply stochastic gradient descent. (Note: $\Sigma$ is
+also often constrained to be diagonal to ease computation of the
+KL-Divergence.)
 
 Once such an autoencoder is trained, the latent space can be sampled
 to generate new outputs from the original distribution by producing
 vectors $h \in N(0,I)$ and feeding these values $h$ to the decoder
-$g(h)$.
+$g(h)$.%Jake
 
-%Jake
 \subsection{Conditional VAE}
 
 While a VAE could generate outputs from the overall original
@@ -145,7 +194,7 @@ certain cases it may become necessary to be more specific in this
 data generation process. For example, if trained on a dataset of
 digit images, we may want to generate images of a specific digit
 instead of any digit from the overall distribution. To accomplish
-this, we turn to the Conditional VAE \cite{sohn2015learning}.
+this, we turn to the Conditional VAE.
 
 Whereas a standard VAE encoder and decoder only conditions on the
 input space and latent space respectively, a Conditional VAE, also
@@ -153,9 +202,9 @@ conditions both on an additional variable $c$. That is, the encoder
 and decoder are re-formulated as:
 
 \begin{align*}
-    &f(x_i, c ;\theta_f) = \vec{\mu}_i, \vec{\Sigma}_i \\
+    &f(x_i, c ;\theta_f) = \vec{\mu}_i, \Sigma_i \\
     &\gamma \in N(0,I) \\
-    &g(\vec{\mu}_i + \gamma \vec{\Sigma}_i, c; \theta_g) = \hat{x}_i \\
+    &g(\vec{\mu}_i + \gamma \Sigma_i, c; \theta_g) = \hat{x}_i \\
 \end{align*}
 
 And the optimization becomes similarly conditioned on $c$. This
@@ -166,7 +215,7 @@ can now feed the decoder a randomly sampled latent space vector and
 specify a concatenated $c$ to generate from the specified
 distribution.
 
-\subsection{Beta-VAE}
+\subsection{$\beta$-VAE}
 
 While a VAE will learn a latent representation ideal for decoding,
 there is no guarantee on the \textit{disentanglement} of the learned
@@ -189,7 +238,7 @@ efficient latent representation that is hopefully more disentangled.
 This optimization is defined as:
 
 \begin{align*}
-    L_{\beta \text{-VAE}} = l(x_i, \hat{x}_i) + \beta D_{KL}(N(\vec{\mu}_i, \vec{\Sigma}_i) \mid N(0,I))
+    L_{\beta \text{-VAE}}(x_i, \hat{x}_i) = l(x_i, \hat{x}_i) - \beta D_{KL}[N(\vec{\mu}_i, \Sigma_i) \mid N(0,I)]
 \end{align*}
 
 This simple addition of the $\beta$ coefficient leads to a more
