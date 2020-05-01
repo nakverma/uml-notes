@@ -21,7 +21,7 @@ A generic \textit{alternating minimization} algorithm works as follows. First, i
 
 Here, we discuss two specific AM algorithms and their respective theoretical convergence/recovery guarantees - that is, under conditions of data generative assumptions and assumptions on algorithm parameters, the iterates converge to the true dictionary with high probability. Both algorithms, as the current theoretical guarantees suggest, achieve \textit{local linear convergence}, that is, the dictionary iterates $A^{(t)}$ satisfy $\|A^{(t)} - A^*\| \leq C \cdot \eta^t \|A^{(0)} - A^*\|$ for $C>0$ and $0<\eta<1$, where $A^*$ is the true underlying dictionary, as long as $A^{(0)}$ is sufficiently close to $A^*$. The first algorithm below has a provably larger radius of convergence, that is, $A^{(0)}$ can be further away from $A^*$. It also has weaker assumption on the dictionary matrix, that is, an upper bound on $\|A^*\|_\infty$ instead of its operator norm, while allowing the operator norm to grow with dimension. 
 
-\subsection{An alternating minimization algorithm}
+\subsection{Alternating minimization algorithm I}
 The first is the one considered in \cite{chatterji2017alternating}, in which the authors provide theoretical guarantees of local linear convergence. On a high level, this algorithm involves a specific robust sparse least-square estimation subroutine (for updating the coefficients $x$) and simple gradient step (for updating the dictionary $A$).
 
 We first introduce the robust sparse least-square estimation subroutine, which is defined as follows. Let $\gamma, \eta, \nu > 0$ be tuning parameters and $R>0$ be an upper bound on the entry-wise maximum dictionary estimation error ($\max_{i,j} |A_{ij} - A^*_{ij}|$). Let $(\hat{\theta}, \hat{t}, \hat{u})\in \mathbb{R}^r \times \mathbb{R}_+\times \mathbb{R}_+$ be the solution to the following convex minimization problem: 
@@ -40,7 +40,7 @@ This is simply a gradient step for minimizing the sum of square
 
 The estimator is the first part of the optimal solution $\hat{\theta}$, denoted as $MUS_{\gamma,  \lambda, \nu}(y, A, R)$. In the algorithm, there will be a further thresholding step of the form $\tilde{\theta}_i = \hat{\theta}_i \mathbb{I}\{|\hat{\theta}_i| \geq \tau \}$, where $\tau$ is the threshold value depending on various problem parameters.
 
-The following alternating minimization algorithm is analyzed in \cite{chatterji2017alternating}.
+Below is Algorithm \ref{alg:am-for-dl-with-mus-estimator} \cite{chatterji2017alternating}.
 
 \begin{algorithm}
 \caption{Alternating Minimization for Dictionary Learning}
@@ -175,11 +175,11 @@ So the bound has the form:
 \end{aligned}
 \end{equation}
 
-Now we consider the bound of the term $[\mathbb E[x_j^2|x_j^*\neq0]$. By the lemma in (\ref{1}), we have:
+Now we consider the bound of the term $[\mathbb E[x_j^2|x_j^*\neq0]$. By the Lemma 6 in \cite{chatterji2017alternating}, we have:
 \begin{equation}
     0\leq\left(1-\eta\frac s r\left[\mathbb E[x_j^2|x_j^*\neq0]-\frac 1 3\right]\right)\leq\frac 3 4
 \end{equation}
-therefore:
+therefore,
 \begin{equation}
 |a_{ij}^{(t)}-a_{ij}^*|\leq\frac3 4 R^{(t-1)}+\eta|\epsilon_n|\leq\frac3 4 R^{(t-1)}+\frac1 8 R^{(t-1)}=\frac 7 8R^{(t-1)}\leq\left(\frac 7 8\right)^tR^{(0)}.
 \end{equation}
