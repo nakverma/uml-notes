@@ -1,0 +1,199 @@
+% Contributors: Suman Mulumudi, Jake Lee
+
+\section{Background on Autoencoders and A Few Flavors}
+
+Autoencoders are neural networks which perform dimensionality
+reduction in an unsupervised manner by compressing their inputs into
+a (generally lower-dimensional) latent space while mandating that the
+original input can be reconstructed. This turns out to be an
+extremely powerful architecture, enabling both the discovery of
+well-structured latent spaces and for the separation of signal from
+noise.
+
+Formally, suppose an input space $X$, an encoder $f(x ; \theta_f): X
+\to H$, and a decoder $g(h ; \theta_g): H \to X$, where $H$ is a
+latent space. Further, suppose a regressive reconstruction loss $l(x,
+x'): X \times X \to R$. The autoencoder is then optimized as:
+
+\begin{align*}
+    \theta_f^*, \theta_g^* = \argmin_{\theta_f, \theta_g} \sum_i l(x_i, g(f(x_i)))
+\end{align*}
+
+That is, the encoder $f$ transforms $x$ into a latent representation
+$h$, which is then transformed by $g$ back into the original domain.
+Generally, $H$ will be chosen to be of lower dimension than $X$ in
+order to facilitate dimensionality reduction, and the use of a
+reconstruction loss forces a representation in $H$ to retain
+information about the original input. Encoder and decoder functions
+can be as simple as linear layers, or as complex as deep neural
+networks with non-linear activations in order to learn richer or more
+abstract representations.
+
+To better understand the process of autoencoding, it may be helpful
+to view $f(x)$ as projecting points onto a manifold $H$, and $g(x)$
+as re-projecting from the manifold back into the original space; with
+this conceptualization, training an autoencoder is the process of
+finding a low-dimensional manifold which can best represent the data
+the data in $X$. Indeed, when the encoder and decoder are linear, the
+optimal autoencoder recovers the PCA subspace, which we know to be
+the optimal linear manifold for dimensionality reduction \cite{alain2014regularized}
+
+
+In de-noising applications, the full auto-encoder $g(f(x))$ is used
+for downstream tasks. In generative applications, the decoder $g(h)$
+is used in downstream tasks. In dimensionality reduction and
+re-representation applications, the latent space representation
+$h=f(x)$ is useful for downstream tasks. These are discussed in more
+detail below.
+
+
+\subsection{Regularized Autoencoders}
+
+Regularized autoencoders utilize regularization on the latent space,
+or by introducing noise into the input, to better constrain the
+geometry of the latent space.
+
+One common regularized autoencoder is the Contracted Autoencoder
+(CAE). CAEs modify the autoencoder loss to:
+
+\begin{align*}
+    L_{CAE}(x, x') = \sum_i \left ( l(x_i, \hat{x}_i) + \lambda \left | \frac{\partial f(x)}{\partial x} \right |^2_F \right )
+\end{align*}
+
+This additional term to regularize the encoder adds robustness to
+perturbations of the input space. In general, an autoencoder must
+learn representations which allow for differentiation of different
+datapoints and allow for reconstruction, so a strong contractive loss
+term (i.e. large $\lambda$) provides robustness by encouraging the
+autoencoder to be robust to directions in the input space which are
+not descriptive of the data (i.e. orthogonal to the manifold on which
+the data lie) \cite{alain2014regularized}.
+
+
+Another common autoencoder is the denoising autoencoder (DAE). Unlike
+other autoencoders, DAEs are used to separate data from noise by
+introducing stochastic noise into the input and regressing the
+uncorrupted output with the goal of producing an autoencoder which
+can denoise an input. That is, if $N(x)$ is a function which
+introduces stochastic noise, then a DAE has the form:
+
+\begin{align*}
+    \theta_f^*, \theta_g^* = \argmin_{\theta_f, \theta_g} \sum_i l(x_i, g(f(N(x_i))))
+\end{align*}
+
+Indeed, the DAE can actually be seen as a form of a CAE, as it
+encourages robustness to small perturbations of the input, but
+applies regularization over the full encoder-decoder chain rather
+than just the encoder \cite{alain2014regularized}.
+
+
+
+\subsection{Variational Autoencoders}
+
+Variational autoencoders (VAEs) are a generative variant of
+traditional autoencoders that is regularized in to create a latent
+space which can be easily sampled to generate new examples similar to
+the original data. The primary intuition behind VAEs is to try to
+model the dataset as being sampled from a well structured latent
+distribution, generally a latent normal distribution $h \in H =
+N(0,I)$. Using this distribution as a prior, the VAE encoder then
+maps each datapoint $x \in X$ to a posterior distribution
+$N(\vec{\mu}, \vec{\Sigma})$ \cite{doersch2016tutorial}.
+
+VAEs achieve this modeling by making two changes to the standard
+autoencoder: encoding each datapoint to a multivariate Gaussian
+distribution rather than a single point (i.e. the posterior), and
+applying a KL-divergence loss to the resulting distribution (i.e.
+enforcing the prior). Formally, the encoder is modified to output a
+$\vec{\mu}_i$ and $\vec{\Sigma}_i$ of a distribution, and during
+training the decoder is fed a vector from the latent space sampled
+from the distribution $N(\vec{\mu}_i, \vec{\Sigma}_i)$. That is, the
+encoder and decoder are re-formulated as:
+
+\begin{align*}
+    &f(x_i ;\theta_f) = \vec{\mu}_i, \vec{\Sigma}_i \\
+    &\gamma \in N(0,I) \\
+    &g(\vec{\mu}_i + \gamma \vec{\Sigma}_i; \theta_g) = \hat{x}_i \\
+\end{align*}
+
+And the loss is reformulated as:
+
+\begin{align*}
+    L_{VAE}(x, x') = l(x_i, x') + D_{KL}(N(\vec{\mu}, \vec{\Sigma}) \mid N(0,I))
+\end{align*}
+
+Where $D_{KL}$ is the KL-divergence, which is used to measure the
+similarity of two probability distributions, and $l$ is again the
+reconstruction loss. The KL-divergence is added to the loss term in
+order to force the distribution of the input in the latent space to
+be $0$-mean and unit standard deviation (i.e. similar to the prior),
+allowing for sampling when used generatively and preventing the
+latent distribution for each datapoint from collapsing on a single
+point.
+
+Once such an autoencoder is trained, the latent space can be sampled
+to generate new outputs from the original distribution by producing
+vectors $h \in N(0,I)$ and feeding these values $h$ to the decoder
+$g(h)$.
+
+%Jake
+\subsection{Conditional VAE}
+
+While a VAE could generate outputs from the overall original
+distribution by feeding latent space samples to the decoder, in
+certain cases it may become necessary to be more specific in this
+data generation process. For example, if trained on a dataset of
+digit images, we may want to generate images of a specific digit
+instead of any digit from the overall distribution. To accomplish
+this, we turn to the Conditional VAE \cite{sohn2015learning}.
+
+Whereas a standard VAE encoder and decoder only conditions on the
+input space and latent space respectively, a Conditional VAE, also
+conditions both on an additional variable $c$. That is, the encoder
+and decoder are re-formulated as:
+
+\begin{align*}
+    &f(x_i, c ;\theta_f) = \vec{\mu}_i, \vec{\Sigma}_i \\
+    &\gamma \in N(0,I) \\
+    &g(\vec{\mu}_i + \gamma \vec{\Sigma}_i, c; \theta_g) = \hat{x}_i \\
+\end{align*}
+
+And the optimization becomes similarly conditioned on $c$. This
+conditioning is simply accomplished by concatenating $c$ to the input
+vector and latent vector for the encoder and decoder, respectively.
+Now that the latent variable is distributed conditioned on $c$, we
+can now feed the decoder a randomly sampled latent space vector and
+specify a concatenated $c$ to generate from the specified
+distribution.
+
+\subsection{Beta-VAE}
+
+While a VAE will learn a latent representation ideal for decoding,
+there is no guarantee on the \textit{disentanglement} of the learned
+features. If each variable in a latent representation is sensitive to
+changes in a single generative factor, while being relatively
+invariant to changes in other factors, then it is referred to as
+\textit{disentangled}. We introduce the Beta VAE, which encourages
+the learning of such representations \cite{higgins2017beta}. This is
+particularly useful for interpretability of the latent space, as well
+as fine-grained manipulation of generated outputs. For example, a
+Beta VAE trained on images of faces may be able to modify a single
+factor such as hair color or mouth shape in a generated image by
+modifying a single value in the latent space representation.
+
+To achieve this during training, a single hyperparameter $\beta$ is
+introduced. When $\beta = 1$, the Beta VAE behaves equally to a
+standard VAE. When $\beta > 1$ however, the capacity of the learning
+channel is limited, and the network is forced to learn a more
+efficient latent representation that is hopefully more disentangled.
+This optimization is defined as:
+
+\begin{align*}
+    L_{\beta \text{-VAE}} = l(x_i, \hat{x}_i) + \beta D_{KL}(N(\vec{\mu}_i, \vec{\Sigma}_i) \mid N(0,I))
+\end{align*}
+
+This simple addition of the $\beta$ coefficient leads to a more
+disentangled latent representation, but may come with a trade-off
+with reconstruction fidelity. Therefore, a $\beta$ value must be
+found with the best balance between the disentanglement of the latent
+space and the quality of decoding.

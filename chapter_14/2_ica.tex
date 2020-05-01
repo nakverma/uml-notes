@@ -1,0 +1,273 @@
+% Contributors: Jake Lee, Zhengping Jiang
+
+\section{Provable ICA with Unknown Gaussian Noise}
+
+\subsection{Introduction}
+
+Independent Component Analysis is a method that separates an observed
+variable into variables with independent components. Its simplest
+formulation is $y = Ax$, where $y$ is observed and deconstructed into
+$A$, a mixing matrix, and $x$, a variable with independent
+components. Typically an MLE-based approach is used, optimizing
+weight vectors such as the non-gaussianity of $x$ is maximized. This
+method is commonly used for signal processing and signal separation.
+
+This work instead considers a noisy case, $y = Ax + \eta$, where
+$\eta$ is an independent Gaussian random variable with an unknown
+covariance matrix $\vec{\Sigma}$ \cite{arora2012provable}. The
+authors note that prior works are not robust to such noise,
+especially if the covariance is completely unknown. The authors make
+two major contributions: 1. A denoising and whitening method that do
+not require estimates of the covariance and 2. A modified local
+search more stable to approximation errors due to noise that also
+finds all local optima. With these two tools, they propose an
+algorithm to recover $A$ and $\vec{\Sigma}$ within $\epsilon$ in
+polynomial running time and sampling.
+
+This problem formulation can be related to an RBM with real-valued
+visible units, as such an RBM is a mixture of exponentially many
+standard Gaussians. Parametrized by a matrix $A$ and vector $\theta$,
+a mixture of $n$-dimensional standard Gaussians is encoded. To
+clarify, the algorithm presented could be interpreted as a nonlinear
+autoencoding scheme analogous to an RBM but with uniform mixing
+weights.
+
+\subsection{Algorithm}
+
+Given the formulation above, the main theorem of the paper is:
+
+\begin{theorem}
+    There is an algorithm that recovers the unknown $A$ and
+    $\vec{\Sigma}$ up to additive error $\epsilon$ in each entry in
+    time that is polynomial in $n$, ${\|A\|}_2$,
+    ${\|\vec{\Sigma}\|}_2$, $1/{\epsilon}$, $1/{ \lambda_{\min} (A)}$
+    where $\| \cdot \|_2$ denotes the operator norm and
+    $\lambda_{\min}(\cdot)$ denotes the smallest eigenvalue.
+\end{theorem}
+
+There is an assumption that should be noted regarding $x$. Its
+components are independent, and its fourth moment is strictly less
+than that of a standard Gaussian variable.
+
+The algorithm is enumerated as follows:
+\begin{enumerate}
+    \item Quasi-whiten the observed variable $y$ to generate $z$.
+    This method is discussed in Section \ref{sec:ica-qwhitening}.
+    \item Denoise the new samples $z$, which calculates an empirical
+    estimate of a functional based on the fourth order cumulant. This
+    method is also discussed in Section \ref{sec:ica-qwhitening}.
+    \item Find local optima via local search of the above-mentioned
+    estimated functional. This method is discussed in Section
+    \ref{sec:ica-search}.
+    \item Recover $A$ and $\vec{\Sigma}$ from the result of the local
+    search. This procedure is discussed in Section
+    \ref{sec:ica-search}.
+\end{enumerate}
+
+All parameters in each of these steps are polynomially related, and
+therefore the running and sampling complexity is polynomial. We refer
+to Theorem 3.1 in the original paper for the full proof.
+
+\subsection{Denoising and Quasi-whitening} \label{sec:ica-qwhitening}
+
+The denoising process is called as such because it allows for
+empirical access to information about $A$ uncorrupted by noise
+$\eta$. It relies on the fourth order cumulant ($\kappa_4(\cdot)$)
+and the functional $P(u) = -\kappa_4 (u^T y)$ where $u \in
+\mathbb{R}^n$. $P(u)$ can be estimated by drawing a sufficient number
+of samples of $y$ and taking an average. Additionally, $x$ and $\eta$
+are independent, the following lemma follows:
+
+\begin{lemma}
+    $P(u) = 2 \sum_{i=1}^n (u^T A)_i^4$
+\end{lemma}
+
+This is significant because this functional is independent of the variance matrix $\vec{\Sigma}$.
+
+In prior ICA works, \textit{whitening} refers to reducing $y = Ax$ to
+$y = Rx$ for some rotation matrix $R$ such that the variance is the
+same in all directions. In the noisy case of $y = Ax + \eta$,
+\textit{quasi-whitening} reduces it to $y = RDx + \eta'$ where
+$\eta'$ is some other Gaussian noise, $R$ is a rotation matrix, and
+$D$ is a diagonal matrix that depends on $A$. Local search using the
+objection function $\kappa_4(u^T y)$ gives approximations to the rows
+of $R$ and $D$, from which $A$ is recoverable.
+
+Quasi-whitening uses the Hessian of $P(u)$, but an empirical approximation $\hat P(u)$ must be used with $2N$ samples of $y$:
+$$ \hat P(u) = \frac{-1}{N} \sum_{i=1}^N (u^T y_i)^4 + \frac{3}{N} \sum_{i=1}^N (u^T y_i)^2 (u^T y_i')^2 $$
+
+It is shown in the paper that the Hessian of this empirical estimate
+is a good approximation to the actual Hessian. Then, this estimate
+can be used to compute $B$ such that $\mathcal{H}(\hat P(u)) = BB^T$,
+and $D$ is defined to be a diagonal matrix in which the $k$th entry
+is $24 (A_k \cdot u)^2$. This is sufficient to complete the reduction
+to $y = RDx + \eta'$.
+
+\subsection{Finding Local Optima}\label{sec:ica-search}
+
+Notice that from previous section we have shown that after the
+quasi-whitening steps we have to apply local optima search algorithm
+to reconstruct the rotation matrix $R$. The general steps are:
+
+\begin{enumerate}
+    \item Recover one local optimum.
+    \item project the function to the zero space of the found local optimum and continue finding new local optima and projection.
+\end{enumerate}
+
+Intuitively, to have this algorithm work we need to solve two
+potential problem. First, we need to show that there exists a
+algorithm that can find a local optimum in a given subspace; second,
+we need to bound the error of the project s.t. the projected
+function's evaluation is close to the original function.
+
+\subsubsection{Finding First Local Optima}
+Before proceeding we have to formalize some concept that we have
+mentioned to freely in previous sketch, which is crucial to following
+the line of argument of the authors:
+
+\begin{definition}
+    \begin{align*}
+        \text{Proj}_{\perp u}(v) &= v - (u^Tv)u\\
+        \text{Proj}_{\perp u}(M) &= M - (u^TMu)uu^T
+    \end{align*}
+\end{definition}
+
+This definition aligns well with our intuition. Equipped with this
+definition, we are able to explain the LocalOPT algorithm the authors
+used to get the first optimum. Which is shown here as
+algorithm~\ref{algo:localopt}.
+
+\begin{algorithm}[t]
+\hspace*{\algorithmicindent} \textbf{Input:} $f(u), u_s, \beta, \delta$\\
+\hspace*{\algorithmicindent} \textbf{Output:} vector $v$
+\begin{algorithmic}
+\STATE Set $u \leftarrow u_s$
+\STATE Maximize (via Lagrangian Methods)
+	\STATE $\text{Proj}_{\perp u}(\nabla f(u))^T\xi +
+	\frac{1}{2}\xi^T \text{Proj}_{\perp u}(\mathcal{H}(f(u)))\xi -
+	\frac{1}{2}\big(\frac{\partial}{\partial u}f(u)\big)\|\xi\|_2^2$ s.t.
+	\STATE $\|\xi\|_2^2 \leq \beta$ and $u^T\xi = 0$
+\STATE Let $\xi$ be the solution and $\tilde{u} = \frac{u + \xi}{\|u +\xi\|}$\; 
+\IF {$f(\tilde{u}) \geq f(u) + \frac{\delta}{2}$}
+	\STATE {$u \leftarrow \tilde{u}$ and run another iteration}
+\ELSE 
+	\RETURN {$u$}
+\ENDIF
+\end{algorithmic}
+\caption{LocalOPT}
+\label{algo:localopt}
+\end{algorithm}
+
+The exact proof of the correctness of this algorithm is more
+involved, but we here state the intuition of this
+algorithm~\ref{algo:localopt}. First notice that the condition check
+in the ``if'' statement basically says that the improvement of
+$\tilde{u}$ over $u$ is significant, and we could hope for another
+update. This could be formalized as a proved theory in previous
+papers. Now lets focus on the maximization problem. The optimization
+step is just a Newton's method step without the last correction term.
+But as controlling the norm of $u$ is crucial to controlling the
+error term later on, the author project the gradient and Hessian to
+the subspace perpendicular to $u$ and adding an error term that
+shrink the vector $u$ against its direction. And another conclusion
+from previous literature shows that as long as $f(u)$ the function we
+optimize is close to $f^*(u)$ to some extent, we could actually run
+algorithm~\ref{algo:localopt} on $f(u)$ and get approximate local
+optimum on $f^*(u)$. Applying this theorem(informal) to our case we
+could see that algorithm~\ref{algo:localopt} returns a near local
+optimum of $P(u)$ even we approximate it with $\hat{P}(u)$.
+
+\subsubsection{Finding All Local Optima}
+Notice that in the previous subsection, we are only projecting
+vectors and matrix into subspace. However, to proceed with local
+optima search, recall that we have talked about process that project
+a function into a subspace and run the searching algorithm. This
+projection of function step needs to be further well defined.
+
+\begin{definition}
+    The projection of a function $f$ to a linear subspace $S$ is a function on that subspace with value equal to $f$. More explicitly, if $\{v_1, v_2, \dots v_d\}$ is an orthogonal basis of $S$, the projection of $f$ to $S$ is a function $g$: $\mathbb{R}^d \rightarrow \mathbb{R}$ such that $g(w) = f\big(\sum_{i = 1}^d w_iv_i\big)$.
+\end{definition}
+
+Our algorithm is thus completely defined. The problem remains to be
+solved is to prove the sensibility of the projection-iteration
+algorithm, as to show that the error term under certain condition, as
+in the case of the fourth order cumulant, could be bounded. Recall
+that our sample $x$ is chosen from sub-Gaussian distribution, the
+projection matrix after whitening is a rotation matrix, we know that
+all local optima are orthogonal. This is a very important
+characteristics of the optimization problem. This along with some
+other property, namely, 1) all local maximum are well separated; 2)
+the proxy function $f(x)$ is sufficiently close to $f^*(x)$; 3) the
+projected function is still improvable; 4) the object function is
+Lipschitz conitinuous. If all these conditions hold, the authors
+propose algorithm~\ref{algo:allopt}.
+
+\begin{algorithm}[t]
+\hspace*{\algorithmicindent} \textbf{Input:} $f(u), u_s, \beta, \delta, \beta^*, \delta^*$\\
+\hspace*{\algorithmicindent} \textbf{Output:} vector $v_1, v_2
+\dots v_n, \forall \|v_i - v_i\| \leq \gamma$
+\begin{algorithmic}
+    \STATE Let $v_1 = \text{LocalOPT}(f, e, \beta, \delta)$
+    \FOR {$i = 2$ TO $n$}
+    \STATE {Let $g_i$ be the projection of $f$ to the subspace $v_1, 
+    v_2,\dots v_{i - 1}$}
+    \STATE {Let $u' = \text{LocalOPT}(g_i, e, \beta', \delta')$}
+    \STATE {Let $v_i = \text{LocalOPT}(f, u', \beta, \delta)$}
+    \ENDFOR
+    \RETURN $v_1, v_2 \dots v_n$
+\end{algorithmic}
+\caption{AllOPT}
+\label{algo:allopt}
+\end{algorithm}
+
+Notice that the crucial step here is that we do the local
+optimization step twice to refine the solution, this help prevent the
+error accumulation. We here give a brief intuition sketch about how
+the author proposed to prove that algorithm~\ref{algo:allopt} find
+$v_i^*$ at iteration $i$ (approximately). The idea is to first prove
+that the projection $g$ of $f$ is sufficiently close $g^*$ of $f^*$.
+Now the proof follows an induction as $v_1$ is guaranteed to be
+$\gamma$ close by the sanity of algorithm~\ref{algo:localopt}. Then
+by some bounding techniques we could show that the first LocalOPT run
+is able to push the  $u'$ to some near locality around  $v_i^*$, and
+as all local optima are well separated (as by condition 1) the second
+run of LocalOPT in each iteration will only converge to $v_i^*$ thus
+complete the proof.
+
+\subsection{Recover $A$ and $\Sigma$}
+To this point the combination of algorithm~\ref{algo:localopt} and
+algorithm~\ref{algo:allopt} seems promising, one problem remain
+non-trivial. That is, during the proof of the bound for algorithms,
+we give many assumptions of nice properties of the underlying
+function $f(u)$. In fact our algorithm might only run for a small
+family of functions. We need to show that $P(u)$ is a function that
+satisfies all these constraints and thus our algorithm is applicable.
+Luckily, $P(u)$ satisfies all constraints up to a given constant,
+which means by applying algorithm~\ref{algo:allopt} we could recover
+the quasi-whitened rotation matrix $R$. The authors then proposed
+algorithm~\ref{algo:recover} to recover $A$ and $\Sigma$.
+
+\begin{algorithm}[t]
+\hspace*{\algorithmicindent} \textbf{Input:} $B, \hat{P}(u), \hat{R}, \epsilon$\\
+\hspace*{\algorithmicindent} \textbf{Output:} $\hat{A}, \hat{\Sigma}$
+
+\begin{algorithmic}
+    \STATE Let $\hat{D}_A(u)$ be a diagonal matrix whose $i$-th entry
+    is $\frac{1}{2}\big(\hat{P}(\hat{R}_i)\big)^{-\frac{1}{2}}$
+    \STATE Let $\hat{A} = B\hat{R}\hat{D}_A(u)^{-\frac{1}{2}}$
+    \STATE Estimate $C =
+    \mathbbm{E}[yy^T]$ by taking $O((\|A\|_2 +
+    \|\Sigma\|_2)^4n^2\epsilon^{-2})$ samples and let $\hat{C} =
+    \sum_{i = 1}^Ny_iy_i^T$
+    \STATE Let $\hat{\Sigma} = \hat{C} - \hat{A}\hat{A}^T$
+    \RETURN $\hat{A}$, $\hat{\Sigma}$
+\end{algorithmic}
+\caption{RECOVER}
+\label{algo:recover}
+\end{algorithm}
+
+Where $\hat{(\cdot)}$ denotes approximate recovery. Recall that
+according to our algorithm $A = BR^*D_A(u)$, thus if all these
+approximation constraint satisfies the given
+algorithm~\ref{algo:recover} recovers an approximate $A$ which is
+$\epsilon$-close.
