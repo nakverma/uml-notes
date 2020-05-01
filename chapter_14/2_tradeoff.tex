@@ -1,0 +1,114 @@
+
+
+\section{Introduction to Representation Trade-Off}
+This paper builds on the previous studies of hyperbolic embedding. Sarkar has presented an embedding of trees into a Poincar\'e disk. De Sa et al. analyze the construction by Sarkar and examine the fundamental trade-off between precision and dimensionality. They propose a hyperbolic generalization of multidimentional scaling (h-MDS) for general metric spaces and show that exact recovery of hyperbolic points from distances can be found with the help of perturbation analysis. In stead of using traditional PCA, the authors provide new results for convergence for Principal Geodesic Analysis (PGA).  An SGD-based algorithm, which is initialized with a h-MDS solution, is implemented to recover the submanifold the data is on with losses derived from PGA loss. 
+
+
+\section{Background}
+\subsection{Hyperbolic spaces}
+
+An important example of hyperbolic space is the Poincar\'e disk $\mathbb{H}_2$ and its generalization $\mathbb{H}_r$ in higher dimensions. Mapping between hyperbolic and Euclidean space preserves angles but not distances, which are given by
+\begin{align*}
+    d_H(x, y) = \text{acosh}(1 + 2 \frac{||x-y||^2}{(1-||x||^2)(1 - ||y||^2)}),
+\end{align*}
+where $d_H(x, y)$ represents the hyperbolic distance between two points $x, y$. One property that arises from this mapping is that the shortest path between two points is almost the same as the path through the origin. For the points $||x||=||y|| = t$ with origin $0$, the ratio $\frac{d_E(x, y)}{d_E(x, 0) + d_E(0, y)}$ is constant with respect to $t$ in Euclidean space, whereas $\frac{d_H(x, y)}{d_H(x, 0) + d_H(0, y)}$ approaches 1. In other words, hyperbolic space has a tree-like property which holds far arbitrarily small angles between $x$ and $y$: the shortest path between two neighboring nodes is the path that goes through ther parent (the origin). Another important geometric fact used in the algorithm is that isometric reflection across geodesics can be represented as circle inversion in Euclidean model. 
+
+\subsection{Embedding}
+Some fidelity measures for embeddings are presented below. One local metric is mean average precision (MAP). For a graph $G = (V, E)$, $a \in V$ has neighborhood $N_a = \{b_1, b_2, \cdots, b_{\deg(a)}\}$. For an embedding $f$, we define $R_{a, b_i}$ to be the smallest set of points that contains $b_i$ that are closest to $f(a)$. MAP is defined to be 
+\begin{align*}
+    MAP(f) = \frac{1}{|V|} \sum_{a\in V}\frac{1}{\deg(a)} \sum^{|N_a|}_{i=1}\frac{|N_a \cap R_{a, b_i}|}{|R_{a, b_i}|}.
+\end{align*}
+As a local measure, MAP describes how well the mapping preserves each vertex's neighborhood. $MAP(f) \leq 1$ and equality holds when all neighborhoods are preserved. 
+
+Another important metric used is distortion $D$. For $f:U\rightarrow V$ for $U, V$ with distances $d_U, d_V$ respectively, the distortion is defined as
+\begin{align*}
+    D(f) = \frac{1}{\binom{n}{2}}\left(\sum_{u, v \in U, u != v}\frac{|d_V(f(u), f(v)) - d_U(u, v)|}{d_U(u, v)}\right)
+\end{align*}
+When $D(f) = 0$, there is no distortion of edge lengths due to the embedding. $D$ is a global metric because it depends on the related distances rather than local structures. A related metric, the worst case distortion $D_{wc}$ is defined by
+\begin{align*}
+    D_{wc}(f) = \frac{\max d_V(f(u), f(v))/d_U(u, v)}{\min d_V(f(u), f(v))/d_U(u, v)}.
+\end{align*}
+
+
+\section{Hyperbolic Tree Embedding}
+Sarkar has shown that it is possible to embed trees into a Poincar\'e disk $\mathbb{H}_2$ with arbitrarily low distortion, which motivates the process for embedding hierarchies into hyperbolic space: 1. First, we embed the graph $G = (V, E)$ into a tree $T$. 2. Then, we embed $T$ into the Poincar\'e ball $\mathbb{H}_d$. This process is referred to as the combinatorial construction. The second step is accomplished by Sarkar's construction. 
+
+Suppose a node $a$ and its parent $b$ are already embedded into $\mathbb{H}_2$, Sarkar's algorithm places the children of $a$ into the hyperbolic disk. $f(a), f(b)$ are reflected across a geodesic so that $f(a)$ is mapped onto the origin and $f(b)$ to some point z. Then the children are placed around a circle with radius $\frac{e^\tau - 1}{e^\tau + 1}$ for some scaling factor $\tau$. They are maximally separated from the reflected node $z$. After reflecting every points back across the geodesic, the isometric properties of hyperbolic space guarantees that all the children are $d_H = \tau$ away from $f(a)$. 
+
+\subsection{Analysis of Sarkar's Construction}
+
+Sarkar's construction produces a Delauney embedding, which is able to preserve the neighborhoods - nodes that are in the same cluster will be mapped to the same area. However, hyperbolic space is not scale invariant. The increase in scale preserves the distance between nodes that are farther apart better, hence the trade-off: if we want a better distortion, we have to pay for it in precision, the largest norm of a point determined by the longest path in the tree. It turns out that the precision is logarithmically proportional to the degree of the tree but linearly proportional to the maximum path length. In other words, hyperolic embeddings with short trees with more branches requires less bits of precision and longer trees gives less distortion but worse precision.  
+
+With $b$ bits of precision, we can represent $2^b$ distinct points, so the bit complexity for $\epsilon$-covered ball $B(0, d)$ is of $n\log(d/\epsilon)$ in a Euclidean space and $O(d)$ in hyperbolic space. If $x \in \mathbb{H}_2, ||x|| < 1$, we need enough bits so that $1 - ||x||$ will not be rounded to zero, which requires about $ -\log(1 - ||x||)$ bits. For two points $x, y$ and their reflection across geodesic $(0, z)$, we have 
+\begin{align*}
+    d = d_H(x, y) = d_H(0, z) = \text{acosh}(1 + 2 \frac{||z||^2}{1 - ||z||^2})\\
+    \frac{\cosh{d}+1}{2} \geq \frac{1/2}{1 - ||z||}.
+\end{align*}
+The number of bits we need is $\log(\cosh(d)+1)$, which is roughly $d$ bits. Therefore, we needs $d$ bits in hyperbolic space rather than $\log d$ in Euclidean space. 
+
+Denote the longest path in the tree by $l$. If we have $\tau = \frac{1}{\epsilon}(2 \log \frac{\deg_{\max}}{\pi/2})$, the largest distance is $O(\frac{l}{\epsilon} \log \deg_{\max})$ and number of bits for representation is on the same order. This expression explains why a short, bushy tree is not penalized as much in precision as a taller tree. By selecting a graph with $m(\deg_{\max} + 1)$ nodes in a tree that has $\deg_{\max}$ chains of length $m$, we can prove that the lower bound is $\Omega(\frac{l}{\epsilon} \log \deg_{\max})$.
+
+Sarkar's algorithm can be generalized to a higher dimension with ball $\mathbb{H}_r$. Instead of placing the children on a disk, we put them at the vertices of a hypercube inscribed into the unit hypersphere. The points can be represented by
+\begin{align*}
+    x_a = \left(\frac{(-1)^{a_1}}{\sqrt{r}}, \cdots, \frac{(-1)^{a_r}}{\sqrt{r}}\right),
+\end{align*}
+where $a \in \{0, 1\}^r$. The scaling factor can be reduced by increasing the dimension, because we can place more children with larger angles between them. Thus, for a higher dimension and $\mathbb{H}_r$, we require at most $O(\frac{l}{\epsilon} \frac{l}{r} \log \deg_{\max})$ bits for representation for $r \leq (\log \deg_{\max}) + 1$, and $O(\frac{1}{\epsilon}l)$ bits for $r > (\log \deg_{\max}) + 1$.  
+
+As for the first step, embedding graphs into trees, there are some limitations on this transformation. Breaking a cycle would lead to larger distortion in general. Steiner nodes are added to help embed long cycles: connecting a Steiner node to all the rest of the node with proper edge weight recovers the distance between any pair of nodes in the graph with a tree-like property. In conclusion, we have to balance precision and quality for hyperbolic embeddings. For short, bushy trees, hyperbolic embeddings do very well, whereas for trees with long paths, they do less well because the order of bits is directly proportional to the path length. 
+
+\section{Hyperbolic Multidimensional Scaling}
+
+For a set of hyperbolic points $x_1, \cdots, x_n \in \mathbb{H}_2$, we have the pairwise distance $d_{i, j} = d_H(x_i, x_j)$ and want to recover the points in a matrix form $X \in \mathbb{R}^{n \times r}$. In Euclidean space, the multidimensional scaling assumes all the points have mean zero and recovers a centered embedding. In hyperbolic space, we have to make slight modifications, including a pseudo-Euclidean mean that enables matrix factorization. We use a hyperboloid model, which can be easily converted to the Poincar\'e ball. The problem can be converted to a standard PCA and the centering helps to preserve submanifolds as well.
+
+Let $Q \in \mathbb{R}^{r+1}$ be the diagonal matrix with $Q_{00} = 1, Q_{ii} = -1$. The hyperboloid model is defined as 
+\begin{align*}
+    \mathbb{M}_r = {x \in \mathbb{R}^{r+1}|x^TQx = 1 \wedge x_0 > 0},
+\end{align*}
+with its distance measure
+\begin{align*}
+    d_H(x, y) = \text{acosh}(x^TQy).
+\end{align*}
+As for the new mean, we define a variance term in hyperbolic space
+\begin{align*}
+    \Psi(z; x_1, \cdots, x_n) = \sum^n_{i=1}\sinh^2(d_H(x_i, z)).
+\end{align*}
+Our pseudo-Euclidean mean is the local minimum of the above $\Psi$. For matrix $X \in \mathbb{R}^{n \times r}$ such that $X^Te_i = \Vec{x}_i$ and $u \in \mathbb{R}^n$ such that $u_i = x_{0, i}$, we take the gradient of the variance term and get
+\begin{align*}
+    \nabla_z \Psi(z; x_1, \cdots, x_n)|_{z= 0} = -2 \sum^n_i x_{0, i}\Vec{x}_i = -2X^Tu. 
+\end{align*}
+In this way, the hyperbolic points are centered if $X^Tu = 0$. 
+
+Suppose we have $x_1, \cdots, x_n$ and their pairwise distances $d_H(x_i, x_j)$, we can compute the matrix $Y$ such that 
+\begin{align*}
+    Y_{i, j} = \cosh(d_H(x_i, x_j)) = x_i^TQx_j = x_{0, i}x_{0, j} - \Vec{x}_i^T\Vec{x}_j = uu^T - XX^T.
+\end{align*}
+Assuming the points are centered, $X^Tu = 0$, $u$ becomes an eigenvector of $Y$. It turns out that running PCA on $-Y = X^TX - uu^T$ and compute $n$ most significant non-negative eigenvectors recovers $X$ up to rotation. Then we can find $u$ from $x_0 = \sqrt{1 + ||\Vec{x}||^2}$. Therefore, the algorithm for h-MDS proposed with input distance matrix $d_{i, j}$ and rank $r$ is \\
+\horrule{0.5pt} \\
+1. Compute scaled distance $Y_{i, j} = \cosh(d_{i, j})$\\
+2. Compute $X$ from performing PCA on $(-Y, r)$\\
+3. Project $X$ from hyperboloid model to Poincar\'e model: $x \rightarrow \frac{x}{1 + \sqrt{1 + ||x||^2}}$\\
+4. Center $X$ to a different mean if needed. \\
+\horrule{0.5pt} \\
+
+\subsection{PGA}
+If we want to perform dimensionality reduction to the high-rank embedding in hyperbolic space, we follow Principal Geodesic Analysis (PGA). Our goal is to find a geodesic $\gamma: [0, 1] \rightarrow \mathbb{H}_2$ that passes through mean of the points and minimizes the squared error:
+\begin{align*}
+    f(\gamma) = \sum^n_{i=1} \min_t d_H(\gamma(t), x_i)^2. 
+\end{align*}
+In a Poincar\'e model, the reflection across a geodesic that passes through the origin is the same in both Euclidean and hyperbolic space. For a line through origin $\gamma$ and its reflection $R_\gamma$, we have
+\begin{align*}
+    d_H(\gamma, x) = \min_t d_H(\gamma(t), x) = \frac{1}{2}d_H(R_l x, x).
+\end{align*}
+Using the hyperbolic metric, we get 
+\begin{align*}
+    f(\gamma) &= \frac{1}{4}\sum^n_i \text{acosh}^2(1 + \frac{8d_E(\gamma, x_i)^2}{(1 - ||x_i||^2)^2})\\
+    &= \frac{1}{4}\sum^n_i \text{acosh}^2(1 + d_E(\gamma, w_i)^2),
+\end{align*}
+where $w_i = \sqrt{8}x_i/(1 - ||x_i||^2)$ for simplification. 
+
+However, unlike PCA, the loss function is not convex, which means there could be multiple local minima. It is still possible to give a sufficient condition on the data so that $f$ becomes convex: if for all $i$, we have 
+\begin{align*}
+    \text{acosh}^2(1 + d_E(\gamma, w_i)^2) < \min(1, \frac{1}{3}||w_i||^2),
+\end{align*}
+then $f$ is locally convex at $\gamma$. 
+
