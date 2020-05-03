@@ -1,7 +1,7 @@
 #!/bin/bash
 
 FIRST_CHAPTER=1
-LAST_CHAPTER=14
+LAST_CHAPTER=15
 
 
 preamble="\documentclass[11pt]{book}
@@ -86,7 +86,7 @@ echo "" >> main.tex
 echo "" >> main.tex
 
 ### bibresource
-for ((i=1;i<=14;i++))
+for ((i=$FIRST_CHAPTER;i<=$LAST_CHAPTER;i++))
 do
     if [[ CHAPTERS[$i] -eq 1 ]]; then
 	echo "\addbibresource{chapter_$i/references}" >> main.tex
@@ -176,7 +176,7 @@ if [[ include_part -eq 1 ]]; then
     echo "" >> main.tex
 fi
 
-for ((i=11;i<=14;i++))
+for ((i=11;i<=$LAST_CHAPTER;i++))
 do
     if [[ CHAPTERS[$i] -eq 1 ]]; then
 	echo "\include{chapter_$i/chapter_$i}" >> main.tex
