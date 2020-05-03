@@ -1,66 +1,75 @@
 %Contributor: Ben Brimacombe
 \section{Geometry and Homology Inference}
-The nerve theorem is a powerful result which we can use for several more analyses of the topology of data. The first of these techniques covers $X_n$ by a union of balls of fixed radius centered on the $x_i$. This construction has 
-’s. Under some regularity
-assumptions on M, one can relate the topology of this union of balls to the one of M;
-2. From a practical and algorithmic perspective, topological features of M are inferred from
-the nerve of the union of balls, using the Nerve Theorem.
-
+The Nerve Theorem is a powerful result with many uses beyond the Mapper algorithm. We will discuss one such use, which builds a cover over $X_n = \{x_0, ..., x_n\}$, a subset of finite dimensional euclidean space sampled i.i.d. The cover on $X_n$ is a union of balls of fixed radius centered on the $x_i$. Then, given the radius of the balls satisfies certain regularity constraints with respect to the space, one can relate the topology of this union of balls to the topology of the support of the space, by the Reconstruction Theorem and the Nerve Theorem. Though these results are quite interesting, the resultant covering is often not well suited for further data processing. A solution commonly proposed is to use homology and the inference of the homology of the simplical complex, which is more easily computed than the other methods,and provides useful, numerical, topological descriptors of the space.
 
 \subsection{Offsets and Sublevels} 
+
+We introduce a few concepts, and work our way towards the Reconstruction Theorem.
 
 \begin{definition}[Sublevel Set]
 Given a function $f$ with domain $X$, the sublevel set for $f$ at a constant r is given by $\{(x_1, x_2, ... x_n) \: | \: f(x_1, x_2, ... x_n) \leq r\}$
 \end{definition}
 
 \begin{definition}[r-offset]
-Given a compact subset K of $\bbR^d$ and a non-negative
-real number r, the r-offset of $K$, called $K^r$, is the the r-sublevel set of the distance function $d_K:\bbR^d \rightarrow \bbR$, such that $d_K(x) = \text{inf}_{y\in K}||x-y||$. That is, $K^r = \cup_{x\in{K}}B(x, r) = d_{k}^{-1}([0, r])$, the preimage of the radius interval.
+Given a compact subset K of $\bbR^d$ and a non-negative real number r, the r-offset of $K$, called $K^r$, is the the r-sublevel set of the distance function $d_K:\bbR^d \rightarrow \bbR$, such that $d_K(x) = \text{inf}_{y\in K}||x-y||$. That is, $K^r = \cup_{x\in{K}}B(x, r) = d_{k}^{-1}([0, r])$, the preimage of the radius interval.
 \end{definition}
 
-
-Change:
-This remark allows us to compare the topology of the offsets of compact sets that are close to each other. For example, the offsets of Xn and the support of the measure $\mu$, M, by their compactness and with a few mild assumptions on their Hausdorff difference, can be related up to homotopy equivalence. Specifically When M is a smooth compact submanifold there exists an r for which the offsets of Xn are homotopy equivalent to M.
-
-
-The r-offset 
+Offsets are useful because they allow us to compare different compact sets. For example, the offsets of $X_n$ and the support of the measure $\mu$, called M, by compactness and with a few mild assumptions on their Hausdorff difference, can be related up to homotopy equivalence.
 
 \begin{definition}
-A function $\phi:\bbR^d \rightarrow \bbR_+$ is called distance like if $x\rightarrow ||x||^2 -\phi^2(x)$ is convex and if the pre-image of any compact set in $\bbR$ is a compact set in $\bbR^d$. 
+A function $\phi:\bbR^d \rightarrow \bbR_+$ is called distance-like if $x\rightarrow ||x||^2 -\phi^2(x)$ is convex and if the pre-image of any compact set in $\bbR$ is a compact set in $\bbR^d$. 
 \end{definition}
 
+The notion of distance-like functions is immediately useful, both to the Reconstruction Theorem and to Grove's Isotopy Lemma. As a brief digression, Grove's Isotopy Lemma gives that for a distance-like function satisfying several criteria, particularly having no points where the gradient equals 0, the sublevel sets up to a constant distance from the origin will all be isotopic. Thus if we can a calculate a few sublevel sets of the function, we can understand many of them, though the assumption on the function's gradient is not trivial. We now are ready to introduce the Reconstruction Theorem:
 
-Mention Isotopy Lemma Grove (1993)
 
 \begin{theorem}[Reconstruction Theorem]
 Let $\phi, \psi$ be two distance-like functions. Given $||\phi - \psi||_\infty < \epsilon$ and that $\text{reach}_\alpha(\phi) \geq R$ for some positive $\epsilon$ and $\alpha$, then $\forall{r} \in [4\epsilon/\alpha^2, R-3\epsilon]$ and $\forall{\eta}\in(0, R)$, the sublevel sets $\psi^r$ and $\phi^\eta$ are homotopy equivalent if $$\epsilon \leq \frac{R}{5+4/\alpha^2}$$
 \end{theorem}
 
-The Reconstruction theorem and the Nerve Theorem allow us to infer the topology of data from a simplicial complex built on top of an approximating finite sample. However, the Reconstruction Theorem requires a regularity assumption (through the $\alpha$-reach condition and the choice of a radius r for the ball used to build Cech$_r(\mathbb{X})$). Additionally, Cech$_r(\mathbb{X})$
-provides a simplicial complex that, while provably related to the underlying topological space, is often not computationally useful. As a solution, we introduce the idea of homology. Homology is a more general approach which associates algebraic objects to the properties of the topological space, allowing for more computable statistics over our constructed simplicial complexes. 
+We can define the distance-like functions $\psi$ and $\phi$ as the distance function on $X_n$ and M, respectively. Given the condition on the reach of $\phi$, essentially a regularity condition on M, and that the bound on $\epsilon$ is satisfied, then the Reconstruction Theorem gives an extremely strong result when used in conjunction with the Nerve Theorem. Specifically this yields that for some $r$ and $\eta$, the $\eta$-offsets of M are homotopy equivlaent to the Cech complex of $X_n$, Cech$_r(X_n)$. 
+Essentially the Reconstruction Theorem and the Nerve Theorem allow us to infer the topology of data from a simplicial complex built on top of an approximating finite sample. 
 
-
-Change:
-$\text{reach}_\alpha(\phi) \geq R$ can be interpreted as regularity condition on M.
-The Reconstruction Theorem combined with the
-Nerve Theorem tell that, for well-chosen values of r, η, the η-offsets of M are homotopy equivalent
-to the nerve of the union of balls of radius r centered on Xn, i.e the Cech complex Cechr(Xn).
-From a statistical perspective, the main advantage of these results involving Hausdorff distance is that the estimation of the considered topological quantities boil down to support estimation questions that have been widely studied
-
-Add citations to usefulness and different approaches. 
+While provably related to the underlying topological space, this simplicial complex is often not computationally useful given its abstractness and lack of numericity.
+As a solution, we introduce the idea of homology. Homology is a more general approach which associates algebraic objects to the properties of the topological space, allowing for more computable statistics over our constructed simplicial complexes. 
 
 
 \subsection{Introduction to Homology} 
 
-Homology was developed as a way to analyse and classify manifolds according to their cycles –  submanifolds that can be drawn on a given n dimensional manifold but not continuously deformed into each other. For example, a 1 dimensional sub-manifold cycle is a closed loop. In $\bbR^d$ all closed loops can be continuously deformed into any other closed loop, so this tells us that the space is contractible to a point and that it has no holes. In some spaces, such as the torus, not all loops can be continuously homotoped (deformed) into other loops. By defining equivalence classes on the homotopic loops, a group algebra can be constructed on the space. Homology is an abelianization of these groups in dimension 1. In higher dimensions Homology generalizes these ideas, allowing algebraic objects to be associated with the structure of a space, based on its disconnections, holes, cavities, etc. 
+Homology was developed as a way to analyse and classify manifolds according to their cycles, that is, submanifolds that can be drawn on a given n dimensional manifold but not continuously deformed into each other. For example, a 1 dimensional sub-manifold cycle is a closed loop. In $\bbR^d$ all closed loops can be continuously deformed into any other closed loop, so this tells us that the space is contractible to a point and that it has no holes. In some spaces, such as the torus, not all loops can be continuously homotoped (deformed) into other loops. By defining equivalence classes on the homotopic loops, a group invariant can be constructed on the space. Homology is an abelianization of these groups in dimension 1. In higher dimensions Homology generalizes these ideas, allowing algebraic objects to be associated with the structure of a space, based on its disconnections, holes, cavities, etc. We will particularly use the Betti number of a space, which for our simplicial complexes will given the number of homologically distinct k-cycles after discarding boundaries of dimension k. More generally the Betti number is a topological invariant that measures the number of k-dimensional holes in a space. 
 
-
-\begin{definition}[Simplicial homology group and Betti numbers]
-The $k^{\text{th}}$ simplicial homology group of K is the quotient vector space $$H_k(K) = Z_k(K)/B_k(K)$$
-The $k^{\text{th}}$ Betti number of K is the dimension $\beta_k(K) = dim(H_k(K))$ of the vector space $H_k(K)$
+\begin{definition}[k-chain]
+A linear combination of simplices
 \end{definition}
 
+\begin{definition}[boundary of a k-simplex]
+The boundary of a k-simplex $\sigma = [v_0, ..., v_k]$ is the k-1 chain $\delta_k(\sigma) = \sum_{i=0}^k (-1)^{i}[v_0, ..., \hat{v}_i, ..., v_k]$
+\end{definition}
 
-\begin{theorem}[Betti number equivalences]
-pass
+\begin{definition}
+The $k^{th}$ homology is the set of homology classes $H_k := \{[z] \: | \: z\in Z_k\}$
+\end{definition}
+
+Thus we can define k-cycles and k-boundaries for an abstract vector space $K_k$ (consisting of a basis of k-simplices):
+
+\begin{definition}[k-cycle]
+$Z_k := \text{ker}(\delta_{k}:K_k \rightarrow K_{k-1})$
+\end{definition}
+\begin{definition}[k-boundaries]
+$B_k := \text{im}(\delta_{k+1}:K_{k+1} \rightarrow K_{k})$
+\end{definition}
+
+Note then that a k-cycle is a k-chain with boundary 0.
+
+\begin{definition}[Betti number and simplicial homology group]
+The $k^{\text{th}}$ simplicial homology group of K is the quotient vector space $$H_k(K) = Z_k(K)/B_k(K)$$
+The $k^{\text{th}}$ Betti number of K is the dimension $dim(H_k(K)) = \beta_k(K)$ of the vector space $H_k(K)$
+\end{definition}
+
+The Betti number gives a topological invariant which is relatively easily computable using k-chains, compared to conducting distribution support estimation or level sets estimation to distill information about Cech$_r(X_n)$. However, using the Betti number in conjunction with the Reconstruction Theorem, with a few assumptions, allows us to again directly relate Cech$_r(X_n)$ with M. Namely, 
+
+\begin{theorem}[Betti Equivalence Guarantees]
+Given $M\subset \bbR^d$ a compact subset, with reach$_\alpha(d_M) \geq R \geq 0$ for some $\alpha \in (0,1)$, and given some $X$, a finite set of points such that $d_H(M, X) = \epsilon < \frac{R}{5+4/alpha^2}$, then $\forall r\in [4\epsilon/\alpha^2, R-3\epsilon]$ and every $\eta\in(0, R)$, the Betti numbers of  Cech$_r(X_n)$ are the same as the Betti numbers of $M^\eta$.
 \end{theorem}
+
+This theorem yields that if M is a smooth m-dimensional submanifold of $\bbR^d$, then $\beta_k\text{Cech}_r(X) = \beta_k(M)$. This sheds light on the topological structure of our covering Cech$_r(X_n)$ of our data space.
