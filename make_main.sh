@@ -1,7 +1,7 @@
 #!/bin/bash
 
 FIRST_CHAPTER=1
-LAST_CHAPTER=15
+LAST_CHAPTER=16
 
 
 preamble="\documentclass[11pt]{book}
