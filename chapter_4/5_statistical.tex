@@ -1,0 +1,55 @@
+\section{Towards a Statistical Theory of Clustering}
+
+\subsection{Overview}
+As its title suggests, this paper explores the statistical aspect of clustering. The paper identifies two separate questions that arise from the problem of clustering, formulated in statistical language:
+
+\begin{itemize}
+    \item Given access to the true probability distribution of the data, what is the correct clustering? This question pertains to the definition of clustering as a function of a given probability distribution of data.
+    \item Given a finite sample from an unknown distribution, how does one approximate the optimal clustering (as defined in the above problem) for the distribution? This problem can be further subdivided into two aspects
+    \begin{itemize}
+        \item Algorithmic: What is the time complexity of a given algorithm? How does one overcome the problem of having incomplete data?
+        \item Statistical: Given a particular algorithm, does the partitions converge asymptotically (as the size of the sample goes to infinity) to the optimal clustering? If so, how fast do they converge? What exactly is the limit clustering and how far is the clustering on a given sample from the limit clustering? On a given data set, does an algorithm overfit or does it uncover the true structure?
+    \end{itemize}
+\end{itemize}
+
+The paper primarily focuses on the statistical aspect of the second problem. 
+
+\subsection{Complete information case}
+
+This subsection deals with the first problem: given a probability space $(\mathcal{X}, P)$, what is the optimal clustering? There are several approaches to this:
+
+\begin{itemize}
+    \item Quality measure method: Defining a quality measure $q$ of clustering with respect to a probability distribution and define the optimal clustering as one that maximizes the measure. One example of this is defining the clustering induced by $(\mathcal{X}, P)$ as the $k$ set partition which minimizes the expected distances of the individual points to the cluster centers. There are many other ways of defining a measure of quality which induces an optimal clustering.
+    \item Clusters as high density regions separated by low density regions: While this definition of optimal clustering is simple, density estimation using samples is a hard problem, so this approach does not seem very promising
+    \item Axiomatic approach: Instead of explicitly defining clusters, axiomatic approaches define properties an optimal clustering ought to satisfy. The second problem then deals with whether different algorithms are able to return clustering that satisfies the axioms or to show that it is impossible to construct one that achieves all of the axioms.
+\end{itemize}
+
+However, all of these approaches have major drawbacks.
+
+\subsection{Finite sample case}
+
+Note: One of the important tools in the study of statistical aspect of clustering is the metric on the clustering which measures the similarity between two different clusterings. While there are many metrics on the clusterings induced on the same sample set, this is not enough to compare clusterings induced by different sets. One method of overcoming this is to extend the clustering to the sample space $\mathcal{X}$ and then compare them.
+
+The authors first consider the possibility of generalization bounds in the context of clustering just as its counterpart in classification. In classification, generalization bounds are obtained to probabilistically bound the difference between the true risk of a hypothesis function and the empirical risk based on the empirical distribution of the sample. Once such a bound is found, an algorithm only needs to find a hypothesis function for which the empirical risk is minimized. The naive way to transfer this to clustering would be to similarly define loss functions on each of them, and define the quality of the clustering as an expectation of the loss function of each data points. However, with the exception of k-means this formulation of clustering quality does not work as we may care about more than the quality of the clustering. Another approach would be to define the true risk of the clustering algorithm as the distance between the hypothesis clustering and the optimal clustering. However, in order to replicate the classification generalization bound, we would need to find an estimator for this risk. However, this does not exist in the clustering context.
+
+The authors then consider the possibility of proving convergence of clustering returned by specific algorithms as the number of samples go to infinity. Convergence in this case is induced by the metric on the space of all possible clustering independent of the samples (as defined in the beginning of this subsection). This line of research has proven to be fruitful as it shows that certain clustering algorithm converge but others fail to converge or converge to trivial bounds. Therefore, convergence analysis is able to shed light on whether a particular algorithm is good.
+
+The authors then define another notion for clustering algorithms to further narrow their choice: model stability,
+
+\begin{definition}
+    The instability of an algorithm $\mathcal{A}$ with respect to distribution $P$ with $m$ samples 
+    \[ \beta(\mathcal{A}, P, m) =\mathbb{E}_P(d(C(S_m), C(S_m')) \]
+    where $S_m, S'_m$ are $m$ samples drawn independently and $C$ returns the corresponding clustering.
+\end{definition}
+
+However, this is with respect to a particular probability distribution which is unknown. Unlike true risk which cannot be estimated in context of clustering, Ben-David has proven the following theorem which allows the instability of an algorithm to be estimated
+
+\begin{theorem}
+    For every probability distribution $P$ and any center-based clustering algorithm $\mathcal{A}$, for any $m \in \mathbb{N}$ and $t > 0$, if $S_1, S_2$ are two i.i.d random $m$-size samples drawn from $P$, then,
+    
+    \[ \Pr[|d(C(S_1), C(S_2)) - \beta(\mathcal{A}, P, m)| > t] < e^{-mt^2} \]
+\end{theorem}
+
+As a result, clustering algorithms can be chosen from a set such that it minimizes $d(C(S_1),C(S_2))$ so the resulting true instability of the algorithm with respect to the unknown probability distribution is minimized. 
+
+It is important to notice that stability only refers to the stability of the clustering with respect to a fixed $n$ as opposed to convergence which refers to the asymptotic stability of the clustering. Therefore, the two concepts are complementary and are both indicators of good clustering algorithms.

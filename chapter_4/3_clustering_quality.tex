@@ -1,0 +1,116 @@
+\section{Clustering Quality Measures (CQMs)}
+
+\medskip
+
+Instead of focusing on clustering functions, we now turn our attention to the ``quality" of the clusterings that these functions produce. We would like clusterings to be meaningful enough to be used in future analysis. 
+
+\medskip
+
+In a paper by Margareta Ackerman and Shai Ben-David titled \textit{Measures of Clustering Quality: A Working Set of Axioms for Clustering}, they define the notion of a \textbf{clustering-quality measure (CQM)} as a function that, ``given a data set and its partition into clusters, returns a non-negative real number representing how strong or conclusive the clustering is."
+
+\medskip
+
+\subsection*{Definition and Notation Review}
+
+\begin{itemize}
+    \item (usually finite) domain set $X$
+    \item \textit{distance function} $d:X \times X \rightarrow R^+$
+    \item $d(x_i,x_i)\geq 0 \hspace{0.2cm} \forall x_i \in X$, $d(x_i,x_j)> 0 \hspace{0.2cm}$ iff $x_i \neq x_j$
+    \item \textit{k-clustering of X}, $C=\{C_1,C_2,...,C_k\}$
+    \item For $x,y\in X$ and clustering $C$ of $X$, $x\sim_C y$ indicates that $x$ and $y$ are in the same cluster.
+    \item CQMs require an input of a clustering $C$ and $(X,d)$, where $d$ is a distance function over $X$
+    \item A set is a \textit{representative set} of a clustering $C$ if it consists of exactly one point from each cluster of $C$
+\end{itemize}
+
+While Kleinberg's paper demonstrated that no clustering function can simultaneously satisfy scale invariance, consistency, and richness, it also requires that when scale varies, the original clustering remains the best clustering (which is not always the case). The following axioms for clustering quality will relax that requirement. 
+
+\subsection*{CQM Analogues to Kleinberg's Axioms}
+
+Define ``quality measure" as $m$, where larger values of $m$ indicate better clustering quality.
+
+  \begin{itemize}
+    \item \textbf{Scale Invariance:} $\forall$ clustering $C$ of $(X,d)$ and $\forall\lambda>0$, $m(C,X,d)=m(C,X,\lambda d)$
+        \begin{itemize}
+            \item This relaxes Kleinberg's axiom by allowing for the possibility of some partitionings improving more than others
+        \end{itemize}
+    \item \textbf{Consistency:} When within-cluster distances are decreased and between-cluster distances are increased, $m(C,X,d')\geq m(C,X,d)$
+    \item \textbf{Richness:} For all non-trivial clustering $C$ of $X$, $\exists d$ st $C=Argmax\{m(C,X,d)\}$
+    \item \textbf{Theorem:} Scale invariance, consistency, and richness for clustering-quality form a consistent set of requirements
+    \begin{itemize}
+        \item Proof: Introduce a CQM that satisfies all 3 axioms (next section)
+    \end{itemize}
+  \end{itemize}
+  
+\subsection*{Clustering Quality Measure that satisfies all three axioms}
+
+\begin{itemize}
+    \item The \textbf{$K$-Relative Point Margin} of $x\in X$ is $$K\text{-}M_{X,d}(x)=\frac{d(x,c_x)}{d(x,c_{x'})}$$ where $c_x\in K$ is closest center to $x$, $c_{x'}\in K$ is the second-closest center to $x$, and $K\subseteq X$
+    \item The \textbf{Relative Margin} of a clustering $C$ over $(X,d)$ is $$RM_{X,d}(C)=\min_{\text{K is a representative set of C}} avg_{x\in X\setminus K}K\text{-}RM_{X,d}(x)$$
+    
+\end{itemize}
+
+\begin{lemma}: Relative Margin is scale-invariant
+\end{lemma}
+
+Proof: Define $d'$ such that $d'(x,y)=\alpha d(x,y) \forall x,y\in X$. For all points $x,y,z\in X, \frac{d(x,y)}{d(x,z)}=\frac{d'(x,y)}{d'(x,z)}$
+
+\begin{lemma}: Relative Margin is consistent
+\end{lemma}
+
+Proof: Define $d'$ as a $C$ consistent variation of $d$. By definition, we know $d'(x,y)\leq d(x,y)$ for $x\sim_{C} y$ and $d'(x,y)>d(x,y)$ for $x \nsim_C y$. Thus, $RM_{X,d'}(C)\leq RM_{X,d}(C)$
+
+\begin{lemma}: Relative Margin is rich
+
+Proof: For any clustering $C$ over $X$, define $d$ such that $d(x,y)=1$ for all $x\sim_C y$ and $d(x,y)>1$ otherwise. Therefore, $C=Argmin\{m(C,X,d)\}$
+
+\end{lemma}
+
+The axioms are proven to be a consistent set.
+
+\subsection*{Soundness and Completeness of Axioms}
+
+\textit{Soundness} means that all elements of a described class satisfy all axioms. \textit{Completeness} means that all properties shared by the elements of the class are implied by the axioms. 
+
+\medskip
+
+The authors replace these requirements with \textit{relaxed soundness}, where all axioms as satisfied by all examples of common clustering functions, and \textit{relaxed completeness}, where non-clustering partition functions fail at least one axiom. 
+
+The scale invariance, consistency, and richness axioms satisfy the relaxed soundness property but fail the relaxed completeness property. To address this, they introduce the \textbf{Isomorphism Invariance} axiom, which requires that clustering should be indifferent to the individual identity of clustered elements. 
+
+\medskip
+
+Two clusterings $C,C'$ over the same domain are \textbf{isomorphic} ($C\approx_d C'$) if there exists a distance-preserving isomorphism $\phi :X\rightarrow X,$ such that $\forall x,y\in X, x\sim_X y$ iff $\phi (x)\sim_{C'}\phi (y)$
+
+\medskip
+
+A quality measure $m$ is \textbf{isomorphism-invariant} if for all all isomorphic clusterings $C,C'$ over the same domain, $m(C,X,d)=m(C',X,d)$
+
+\medskip
+
+\textbf{Theorem:} The set of axioms consisting of Scale Invariance, COnsistency, Richness, and Isomorphism Invariance are a consistent set.
+
+\smallskip
+
+Proof: Relative Margin CQM satisfies all four axioms. 
+
+\subsection*{CQM's for Linkage-Based and Center-Based Clusterings}
+
+The following CQMs are examples of natural CQM's that do satisfy all of the authors' axioms. They (and Relative Margin) are all computable in polynomial time in terms of $n$, the number of points in the dataset. 
+
+\subsubsection*{Linkage-Based Clustering}
+
+This type of clustering requires that points in the same cluster are connected via a chain of points. 
+
+\medskip
+
+Define the \textbf{Weakest Link Between Points} as the longest link in a chain $$C\text{-}WL_{X,d}(x,y)=min_{x_i\in C_i} (max(d(x,x_1),d(x_1,x_2),...,d(x_l,y)))$$ where $C_i$ is a cluster in C
+
+\medskip
+
+Then define the \textbf{Weakest Link of C} as $$WL(C)=\frac{max_{x\sim_C y}C\text{-}WL_{X,d}(x,y)}{min_{x\nsim_C y}d(x,y)}$$ and can range from $(0,\infty)$
+
+\subsubsection*{Center-Based Clustering}
+
+While Relative Margin is a quality measure for Center-Based Clustering, we here define a slight variation known as \textbf{Additive Point Margin} $$K\text{-}AM_{X,d}(x)=d(x,c_{x'})-d(x,c_x)$$ where $c_x$ isthe closest center to $x$ and $c_{x'}$ is the second-closest center to $x$
+
+Now we define the \textbf{Additive Margin} of $C$ as $$AM_{X,d}(C)=\min_{\text{K is a representative set of C}}\frac{\frac{1}{|X|}\sum_{x\in X}K\text{-}AM_{X,d}(x)}{\frac{1}{|\{\{x,y\}\subseteq X|x\sim_C y\}|}\sum_{x\sim_C y} d(x,y)}$$
