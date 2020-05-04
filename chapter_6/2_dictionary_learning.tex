@@ -24,7 +24,7 @@ Here, we discuss two specific AM algorithms and their respective theoretical con
 \subsection{Alternating minimization algorithm I}
 The first is the one considered in \cite{chatterji2017alternating}, in which the authors provide theoretical guarantees of local linear convergence. On a high level, this algorithm involves a specific robust sparse least-square estimation subroutine (for updating the coefficients $x$) and simple gradient step (for updating the dictionary $A$).
 
-We first introduce the robust sparse least-square estimation subroutine, which is defined as follows. Let $\gamma, \eta, \nu > 0$ be tuning parameters and $R>0$ be an upper bound on the entry-wise maximum dictionary estimation error ($\max_{i,j} |A_{ij} - A^*_{ij}|$). Let $(\hat{\theta}, \hat{t}, \hat{u})\in \mathbb{R}^r \times \mathbb{R}_+\times \mathbb{R}_+$ be the solution to the following convex minimization problem: 
+We first introduce the robust sparse least-square estimation subroutine, which is defined as follows. Let $\gamma, \lambda, \nu > 0$ be tuning parameters and $R>0$ be an upper bound on the entry-wise maximum dictionary estimation error ($\max_{i,j} |A_{ij} - A^*_{ij}|$). Let $(\hat{\theta}, \hat{t}, \hat{u})\in \mathbb{R}^r \times \mathbb{R}_+\times \mathbb{R}_+$ be the solution to the following convex minimization problem: 
 \begin{align}
     \min_{\theta,t,u}\left\{ \|\theta\|_1 + \lambda t + \nu u : \left\|\frac{1}{d} A^\top (y- A\theta) \right\|_\infty\leq \gamma t + R^2 u,\, \|\theta\|_2 \leq t,\, \|\theta\|_\infty\leq u \right\}. \label{eq:mu-selector}
 \end{align}
