@@ -1,0 +1,13 @@
+% Contributors: Luis Lopez, Robby Costales, Daniel Jaroslawicz, Colin Brown
+\section{Motivation}
+
+Generative Adversarial Networks (GANs), as the name suggests, belong to the class of generative models. Unlike discriminative models, which are used to find the conditional probability $p(y|x)$,  i.e., the probability of class label $y$ given a set of observations $x$,  generative models are used to find the joint distribution $p(x,y)$. Thus, while discriminative models are typically used in classification, generative models are used in the generation of new data. One may then wonder why generative models are useful at all, given the wealth of data that is readily available. Below we describe a few reasons why generative models such as GANs are useful.
+
+\begin{itemize}
+  \item Since the inception of deep belief networks, the need for labeled data has outpaced its creation. This is largely due to the fact that high quality labeled data requires a human expert to label it by hand. Generative models, such as GANs, have circumvented this problem through semi-supervised learning. In this type of learning, a small amount of labeled data is used in conjunction with a large amount of unlabeled data to train the model.
+  \item For certain tasks, a given input can correspond to several equally correct outputs, i.e., the data is multi-modal. Generative models, such as GANs, are able to model multi-modal data. Take as an example the task of predicting the next frame in a video. Conventional approaches such as mean square error (MSE) will often produce a blurry frame. This can be attributed to the fact that MSE does not choose a single feasible subsequent frame, but instead takes a weighted average over all possible subsequent frames; GANs on the other hand will output a crisp frame since they choose only one of the several possible outcomes. \cite{lotter2015unsupervised}
+  \item Lastly, many training tasks require a lot of realistic data generated from some distribution. \cite{goodfellow2016nips}
+
+\end{itemize}
+
+  The list above is by no means exhaustive; however, it does provide the reader a substantive reason for why generative models (GANs specifically) should be studied. In the following section we discuss other generative models and how they compare to GANs.

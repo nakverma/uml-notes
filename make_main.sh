@@ -176,6 +176,7 @@ if [[ include_part -eq 1 ]]; then
     echo "" >> main.tex
 fi
 
+
 for ((i=11;i<=$LAST_CHAPTER;i++))
 do
     if [[ CHAPTERS[$i] -eq 1 ]]; then
