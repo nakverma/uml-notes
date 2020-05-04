@@ -188,30 +188,19 @@ In this section we describe another alternating minimization algorithm used in t
 Input: Samples $Y$, initial dictionary $A(0)$, accuracy sequence $\epsilon_t$ and sparsity level $s$. (The way to estimate $A(0)$ and the selection of $\epsilon_t$'s will be explained later in the paper.)
 
 \begin{algorithm}
-
 \begin{algorithmic}
 \caption{Alternating Minimization for Dictionary Learning}
-
 \FOR{iterations $t=0, 1, 2, ..., T-1$}
-
-\FOR{samples $i=1, 2, ..., n$}
-
-$X(t+1)_i = \arg \min_{x \in \mathbb{R}^r}||x||_1$ such that $||Y_i - A(t)x||_2 \leq \epsilon_t$\\
-
+    \FOR{samples $i=1, 2, ..., n$}
+        \STATE $X(t+1)_i = \arg \min_{x \in \mathbb{R}^r}||x||_1$ such that $||Y_i - A(t)x||_2 \leq \epsilon_t$
+    \ENDFOR
+    \STATE Threshold: $X(t+1) = X(t+1) * (\mathbbm{1}[X(t+1) > 9s\epsilon_t])$
+    \STATE Estimate $A(t+1) = YX(t+1)^+$
+    \STATE Normalize: $A(t+1)_i = \frac{A(t+1)_i}{||A(t+1)_i||_2}$
 \ENDFOR
-
-Threshold: $X(t+1) = X(t+1) * (\mathbbm{1}[X(t+1) > 9s\epsilon_t])$\\
-
-Estimate $A(t+1) = YX(t+1)^+$\\
-
-Normalize: $A(t+1)_i = \frac{A(t+1)_i}{||A(t+1)_i||_2}$\\
-
-\ENDFOR
-
-\textbf{Output:} $A(T)$.
+\STATE \textbf{Output:} $A(T)$.
 \end{algorithmic}
 \end{algorithm}
-
 
 The algorithm above is alternating between two procedures: a sparse recovery step for estimating the coefficients given a fixed dictionary via $\ell_1$ minimization, and a step for estimating the dictionary given a fixed coefficient matrix via least squares estimation. Note that the ``Threshold" step in the algorithm serves to guarantee that the coefficient matrix we get is a sparse matrix. The ``Normalize" step in the algorithm serves to normalize each dictionary atom to have $\ell_2$ norm $=1$; we are allowed to assume this because we can always scale the columns of the coefficient matrices accordingly. 
 
