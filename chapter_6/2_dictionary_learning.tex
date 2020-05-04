@@ -1,0 +1,413 @@
+
+\section{Dictionary learning}
+\subsection{Introduction}
+Sparse dictionary learning is a representation learning method that aims at finding a sparse representation of the input data in the form of a linear combination of basic elements. These elements form the dictionary. 
+
+The problem of sparse coding consists of unsupervised learning of the dictionary and the coefficient matrices. Thus, given only unlabeled data, we aim to learn the set of dictionary atoms or
+basis functions that provide a good fit to the observed data. Sparse coding is important in a variety of domains. Sparse coding of natural images has yielded dictionary atoms which resemble the receptive fields of neurons in the visual cortex. Other important applications include compressed sensing and signal recovery.
+
+\subsection{Problem formulation}
+Dictionary learning has a particularly simple setup as follows. Given $n$ i.i.d. samples $y^i\in \mathbb{R}^d$, $i\in [n]$ from the generative model
+\begin{align}
+    y^i = A^* x^{i*}, \ i\in [n], \label{eq:gen-model}
+\end{align}
+the goal is to recover $A^*\in \mathbb{R}^{d\times r}$, the dictionary, and $s$-sparse vectors $x^{i*}\in \mathbb{R}^r$.  In many applications, the dictionary is often overcomplete, that is, $r \geq d$. Note that most optimization formulations of dictionary learning result in non-convex problems that have (often infinitely) many optimal solutions. This makes it difficult to analyze its optimization and generalization properties. 
+However, fixing one of $A$ and $x$, the problem reduces to linear regression involving response variable $y$ and covariates being either $A$ or $X$, for which various classical optimization methods for least-square problems can be used. This leads to various alternating minimization heuristics, which have been proven effective in practice. Meanwhile, theoretical guarantees for alternating minimization - such as guaranteed convergence to a global optimum and local rate of convergence - have also been developed.
+
+
+% \section{Alternating minimization: algorithms and theoretical guarantees}
+
+A generic \textit{alternating minimization} algorithm works as follows. First, initialize $A^{(0)}$ and $x^{(0)}$. In each epoch, first fixing $A$ and update $X$: $x^+ \leftarrow \phi(A, x)$; then, fixing $x^+$ and update $A$: $A^+ \leftarrow \psi(A, x^+)$. The updates $\phi$ and $\psi$ might involve randomness, such as coordinate-wise updates through a random permutation or a SGD-type method with random sampling of data. 
+
+Here, we discuss two specific AM algorithms and their respective theoretical convergence/recovery guarantees - that is, under conditions of data generative assumptions and assumptions on algorithm parameters, the iterates converge to the true dictionary with high probability. Both algorithms, as the current theoretical guarantees suggest, achieve \textit{local linear convergence}, that is, the dictionary iterates $A^{(t)}$ satisfy $\|A^{(t)} - A^*\| \leq C \cdot \eta^t \|A^{(0)} - A^*\|$ for $C>0$ and $0<\eta<1$, where $A^*$ is the true underlying dictionary, as long as $A^{(0)}$ is sufficiently close to $A^*$. The first algorithm below has a provably larger radius of convergence, that is, $A^{(0)}$ can be further away from $A^*$. It also has weaker assumption on the dictionary matrix, that is, an upper bound on $\|A^*\|_\infty$ instead of its operator norm, while allowing the operator norm to grow with dimension. 
+
+\subsection{Alternating minimization algorithm I}
+The first is the one considered in \cite{chatterji2017alternating}, in which the authors provide theoretical guarantees of local linear convergence. On a high level, this algorithm involves a specific robust sparse least-square estimation subroutine (for updating the coefficients $x$) and simple gradient step (for updating the dictionary $A$).
+
+We first introduce the robust sparse least-square estimation subroutine, which is defined as follows. Let $\gamma, \lambda, \nu > 0$ be tuning parameters and $R>0$ be an upper bound on the entry-wise maximum dictionary estimation error ($\max_{i,j} |A_{ij} - A^*_{ij}|$). Let $(\hat{\theta}, \hat{t}, \hat{u})\in \mathbb{R}^r \times \mathbb{R}_+\times \mathbb{R}_+$ be the solution to the following convex minimization problem: 
+\begin{align}
+    \min_{\theta,t,u}\left\{ \|\theta\|_1 + \lambda t + \nu u : \left\|\frac{1}{d} A^\top (y- A\theta) \right\|_\infty\leq \gamma t + R^2 u,\, \|\theta\|_2 \leq t,\, \|\theta\|_\infty\leq u \right\}. \label{eq:mu-selector}
+\end{align}
+
+Fixing $x^{(t)}$, a gradient step on $A = A^{(t)}$ at iteration $t$ with step size $\eta$ is as follows: 
+\begin{align}
+   A_{ij}^{(t)} = A_{ij}^{(t-1)} - \eta\cdot \frac{1}{n} \sum_{k=1}^n \sum_{p=1}^r \left( A_{ip}^{(t-1)} x_p^{k, (t)} x_j^{k, (t)} - y_i^k x_j^{k, (t)} \right).  \label{eq:grad-step-A}
+\end{align}
+This is simply a gradient step for minimizing the sum of square
+\begin{equation}
+    \mathcal{L}_n(A) := \frac{1}{2n} \left\| y^k - A x^{k, (t)} \right\|^2. 
+\end{equation}
+
+The estimator is the first part of the optimal solution $\hat{\theta}$, denoted as $MUS_{\gamma,  \lambda, \nu}(y, A, R)$. In the algorithm, there will be a further thresholding step of the form $\tilde{\theta}_i = \hat{\theta}_i \mathbb{I}\{|\hat{\theta}_i| \geq \tau \}$, where $\tau$ is the threshold value depending on various problem parameters.
+
+Below is Algorithm \ref{alg:am-for-dl-with-mus-estimator} \cite{chatterji2017alternating}.
+
+\begin{algorithm}
+\caption{Alternating Minimization for Dictionary Learning}
+% \label{alg:am-for-dl}
+\label{alg:am-for-dl-with-mus-estimator}
+\begin{algorithmic}
+\STATE \textbf{Input}: Step size $\eta$, samples $\{y^k\}_{k=1}^n$, initial estimate $A^{(0)}$, number of steps $T$, thresholds $\{\tau^{(y)}\}_{t=1}^T$, initial radius $R^{(0)}$ and robust sparse estimator parameters $\{\gamma^{(t)}\}_{t=1}^T$, $\{\lambda^{(t)}\}_{t=1}^T$, $\{\nu^{(t)}\}_{t=1}^T$.
+\FOR{$t = 1, \dots, T$}
+\FOR{$k = 1, \dots, n$} 
+    \STATE Compute the robust sparse estimator \[w^{k, (t)} = MUS_{\gamma^{(t)}, \lambda^{(t)}, \nu^{(t)}}(y^k, A^{(t-1)}, R^{(t-1)}).\] 
+    \FOR{$l = 1, \dots, r$}
+        \STATE Perform thresholding $x^{k, (t)}_l = w_l^{k, (t)} \mathbb{I}\left( |w_l^{k, (t)}| > \tau^{(t)} \right)$
+    \ENDFOR
+\ENDFOR
+\FOR{$i = 1, \dots, d$}
+    \FOR{$j = 1, \dots, r$}
+        \STATE Perform gradient update \eqref{eq:grad-step-A}.
+    \ENDFOR
+\ENDFOR
+
+\STATE Set $R^{(t)} = \frac{7}{8}R^{(t-1)}$. 
+\ENDFOR 
+\end{algorithmic}
+\end{algorithm}
+
+Next, we discuss the various assumptions on problem data and algorithm parameters used in \cite{chatterji2017alternating} in order to establish convergence guarantees for the algorithms.
+
+\subsection{Assumptions on the problem} 
+
+In order to develop convergence guarantees for Algorithm \ref{alg:am-for-dl-with-mus-estimator}, it is often customary to assume a fixed, deterministic ground truth dictionary $A^*$ and $x^{i*}$ being drawn i.i.d. from a distribution with various regularity assumptions such as bounded variance, independent coordinates and sparse support. Usually, in order to prove local convergence of any optimization algorithm for non-convex problems with many local optima, it is often necessary to assume that the initial iterate is close to a particular local optimum, while different optima are sufficiently ``far apart''.
+
+Next, we list and discuss the assumptions in \cite{chatterji2017alternating}. The first few are for the true dictionary $A^*$. 
+\begin{itemize}
+    \item (A1) \textbf{Incoherence}: $\left| \langle A_i^*, A_j^*\rangle \right| \leq \frac{\mu}{\sqrt{d}} $ for all $i,j\in [r]$, $i\neq j$.  This and the following (A4) essentially mean that the entries in the dictionary are sufficiently different from each other. We actually need a weaker version of this assumption. The author of the algorithm choose this one for ease of exposition.
+    \item (A2) \textbf{Normalized columns}: the columns of $A$ are normalized i.e. $\|A_i^*\|_2=1$ for all $i\in [r]$. 
+    \item (A3) \textbf{Bounded max norm}: $\|A\|_\infty \leq C_b/s$, where $C_b = \dfrac{1}{2000 M^2}$. In related works, some other algorithms require a strong assumption with the form $O(C_b/d)$, but this algorithm allows the operator to grow with dimensions.
+    \item (A4) \textbf{Separation}: for any $i$, $\|A_i^*\|_\infty \geq \dfrac{2C_b}{4s}$ 
+    and, for any $j\neq i$, $\min_{z\in \{-1, 1\}} \|A_i^* - z A^*_j\|\geq \dfrac{3C_b}{2s}$.
+\end{itemize}
+
+In addition, as mentioned previously, it is required that the initial iterate is close to only one dictionary, namely $A^*$:
+\begin{itemize}
+    \item (B1) $\|A^{(0)} - A^*\|_\infty \leq \frac{C_b}{2s}$. 
+\end{itemize}
+
+This initialization along with the separation condition ensures that the initial estimate is close to only one dictionary up to permutation.
+
+We further assume that the $n$ samples $x^{i*}$ (which themselves are unobserved) are generated i.i.d. from a distribution. The next few assumptions are for this
+generative distribution of $x^*$.
+\begin{itemize}
+    \item (C1) \textbf{Conditional independence}: assume that distribution of nonzero entries of $x^*\in \mathbb{R}^{r}$ is conditionally independent and identically distributed, that is, for $i,j\in [r]$, $i\neq j$, $x_i^*$ is independent of $x_j^*$ given that both are nonzero. 
+    \item (C2) \textbf{Sparsity level}: the level of sparsity of any $x_i^*$ is bounded as follows: $2\leq s \leq \min\{2 \sqrt{d}, C_b \sqrt{d}, C\sqrt{d}/\mu \}$, where $C$ is an appropriate global constant such that $A^*$ satisfies (D3) below. 
+    \item (C3) \textbf{Boundedness}: for each $i\in [r]$, conditioning on $x^*_i\neq 0$, it holds that 
+    \[ m \leq |x^*_i|\leq M, \]
+    with $m\geq 32 R^{(0)} M(R^{(0)} (s+1) + s/\sqrt{d} )$ and $M>1$. Here, $R^{(0)}$ is the initial algorithm parameter which will be introduced later. This is needed for the threshold sparse estimator (to be introduced later) to correctly predict the sign of the true covariate, that is, ${\rm sgn}(x) = {\rm sgn}(x^*)$. 
+    \item (C4) \textbf{Uniform probability of support}: the probability of $i$ being in the support of $x^*$ (the set of nonzero indices) is uniform over all $i\in [r]$. In other words, 
+    $\mathbb{P}(x^*_i \neq 0) = \frac{s}{s}$ for all $i$ and $\mathbb{P}(x^*_i, x^*_j \neq 0) = \frac{s(s-1)}{r(r-1)}$. 
+    \item (C5) Mean and variance of variables in the support: $\mathbb{E}(x_i^*|x_i^*\neq 0) = 0$ and $\mathbb{E}((x_i^*)^2|x_i^*\neq 0) = 1$ for all $i$. 
+\end{itemize}
+
+\subsection{Assumptions on algorithm parameters}
+The following are the assumptions on Algorithm \ref{alg:am-for-dl-with-mus-estimator} as well as the sparse estimation subroutine \ref{eq:mu-selector}.
+\begin{itemize}
+    \item The stepsize $\eta$ for the gradient update of $A$ should satisfy $\frac{3r}{4s}\leq \eta \leq \frac{r}{s}$.
+    \item The threshold for MUS is chosen as \[\tau^{(t)} = 16 R^{(t-1)} M\left(R^{(t-1)} (s+1)  + \frac{s}{\sqrt{d}} \right).\]
+    \item The other two parameters for MUS in every iteration need to be picked carefully in order to bound the MUS estimation error. Specifically, choose
+    \begin{align*}
+        128s \left(R^{(t-1)}\right)^2 & \leq \nu^{(t)} \leq 3 \\
+        32 \left( s^{3/2} \left(^{(t-1)}\right) + \frac{s^{3/2}R^{(t-1)}}{d^{1/2}} \right)\left( 4 + \frac{6}{\sqrt{s}} \right) &\leq \lambda^{(t)} \leq 3. 
+    \end{align*}
+    These are rather technical and lack clear intuition. Roughly speaking, these requirements are needed in bounding the estimation error $\frac{1}{d}\|A^\top (y - A \theta^*)\|$, where $\theta^*$ is the returned estimator (see Theorem 16 and its proof therein).
+    \end{itemize}
+    
+With all of the above assumptions, Theorem 3 in \cite{chatterji2017alternating} states that, given 
+\begin{itemize}
+    \item an initial iterate $A^{(0)}\leq R^{(0)} \leq \frac{C_b}{2s}$ (see Assumption (B1)), 
+    \item $\{ n^{(t)}\}_{t=1}^T$ i.i.d. samples in every iteration, with $n^{(t)} = \Omega\left(\frac{r}{s(R^{(t-1)})^2} \log \frac{dr}{\delta} \right)$, 
+\end{itemize}
+then, after $T$ iterations, with probability $1 - T\delta$, Algorithm \ref{alg:am-for-dl-with-mus-estimator} returns a dictionary $A^{(T)}$ such that \[ \|A^{(T)} - A^*\|_\infty \leq \left(\frac{7}{8}\right)^T R^{(0)}. \]
+
+The proof is a direct analysis of the gradient update step \eqref{eq:grad-step-A}. The (random) gradient update can be decomposed into
+an ``expectation'' term and a ``deviation'' (variance) term.
+Then, a deterministic convergence result can be proven by working with the expectation terms and MUS estimation errors (in particular, MUS is guaranteed to estimate the sign correctly in every iteration). Then, making use of concentration inequalities, the behavior of the deviation terms and MUS estimation errors can be controlled.
+
+% 直接抄那些assumptions，尽量加一些解释。
+\subsection{Convergence Results}
+By Lemma \cite{chatterji2017alternating}, Algorithm  \ref{alg:am-for-dl-with-mus-estimator} can estimate the sign of $x^*$ correctly during each loop, i.e. $sgn(x)=sgn(x^*)$. According the our Assumption (B1), the initial value of $A$ is close to one dictionary $A^*$ up to permutation.
+
+During time $t$ and time $t+1$, Let's consider the entries of $A$. Note $a^*_{ij}$ the $(i,j)$-th entry of the correct dictionary $A^*$, $a_{i,j}$ that of the generating dictionary $A^{(t)}$ during loop time $t$, and $a'_{i,j}$ that of loop time $t+1$. Denote $x^{m^*}_k$ the $k$-th coordinate of the $m$-th covariate at step $t$, and $x^m_k$ the $k$-th coordinate of the estimate of the $m$-th covariate at step $t$. Denote the radius $R^{(t)}=R$, $n^{(t)}=n$ for simplicity. Let $\bar g_{ij}$ be the $(i,j)$-th entry of the gradient with $n$ samples at step $t$, $g_{ij}$ be the $(i,j)$-th entry of the expected value of the gradient. We have:
+
+\begin{equation}
+\begin{aligned}
+\bar g_{ij}=&\frac1n\sum_{m=1}^n\left[\sum_{k=1}^r(a_{ik}x_k^mx_j^m)-y_i^mx_j^m\right]\\
+=&\mathbb E\left[\sum_{k=1}^r\left(a_{ik}x_k-a^*_{ik}x*_k\right)x_j\right]+\\
+&\left[\frac1n\sum_{m=1}^n\left[\sum_{k=1}^r(a_{ik}x_k^m-a^*_{ik}x^{m^*}_k)x_j^m\right]-\mathbb E\left[\sum_{k=1}^r\left(a_{ik}x_k-a^*_{ik}x^*_{k}\right)x_j\right]\right]\\
+=&g_{ij}+\underbrace{\bar g_{ij}-g_{ij}}_{\triangleq\epsilon_n}
+\end{aligned}
+\end{equation}
+Under this notation, we can now prove Theorem 3:
+
+First, we decompose the expected value of the gradient into three parts:
+\begin{equation}
+\begin{aligned}
+g_{ij}=&\mathbb E \left(a_{ij}x_j^2-a_{ij}^*x_j^*x_j\right)+\mathbb E\left[\sum_{k\neq j}a_{ik}x_kx_j-a^*_{ik}x^*_kx_j\right]\\
+=&\underbrace{(a_{ij}-a^*_{ij})\frac s r \mathbb E[x_j^2|x_j^*\neq 0]}_{\triangleq g_{ij}^c}+\underbrace{a^*_{ij}\frac s r\mathbb E [(x_j-x_j^*)x_j|x_j^*\neq0]}_{\triangleq E_1}+\\
+&\underbrace{\mathbb E\left[\sum_{k\neq j}a_{ik}x_kx_j-a^*_{ik}x^*_kx_j\right]}_{\triangleq E_2}
+\end{aligned}
+\end{equation}
+
+The first term points in the correct direction and will be useful in converging to the right answer. The other terms could be in a bad direction and we will control their
+magnitude by Lemma 5 in \cite{chatterji2017alternating} such that $|E_1|+|e_2|\leq\frac s {3r}R$.
+
+Given the bound, the gradient update can be expressed by:
+\begin{equation}
+    a'_{ij}=a_{ij}-\eta\bar g_{ij} = a_{ij}-\eta(g_{ij}+\epsilon_n)=a_{ij}-\eta[g_{ij}^c+E_1+E_2+\epsilon_n].
+\end{equation}
+So:
+\begin{equation}
+    a'_{ij}-a^*_{ij}=a_{ij}-a^*_{ij}-\eta(a_ij-a^*_{ij})\frac s r \mathbb E[x_j^2|x_j^*\neq0]-\eta[E_1+E_2+\epsilon_n].
+\end{equation}
+
+So the bound has the form:
+\begin{equation}
+\begin{aligned}
+|a'_{ij}-a^*_{ij}|\leq&\left(1-\eta\frac s r \mathbb E[x_j^2|x_j^*\neq0]\right)|a_{ij}-a^*_{ij}|+\eta[|E_1|+|E_2|+|\epsilon_n|]\\
+\leq&\left(1-\eta\frac s r\mathbb E[x_j^2|x_j^*\neq 0]\right)|a_{ij}-a_{ij}^*|+\eta\left(\frac s {3r} R\right)+\eta|\epsilon_n|\\
+\leq&\left(1-\eta\frac s r\left[\mathbb E[x_j^2|x_j^*\neq0]-\frac 1 3\right]\right)R+\eta|\epsilon_n|.
+\end{aligned}
+\end{equation}
+
+Now we consider the bound of the term $[\mathbb E[x_j^2|x_j^*\neq0]$. By the Lemma 6 in \cite{chatterji2017alternating}, we have:
+\begin{equation}
+    0\leq\left(1-\eta\frac s r\left[\mathbb E[x_j^2|x_j^*\neq0]-\frac 1 3\right]\right)\leq\frac 3 4
+\end{equation}
+therefore,
+\begin{equation}
+|a_{ij}^{(t)}-a_{ij}^*|\leq\frac3 4 R^{(t-1)}+\eta|\epsilon_n|\leq\frac3 4 R^{(t-1)}+\frac1 8 R^{(t-1)}=\frac 7 8R^{(t-1)}\leq\left(\frac 7 8\right)^tR^{(0)}.
+\end{equation}
+
+We have $\eta|\epsilon_n|\leq R/8\leq R^{(0)}/8$ with probability at least $1-\delta$ in each iteration. Thus by taking a union bound over the iterations we are guaranteed to remain in our initial ball of radius $R^{(0)}$ with high probability which completes the proof.
+
+\subsection{Alternating Minimization Algorithm II}
+In this section we describe another alternating minimization algorithm used in the paper \cite{ref1} to learn the dictionary matrix $A^*$. This paper implements another specific kind of alternating minimization - estimating coefficients via $\ell_1$ minimization and estimating the dictionary via least square estimation. The paper shows a theoretical guarantee for the above alternative minimization algorithm. The paper shows that under a set of conditions of the dictionary matrix $A^*$, coefficient matrix $X^*$ and sample complexity, we can show that the algorithm 1) satisfies local linear convergence, and 2) produces exact recovery of the dictionary matrix $A^*$ up to arbitrarily close. In fact, the paper shows that under the set of specified conditions, we need at most $\mathcal{O}(\log_2 1/\epsilon)$ rounds of alternating minimization to ensure that each dictionary atom vector is approximated within an absolute error of $\pm \epsilon$. In later sections, the paper proved a nice theoretical guarantee for this algorithm. We use $A(i)$ and $X(i)$ to denote the dictionary estimate and coefficient estimate after the $i$-th round of alternating minimization.  \\
+
+Input: Samples $Y$, initial dictionary $A(0)$, accuracy sequence $\epsilon_t$ and sparsity level $s$. (The way to estimate $A(0)$ and the selection of $\epsilon_t$'s will be explained later in the paper.)
+
+\begin{algorithm}
+\begin{algorithmic}
+\caption{Alternating Minimization for Dictionary Learning}
+\FOR{iterations $t=0, 1, 2, ..., T-1$}
+    \FOR{samples $i=1, 2, ..., n$}
+        \STATE $X(t+1)_i = \arg \min_{x \in \mathbb{R}^r}||x||_1$ such that $||Y_i - A(t)x||_2 \leq \epsilon_t$
+    \ENDFOR
+    \STATE Threshold: $X(t+1) = X(t+1) * (\mathbbm{1}[X(t+1) > 9s\epsilon_t])$
+    \STATE Estimate $A(t+1) = YX(t+1)^+$
+    \STATE Normalize: $A(t+1)_i = \frac{A(t+1)_i}{||A(t+1)_i||_2}$
+\ENDFOR
+\STATE \textbf{Output:} $A(T)$.
+\end{algorithmic}
+\end{algorithm}
+
+The algorithm above is alternating between two procedures: a sparse recovery step for estimating the coefficients given a fixed dictionary via $\ell_1$ minimization, and a step for estimating the dictionary given a fixed coefficient matrix via least squares estimation. Note that the ``Threshold" step in the algorithm serves to guarantee that the coefficient matrix we get is a sparse matrix. The ``Normalize" step in the algorithm serves to normalize each dictionary atom to have $\ell_2$ norm $=1$; we are allowed to assume this because we can always scale the columns of the coefficient matrices accordingly. 
+
+
+\subsection{Lemmas, theorems, and proof}
+The paper has two main theorems based on two sets of assumptions. Assumptions (A1)-(A7) give local linear convergence (Theorem \ref{thm:thm3-1}), but (A5) requires knowledge of an estimate of $A$ not too far from $A^*$ as initialization. Based on a similar set of assumptions (B1), (B3)-(B5), Theorem \ref{thm:thm3-2} (Specialization of Theorem 2.1 from \cite{ref1} gives an initialization that satisfies (A5), thus shows Algorithm 1 is feasible and will give exact recovery (Corollary \ref{cor:cor3-1}).
+
+We will use the shorthand Supp($v$) and Supp($W$) to denote the set of non-zero entries of $v$ and $W$ respectively. $||w||_p$ denote the $\ell_p$ norm of vector $w$; by default $||w||$ denotes $\ell_2$ norm of $w$. $||W||_2$ denotes the spectral norm of matrix $W$. $||W||_{\inf}$ denotes the largest elements in magnitude of $W$. For a matrix $X$, $X^i, X_i$ and $X_j^i$ denote the $i^{th}$ row, $i^{th}$ column and $(i, j)^{th}$ element of $X$ respectively. 
+
+\subsection{Assumption A, Theorem \ref{thm:thm3-1}}
+Without loss of generality, assume that the elements are normalized: $\lVert A_i^* \rVert_2=1,~\forall i\in[r]$.
+Assumptions:
+
+(A1) \textbf{Dictionary Matrix satisfying RIP}: The dictionary matrix $A^*$ has a $2s$-RIP constant of $\delta_{2s}<0.1$.
+
+(A2) \textbf{Spectral Condition on Dictionary Elements}: The dictionary matrix has bounded spectral norm, for some constant $\mu_1>0$, $\lVert A^*\rVert<\mu_1\sqrt{r/d}$.
+
+(A3) \textbf{Non-zero Entries in Coefficient Matrix}: We assume that the non-zero entries of $X^*$ are drawn i.i.d. from a distribution such that $E[(X^{*i}_j)^2]=1$, and satisfy $\lvert X^{*i}_j\rvert \leq M,~\forall\, i,j$ almost surely (a.s.).
+
+(A4) \textbf{Sparse Coefficient Matrix}: The columns of coefficient matrix have $s$ non-zero entries which are selected uniformly at random from the set of all $s$-sized subsets of $[r]$, i.e. $\lvert Supp(X^{*}_i)\rvert=s,~\forall i\in [n]$. We require $s$ to satisfy $s\leq \frac{d^{1/6}}{c_2\mu_1^{1/3}}$ for some universal constants $c_2$.
+
+(A5) \textbf{Sample Complexity}: For some universal constant $c>0$ and a given failure parameter $\delta >0$, the number of samples $n$ needs to satisfy
+\begin{equation*}
+n\geq c_3 \max(r^2,rM^2s)\log\frac{2r}{\delta}
+\end{equation*}
+where $c_3>0$ is a universal constant.
+
+(A6) \textbf{Initial dictionary with guaranteed error bound}: We assume that we have access to an initial dictionary estimate $A(0)$ such that
+\begin{equation*}
+\hat{\epsilon}_0:=\max_{i\in [r]}\min_{z\in \{-1,+1\}}\lVert zA_i(0)-A_i^*\rVert_2<\frac{1}{2592s^2}.
+\end{equation*}
+
+(A7) \textbf{Choice of Parameters for Alternating Minimization}: Algorithm 1 uses a sequence of accuracy parameters $\epsilon_0=1/2592s^2$ and 
+\begin{equation*}
+\epsilon_{t+1}=\frac{25050\mu_1s^3}{\sqrt{d}}\epsilon_t.
+\end{equation*}
+
+\begin{theorem}
+(Local linear convergence). Unver assumptions (A1)-(A7), with probability at least $1-2\delta$ the iterate $A(t)$ of Algorithm 1 satisfies the following for all $t\geq 1$:
+\begin{equation*}
+\min_{z\in \{-1,+1\}}\lVert zA_i(t)-A_i^*\rVert_2\leq \sqrt{2}\epsilon_t,~1\leq i \leq r.
+\end{equation*}
+\label{thm:thm3-1}
+\end{theorem}
+
+The variable $z$ is because there is a sign ambiguity in the recovery of dictionary: if $A_i=-A_i^*$, we can let $X^i=-X^{*i}$, then $A^j_iX^i_k=A^{*j}_iX^{*i}_k$.
+
+Theorem \ref{thm:thm3-1} shows linear convergence of Algorithm 1. In fact, (A4) says we can choose $c_2$ large enough s.t. $\frac{25050\mu_1s^3}{\sqrt{d}}<1/2$. Together with (A7), we have
+\begin{equation*}
+\min_{z\in \{-1,+1\}}\lVert zA_i(t)-A_i^*\rVert_2\leq \hat{\epsilon}_02^{-t},~1\leq i \leq r.
+\end{equation*}
+Or, to make sure that the maximum L2 error of columns of $A$ is no greater than $\epsilon$, we need at most $\mathcal{O}(\log_2\frac{\hat{\epsilon}_0}{\epsilon})$ iterations.
+
+Another way to understand this theorem is that based on Assumption (A6), the initialization should have error no greater than $\mathcal{O}(1/s^2)$. Thus, we can view this $\mathcal{O}(1/s^2)$ as the size of basin of attraction: as long as $A(0)$ is within this basin, Algorithm 1 will succeed.
+
+\subsection{Assumption B, Theorem \ref{thm:thm3-2}}
+Assumptions:
+
+(B1) \textbf{Incoherent Dictionary Elements}: Without loss of generality, assume that all the elements are normalized: $\lVert A_i^*\rVert_2=1$, for $i\in [r]$. We assume pairwise incoherence condition on the dictionary elements, for some constant $\mu_0>0$, $\lvert <A_i^*,A_j^*>\rvert < \frac{\mu_0}{\sqrt{d}}$.
+
+(B3) \textbf{Non-zero Entries in Coefficient Matrix}: We assume that the non-zero entries of $X^*$ are drawn i.i.d. from a distribution such that $E[(X^{*i}_j)^2]=1$, and satisfy the following a.s.: $m\leq \lvert X^{*i}_j\leq M,~\forall i,j$.
+
+(B4) \textbf{Sparse Coefficient Matrix}: The columns of coefficient matrix have bounded number of non-zeri entries $s$ which are selected randomly, ie.
+\begin{equation*}
+\lvert Supp(x_i)\rvert =s,~\forall i\in [n]
+\end{equation*}
+We require $s$ to be
+\begin{equation*}
+s<c_1\min(\frac{m}{M}\frac{d^{1/4}}{\sqrt{\mu_0}},(\frac{d}{\mu_1^2}\frac{m^4}{M^4})^{1/9},r^{1/8}(\frac{m}{M})^{1/4})
+\end{equation*}
+for some universal constants $c_1,c_2>0$. Constants $m,M$ are as specified above.
+
+(B5) \textbf{Sample Complexity}: For some universal constant $c_2>0$ choose $\delta >0$ and the number of samples $n$ such that
+\begin{equation*}
+n:=n(d,r,s,\delta)\geq c_2r^2\frac{M^2}{m^2}\log\frac{2r}{\delta}
+\end{equation*}
+
+\begin{theorem}
+Under assumptions (B1), (A2), (B3)-(B5) and (A7), there exists an algorithm which given $Y$ outputs $A(0)$, such that Assumption (A6) holds with probability greater than $1-2n^2\delta$.
+\label{thm:thm3-2}
+\end{theorem}
+
+\begin{corollary}
+(Exact Recovery) Suppose assumptions (B1), (A2)-(A5), (B3)-(B5) and (A7) hold. If we start Algorithm 1 with the output of Algorithm 1 of \cite{ref1}, then the following holds for all $t\geq 1$:
+\begin{equation*}
+\min_{z\in \{-1,+1\}}\lVert zA_i(t)-A_i^*\rVert_2<\sqrt{2}\epsilon_t,~1\leq i \leq r.
+\end{equation*}
+\label{cor:cor3-1}
+\end{corollary}
+
+Thus, Theorem \ref{thm:thm3-2} refers to an algorithm that gives an $A(0)$ that satisfies $(A6)$. Using this algorithm, together with Algorithm 1 proposed in this paper, then, we can recover $A,X$ successfully.
+
+Notice that the set of Assumptions A and B are similar (but more strict for some B): (B3) is more strict than (A3) by adding an lower bound on $\lvert X_j^{*i} \rvert$; assumptions (B1) and (B4) implies (A1).
+
+\subsection{Lemmas}
+\begin{lemma}
+(Error in sparse recovery) Let $\Delta X:=X(t)-X^*$. Assume that $2\mu_0s/\sqrt{d}\leq 0.1$ and $\sqrt{s\epsilon_t}\leq 0.1$. Then we have $Supp(\Delta X) \subset Supp(\Delta X^*)$ and the error bound $\lVert \Delta X \rVert_{\infty} \leq 9s\epsilon_t$.
+\label{lemma:l1}
+\end{lemma}
+\begin{lemma}
+With probability at least $1-r \exp(-\frac{Cn}{rs})$, for every $n\times n$ matrix $W$ s.t. $Supp(W)\subset Supp(X^*)$, we have
+\begin{equation*}
+\lVert W \rVert_2 \leq 2 \lVert W \rVert_{\infty}\sqrt{\frac{s^2n}{r}}.
+\end{equation*}
+\label{lemma:l2}
+\end{lemma}
+
+\begin{lemma}
+(Off-diagonal error bound). With probability at least $1-r\exp(-\frac{Cn}{rM^2s})-r\exp(-Cn/r^2)$, we have uniformly for every $p\in [r]$ and every $\Delta X$ such that $\lVert \Delta X\rVert_{\infty}<\frac{1}{288s}$.
+\begin{equation*}
+\lVert (\Delta XX^{+})_p^{\backslash p} \rVert_2=\lVert (X^*X^{+})_p^{\backslash p} \rVert_2 \leq \frac{1968s^2\lVert \Delta X \rVert_{\infty}}{\sqrt{r}}
+\end{equation*}
+\label{lemma:l3}
+\end{lemma}
+\begin{definition}
+For any two vectors $z,w\in \mathbbm{R}^d$, we define the distance between them as follows:
+\begin{equation*}
+dist(z,w):=\sup_{v\perp w}\frac{\langle v,z\rangle }{\lVert v \rVert_2\lVert z \rVert_2}=\sup_{v\perp z}\frac{\langle v,w\rangle }{\lVert v \rVert_2\lVert w \rVert_2}
+\end{equation*}
+\label{def:def1}
+\end{definition}
+
+\begin{lemma}
+For any two unit vectors $u,v\in\mathbbm{R}^d$, we have
+\begin{equation*}
+dist(u,v)\leq \min_{z\in \{-1,+1\}} \lVert zu-v \rVert \leq \sqrt{2}dist(u,v)
+\end{equation*}
+\label{lemma:l4}
+\end{lemma}
+\begin{definition}
+For any two $d\times r$ matrices $Z$ and $W$, we define the distance between them as follows:
+\begin{equation*}
+dist(Z,W):=\sup_{p\in[r]} dist(Z_p,W_p)
+\end{equation*}
+\label{def:def2}
+\end{definition}
+\subsection{Proof of Theorem \ref{thm:thm3-1} (by induction)}
+The idea of proof is to use the distance function defined in Definition \ref{def:def1} and \ref{def:def2} and Lemma \ref{lemma:l4} to provide an upper bound for $\min_{z\in \{-1,+1\}}\lVert zA_i(t)-A_i^*\rVert,~\forall i \in [r]$.
+The key observation is that for each update for $A$, we have
+\begin{equation*}
+    A-A^*=YX^+-A^*=A^*X^*X^+-A^*XX^+=A^*\Delta XX^+
+\end{equation*}
+where we let $X(t+1)=X$, $A(t+1)=A$, $A(t)=\Tilde{A}$, and $X^+$ satisfies $XX^+=I$.
+Thus for each column $p\in[r]$, we have
+\begin{equation*}
+    A_p-A_p^*=A_p^*(\Delta XX^+)_p^p+A_{\backslash p}^*(\Delta XX^+)_p^{\backslash p}
+\end{equation*}
+Fix any $w\perp A_p^*$ s.t. $\lVert w\rVert_2=1$, then with high probability,
+\begin{align*}
+    <w,A_p>=w^TA^*X^*X^+_p &\leq \lVert w^TA^*\rVert_2 \lVert (X^*X^+)_p^{\backslash p}\rVert_2~~~(w^TA^*_p=0)\\
+    &\leq \mu_1\sqrt{\frac{r}{d}}\frac{1968s^2\lVert \Delta X \rVert_{\infty}}{\sqrt{r}}~~~((A2),~\text{Lemma \ref{lemma:l3})}\\
+    &=\frac{17712\mu_1s^3}{\sqrt{d}}\epsilon_t
+\end{align*}
+Based on Definition \ref{def:def1}, then we only need to provide a lower bound for $\lVert A_p \rVert$ so as to upper bound $dist(A_p,A_p^*)$. Based on the above observation,
+\begin{align*}
+    \lVert A_p \rVert_2 &=\lVert A_p^*+A_p^*(\Delta XX^+)_p^p+A_{\backslash p}^*(\Delta XX^+)_p^{\backslash p}\rVert_2\\
+    &\geq \lVert A_p^*\rVert_2 -\lVert A_p^*(\Delta XX^+)_p^p\rVert_2-\lVert A_{\backslash p}^*(\Delta XX^+)_p^{\backslash p}\rVert_2~~~(\text{triangle inequality})\\
+    &\geq 1-\lVert A_p^* \rVert_2\lvert (\Delta XX^+)_p^p \rvert -\lVert A_{\backslash p}^*\rVert_2\lVert(\Delta XX^+)_p^{\backslash p}\rVert_2~~~(\text{Cauchy-Schwarz})\\
+    &\geq 1-\lVert \Delta X \rVert_2\lVert X^T \rVert_2 \lVert (XX^T)^{-1}\rVert_2-\lVert A_{\backslash p}^*\rVert_2\lVert(\Delta XX^+)_p^{\backslash p}\rVert_2\\
+    &=1-\mathcal{T}_1-\mathcal{T}_2
+\end{align*}
+where
+\begin{align*}
+    &\mathcal{T}_1=\lVert \Delta X \rVert_2\lVert X^T \rVert_2 \lVert (XX^T)^{-1}\rVert_2\\
+    &\mathcal{T}_2=\lVert A_{\backslash p}^*\rVert_2\lVert(\Delta XX^+)_p^{\backslash p}\rVert_2
+\end{align*}
+Next, we control $\mathcal{T}_1$ and $\mathcal{T}_2$.
+
+First, $\mathcal{T}_2$ is directly controlled by assumption (A2), Lemma \ref{lemma:l1} and \ref{lemma:l3}: with probability at least $1-r\exp(-\frac{Cn}{rM^2s})-r\exp(-Cn/r^2)$
+\begin{equation*}
+    \mathcal{T}_2\leq \mu_1\frac{r}{d} \frac{1968s^3\epsilon_t}{\sqrt{r}}
+\end{equation*}.
+
+With Lemma \ref{lemma:l1}, \ref{lemma:l2}, we can control $\lVert \Delta X \rVert_2$ with high probability. Together with algebras, we have with probability at least $1-r\exp(-\frac{Cn}{rM^2s})$
+\begin{equation*}
+    \mathcal{T}_1\leq 18\epsilon_t s^2 \sqrt{\frac{n}{r}}\cdot 3s\sqrt{\frac{n}{r}}\cdot\frac{8r}{sn}=432s^2\epsilon_t
+\end{equation*}
+Putting these together,
+\begin{equation*}
+    \lVert A_p \rVert_2\geq 1-9s^2(48+\frac{1968s\mu_1}{\sqrt{d}})\epsilon_t \geq \frac{3}{4}~~~(\text{by } (A6))
+\end{equation*}
+So we have
+\begin{equation*}
+    \min_{z\in \{-1,+1\}}\lVert zA_p-A_p^* \rVert \leq \sqrt{2} dist(A_p,A_p^*)\leq \sqrt{2}\frac{17712\mu_1s^3}{\sqrt{d}}\epsilon_t/\frac{3}{4} \leq \sqrt{2}\epsilon_{t+1}~~~(\text{by }(A7))
+\end{equation*}
+
+
+
+
+\subsection{Experiments}
+The paper shows three experimental results that validate the proved theoretical guarantees: a) advantage of alternating minimization over one-shot initialization, b) linear convergence of alternating minimization, c) sample complexity of alternating minimization. \\
+
+Data generation: Each entry of the dictionary matrix $A$ is chosen i.i.d. from $\mathcal{N}(0, 1/\sqrt{d})$. The support of each column of $X$ was chosen independently and uniformly from the set of all $s$-subsets of $[r]$. Each non-zero element of $X$ was chosen randomly and uniformly from $[-2, -1] \cup [1, 2]$. We measure error in the recovery of dictionary by $error(A) = \max_i \sqrt{1-\frac{\langle A_i, A_i^* \rangle ^2}{||A_i||_2^2 ||A_i^*||_2^2}}$. Observe that the data generated satisfies the conditions $A$ and $B$'s.\\
+
+Experiment results:
+\begin{enumerate}
+\item[(a)] Advantage of alternating minimization over one-shot minimization. Experiments show that the error of a one-shot minimization is approximately 0.56, while an alternating minimization can reduce the error to the scale of $10^{-6}$. On the other hand, do note that the one-shot initialization error of 0.56 is still non-trivial and much better than the error of a random initialization of $\approx 0.99$.
+
+\item[(b)] Linear convergence. Experiments show that, consistent with the theoretical guarantee, the error reduces geometrically as a function of the number of iterations. Thus, the log of error reduces linearly as a function of the number of iterations. 
+
+\item[(c)] Sample complexity of alternating minimization. Recall that theoretical analysis shows that the exact recovery holds if sample complexity $n = \mathcal{O}(r^2\log r)$. Experiment results show a tighter bound that with a reasonably good initialization, only $n = \mathcal{O}(r)$ samples are already sufficient for success of alternating minimization. 
+
+\end{enumerate}
+
+\subsection{Future Directions}
+\begin{enumerate}
+\item[(1)] The current sparse recovery step in the alternating minimization algorithm decodes the coefficients individually for each sample. There may be better algorithms that decode the coefficients for all samples at the same time. Such algorithms will enable control over properties across samples, such as controlling the number of samples per dictionary element. 
+
+\item[(2)] Alternating minimization is often used to handle non-convex optimization problems, which are often seen in machine learning applications. Thus, the new theoretical results in the paper may offer potential insights to analyze factorization-style non-convex problems in machine learning theory. 
+\end{enumerate}
