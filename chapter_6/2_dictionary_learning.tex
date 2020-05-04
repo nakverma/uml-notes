@@ -75,7 +75,7 @@ In order to develop convergence guarantees for Algorithm \ref{alg:am-for-dl-with
 Next, we list and discuss the assumptions in \cite{chatterji2017alternating}. The first few are for the true dictionary $A^*$. 
 \begin{itemize}
     \item (A1) \textbf{Incoherence}: $\left| \langle A_i^*, A_j^*\rangle \right| \leq \frac{\mu}{\sqrt{d}} $ for all $i,j\in [r]$, $i\neq j$.  This and the following (A4) essentially mean that the entries in the dictionary are sufficiently different from each other. We actually need a weaker version of this assumption. The author of the algorithm choose this one for ease of exposition.
-    \item (A2) \textbf{Normalized columns}： We require the columns of $A$ to be normalized i.e. $\|A_i^*\|_2=1$ for all $i\in [r]$. 
+    \item (A2) \textbf{Normalized columns}: the columns of $A$ are normalized i.e. $\|A_i^*\|_2=1$ for all $i\in [r]$. 
     \item (A3) \textbf{Bounded max norm}: $\|A\|_\infty \leq C_b/s$, where $C_b = \dfrac{1}{2000 M^2}$. In related works, some other algorithms require a strong assumption with the form $O(C_b/d)$, but this algorithm allows the operator to grow with dimensions.
     \item (A4) \textbf{Separation}: for any $i$, $\|A_i^*\|_\infty \geq \dfrac{2C_b}{4s}$ 
     and, for any $j\neq i$, $\min_{z\in \{-1, 1\}} \|A_i^* - z A^*_j\|\geq \dfrac{3C_b}{2s}$.
