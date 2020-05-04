@@ -47,25 +47,21 @@ Below is Algorithm \ref{alg:am-for-dl-with-mus-estimator} \cite{chatterji2017alt
 % \label{alg:am-for-dl}
 \label{alg:am-for-dl-with-mus-estimator}
 \begin{algorithmic}
-\STATE \textbf{Input}: Step size $\eta$, samples $\{y^k\}_{k=1}^n$, initial estimate $A^{(0)}$, number of steps $T$, thresholds $\{\tau^{(y)}\}_{t=1}^T$, initial radius $R^{(0)}$ and robust sparse estimator parameters $\{\gamma^{(t)}\}_{t=1}^T$, $\{\lambda^{(t)}\}_{t=1}^T$, $\{\nu^{(t)}\}_{t=1}^T$.\\
-
+\STATE \textbf{Input}: Step size $\eta$, samples $\{y^k\}_{k=1}^n$, initial estimate $A^{(0)}$, number of steps $T$, thresholds $\{\tau^{(y)}\}_{t=1}^T$, initial radius $R^{(0)}$ and robust sparse estimator parameters $\{\gamma^{(t)}\}_{t=1}^T$, $\{\lambda^{(t)}\}_{t=1}^T$, $\{\nu^{(t)}\}_{t=1}^T$.
 \FOR{$t = 1, \dots, T$}
 \FOR{$k = 1, \dots, n$} 
-    
-    Compute the robust sparse estimator $w^{k, (t)} = MUS_{\gamma^{(t)}, \lambda^{(t)}, \nu^{(t)}}(y^k, A^{(t-1)}, R^{(t-1)})$. \newline
+    \STATE Compute the robust sparse estimator \[w^{k, (t)} = MUS_{\gamma^{(t)}, \lambda^{(t)}, \nu^{(t)}}(y^k, A^{(t-1)}, R^{(t-1)}).\] 
     \FOR{$l = 1, \dots, r$}
-    \newline
-        Perform thresholding $x^{k, (t)}_l = w_l^{k, (t)} \mathbb{I}\left( |w_l^{k, (t)}| > \tau^{(t)} \right)$ [Unable to set indent properly.]
+        \STATE Perform thresholding $x^{k, (t)}_l = w_l^{k, (t)} \mathbb{I}\left( |w_l^{k, (t)}| > \tau^{(t)} \right)$
+    \ENDFOR
+\ENDFOR
+\FOR{$i = 1, \dots, d$}
+    \FOR{$j = 1, \dots, r$}
+        \STATE Perform gradient update \eqref{eq:grad-step-A}.
     \ENDFOR
 \ENDFOR
 
-\FOR{$i = 1, \dots, d$}
-\FOR{$j = 1, \dots, r$}
-        Perform gradient update \eqref{eq:grad-step-A}.
-\ENDFOR
-\ENDFOR
-
-Set $R^{(t)} = \frac{7}{8}R^{(t-1)}$. 
+\STATE Set $R^{(t)} = \frac{7}{8}R^{(t-1)}$. 
 \ENDFOR 
 \end{algorithmic}
 \end{algorithm}
