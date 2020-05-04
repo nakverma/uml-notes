@@ -15,7 +15,7 @@ the goal is to recover $A^*\in \mathbb{R}^{d\times r}$, the dictionary, and $s$-
 However, fixing one of $A$ and $x$, the problem reduces to linear regression involving response variable $y$ and covariates being either $A$ or $X$, for which various classical optimization methods for least-square problems can be used. This leads to various alternating minimization heuristics, which have been proven effective in practice. Meanwhile, theoretical guarantees for alternating minimization - such as guaranteed convergence to a global optimum and local rate of convergence - have also been developed.
 
 
-\section{Alternating minimization: algorithms and theoretical guarantees}
+% \section{Alternating minimization: algorithms and theoretical guarantees}
 
 A generic \textit{alternating minimization} algorithm works as follows. First, initialize $A^{(0)}$ and $x^{(0)}$. In each epoch, first fixing $A$ and update $X$: $x^+ \leftarrow \phi(A, x)$; then, fixing $x^+$ and update $A$: $A^+ \leftarrow \psi(A, x^+)$. The updates $\phi$ and $\psi$ might involve randomness, such as coordinate-wise updates through a random permutation or a SGD-type method with random sampling of data. 
 
@@ -26,7 +26,7 @@ The first is the one considered in \cite{chatterji2017alternating}, in which the
 
 We first introduce the robust sparse least-square estimation subroutine, which is defined as follows. Let $\gamma, \eta, \nu > 0$ be tuning parameters and $R>0$ be an upper bound on the entry-wise maximum dictionary estimation error ($\max_{i,j} |A_{ij} - A^*_{ij}|$). Let $(\hat{\theta}, \hat{t}, \hat{u})\in \mathbb{R}^r \times \mathbb{R}_+\times \mathbb{R}_+$ be the solution to the following convex minimization problem: 
 \begin{align}
-    \min_{\theta,t,u}\left\{ \|\theta\|_1 + \lambda t + \nv u : \left\|\frac{1}{d} A^\top (y- A\theta) \right\|_\infty\leq \gamma t + R^2 u,\, \|\theta\|_2 \leq t,\, \|\theta\|_\infty\leq u \right\}. \label{eq:mu-selector}
+    \min_{\theta,t,u}\left\{ \|\theta\|_1 + \lambda t + \nu u : \left\|\frac{1}{d} A^\top (y- A\theta) \right\|_\infty\leq \gamma t + R^2 u,\, \|\theta\|_2 \leq t,\, \|\theta\|_\infty\leq u \right\}. \label{eq:mu-selector}
 \end{align}
 
 Fixing $x^{(t)}$, a gradient step on $A = A^{(t)}$ at iteration $t$ with step size $\eta$ is as follows: 
