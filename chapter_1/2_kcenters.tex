@@ -111,7 +111,7 @@ Conversely, $\Gamma_i^-(u)$ is the set of nodes that can be reached by a directe
 \begin{enumerate}
 \item \underline{Input}: $G=(V, E)$ and A$\subset$V
 \item \underline{Output}: $\Gamma_i^-(u)$
-\item \underline{Goal}: \min $y(V)$ such that y($\Gamma_i^-(u)$ )$\geq 1$ for all $v \in A$, $y \geq 0$
+\item \underline{Goal}: $\min y(V)$ such that $y(\Gamma_i^-(u) )\geq 1$ for all $v \in A$, $y \geq 0$
 \end{enumerate}
 
 Now We can give the algorithm of out LP here:\\
@@ -183,7 +183,7 @@ for $i=0,1,2...$ do ("phase" $i$)
 \ \ $A\leftarrow V_{\geq i+3}$ (expand the front)
 
 \ \ (now $y_A$ is projected onto $V_{i+2}$)
-\end{algorithm}\\
+\end{algorithm}
 
 
 \begin{algorithm}
@@ -213,7 +213,8 @@ for $i= 0,1,2,...$ do
 \ \ \ \ \ \ $S'_{i+1} \leftarrow GREEDYSETCOVER(G, S_i)$
 
 \ \ \ \ \ \ $S_{i+1}\leftarrow S'_{i+1} \cap A$
-\end{algorithm}\\
+\end{algorithm}
+
 The greedy set cover algorithm is well-studied and the following theorem is known.
 \begin{theorem}
 If there exists a fractional set cover for $S$, using $p$ centers, then $GREEDYSETCOVER(G,S)$ outputs a cover of size at most $pH(\frac{\vert S \vert}{p})$. 
@@ -221,7 +222,8 @@ If there exists a fractional set cover for $S$, using $p$ centers, then $GREEDYS
 Finally we give our REDUCE algorithm as follows:\\
 \begin{definition}
 In a directed graph $G$, $v$ is a center capturing vertex (CCV) if $\Gamma^-(v) \subset \Gamma^+(v)$.
-\end{definition}\\
+\end{definition}
+
 \begin{algorithm}
 \caption{REDUCE $(G)$}
 $A \leftarrow V$, $C \leftarrow \emptyset$
@@ -234,7 +236,8 @@ while there is a CCV $v \in A$ do
 
 $A \leftarrow A \backslash \Gamma^+_4(C)$
 output $(C,A)$
-\end{algorithm}\\
+\end{algorithm}
+
 \section{The $k$-centers Problem under Perturbation Resilience}
 
 Up to this point, we have discussed the symmetric and asymmetric $k$-centers problem with the object function defined as the maximum distance from the centers to the points. In this section, we introduce \emph{perturbation resilience} as introduced by Bilu and Linial and summarize two important results. First, Balcan and Liang's result for the symmetric problem under $(1+\sqrt2)$-perturbation resilience can be improved upon. Second, the symmetric problem under $(2-\epsilon)$-approximation stability is $NP$-hard.
