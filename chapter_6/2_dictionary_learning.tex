@@ -1,12 +1,13 @@
 
 \section{Dictionary learning}
-\subsection{Introduction}
+
 Sparse dictionary learning is a representation learning method that aims at finding a sparse representation of the input data in the form of a linear combination of basic elements. These elements form the dictionary. 
 
 The problem of sparse coding consists of unsupervised learning of the dictionary and the coefficient matrices. Thus, given only unlabeled data, we aim to learn the set of dictionary atoms or
 basis functions that provide a good fit to the observed data. Sparse coding is important in a variety of domains. Sparse coding of natural images has yielded dictionary atoms which resemble the receptive fields of neurons in the visual cortex. Other important applications include compressed sensing and signal recovery.
 
-\subsection{Problem formulation}
+\subsubsection{Problem formulation}
+
 Dictionary learning has a particularly simple setup as follows. Given $n$ i.i.d. samples $y^i\in \mathbb{R}^d$, $i\in [n]$ from the generative model
 \begin{align}
     y^i = A^* x^{i*}, \ i\in [n], \label{eq:gen-model}
@@ -15,13 +16,12 @@ the goal is to recover $A^*\in \mathbb{R}^{d\times r}$, the dictionary, and $s$-
 However, fixing one of $A$ and $x$, the problem reduces to linear regression involving response variable $y$ and covariates being either $A$ or $X$, for which various classical optimization methods for least-square problems can be used. This leads to various alternating minimization heuristics, which have been proven effective in practice. Meanwhile, theoretical guarantees for alternating minimization - such as guaranteed convergence to a global optimum and local rate of convergence - have also been developed.
 
 
-% \section{Alternating minimization: algorithms and theoretical guarantees}
-
 A generic \textit{alternating minimization} algorithm works as follows. First, initialize $A^{(0)}$ and $x^{(0)}$. In each epoch, first fixing $A$ and update $X$: $x^+ \leftarrow \phi(A, x)$; then, fixing $x^+$ and update $A$: $A^+ \leftarrow \psi(A, x^+)$. The updates $\phi$ and $\psi$ might involve randomness, such as coordinate-wise updates through a random permutation or a SGD-type method with random sampling of data. 
 
 Here, we discuss two specific AM algorithms and their respective theoretical convergence/recovery guarantees - that is, under conditions of data generative assumptions and assumptions on algorithm parameters, the iterates converge to the true dictionary with high probability. Both algorithms, as the current theoretical guarantees suggest, achieve \textit{local linear convergence}, that is, the dictionary iterates $A^{(t)}$ satisfy $\|A^{(t)} - A^*\| \leq C \cdot \eta^t \|A^{(0)} - A^*\|$ for $C>0$ and $0<\eta<1$, where $A^*$ is the true underlying dictionary, as long as $A^{(0)}$ is sufficiently close to $A^*$. The first algorithm below has a provably larger radius of convergence, that is, $A^{(0)}$ can be further away from $A^*$. It also has weaker assumption on the dictionary matrix, that is, an upper bound on $\|A^*\|_\infty$ instead of its operator norm, while allowing the operator norm to grow with dimension. 
 
 \subsection{Alternating minimization algorithm I}
+
 The first is the one considered in \cite{chatterji2017alternating}, in which the authors provide theoretical guarantees of local linear convergence. On a high level, this algorithm involves a specific robust sparse least-square estimation subroutine (for updating the coefficients $x$) and simple gradient step (for updating the dictionary $A$).
 
 We first introduce the robust sparse least-square estimation subroutine, which is defined as follows. Let $\gamma, \lambda, \nu > 0$ be tuning parameters and $R>0$ be an upper bound on the entry-wise maximum dictionary estimation error ($\max_{i,j} |A_{ij} - A^*_{ij}|$). Let $(\hat{\theta}, \hat{t}, \hat{u})\in \mathbb{R}^r \times \mathbb{R}_+\times \mathbb{R}_+$ be the solution to the following convex minimization problem: 
@@ -68,7 +68,7 @@ Below is Algorithm \ref{alg:am-for-dl-with-mus-estimator} \cite{chatterji2017alt
 
 Next, we discuss the various assumptions on problem data and algorithm parameters used in \cite{chatterji2017alternating} in order to establish convergence guarantees for the algorithms.
 
-\subsection{Assumptions on the problem} 
+\subsubsection{Assumptions on the problem} 
 
 In order to develop convergence guarantees for Algorithm \ref{alg:am-for-dl-with-mus-estimator}, it is often customary to assume a fixed, deterministic ground truth dictionary $A^*$ and $x^{i*}$ being drawn i.i.d. from a distribution with various regularity assumptions such as bounded variance, independent coordinates and sparse support. Usually, in order to prove local convergence of any optimization algorithm for non-convex problems with many local optima, it is often necessary to assume that the initial iterate is close to a particular local optimum, while different optima are sufficiently ``far apart''.
 
@@ -101,7 +101,8 @@ generative distribution of $x^*$.
     \item (C5) Mean and variance of variables in the support: $\mathbb{E}(x_i^*|x_i^*\neq 0) = 0$ and $\mathbb{E}((x_i^*)^2|x_i^*\neq 0) = 1$ for all $i$. 
 \end{itemize}
 
-\subsection{Assumptions on algorithm parameters}
+\subsubsection{Assumptions on algorithm parameters}
+
 The following are the assumptions on Algorithm \ref{alg:am-for-dl-with-mus-estimator} as well as the sparse estimation subroutine \ref{eq:mu-selector}.
 \begin{itemize}
     \item The stepsize $\eta$ for the gradient update of $A$ should satisfy $\frac{3r}{4s}\leq \eta \leq \frac{r}{s}$.
@@ -125,8 +126,8 @@ The proof is a direct analysis of the gradient update step \eqref{eq:grad-step-A
 an ``expectation'' term and a ``deviation'' (variance) term.
 Then, a deterministic convergence result can be proven by working with the expectation terms and MUS estimation errors (in particular, MUS is guaranteed to estimate the sign correctly in every iteration). Then, making use of concentration inequalities, the behavior of the deviation terms and MUS estimation errors can be controlled.
 
-% 直接抄那些assumptions，尽量加一些解释。
-\subsection{Convergence Results}
+\subsubsection{Convergence Results}
+
 By Lemma \cite{chatterji2017alternating}, Algorithm  \ref{alg:am-for-dl-with-mus-estimator} can estimate the sign of $x^*$ correctly during each loop, i.e. $sgn(x)=sgn(x^*)$. According the our Assumption (B1), the initial value of $A$ is close to one dictionary $A^*$ up to permutation.
 
 During time $t$ and time $t+1$, Let's consider the entries of $A$. Note $a^*_{ij}$ the $(i,j)$-th entry of the correct dictionary $A^*$, $a_{i,j}$ that of the generating dictionary $A^{(t)}$ during loop time $t$, and $a'_{i,j}$ that of loop time $t+1$. Denote $x^{m^*}_k$ the $k$-th coordinate of the $m$-th covariate at step $t$, and $x^m_k$ the $k$-th coordinate of the estimate of the $m$-th covariate at step $t$. Denote the radius $R^{(t)}=R$, $n^{(t)}=n$ for simplicity. Let $\bar g_{ij}$ be the $(i,j)$-th entry of the gradient with $n$ samples at step $t$, $g_{ij}$ be the $(i,j)$-th entry of the expected value of the gradient. We have:
@@ -183,6 +184,7 @@ therefore,
 We have $\eta|\epsilon_n|\leq R/8\leq R^{(0)}/8$ with probability at least $1-\delta$ in each iteration. Thus by taking a union bound over the iterations we are guaranteed to remain in our initial ball of radius $R^{(0)}$ with high probability which completes the proof.
 
 \subsection{Alternating Minimization Algorithm II}
+
 In this section we describe another alternating minimization algorithm used in the paper \cite{ref1} to learn the dictionary matrix $A^*$. This paper implements another specific kind of alternating minimization - estimating coefficients via $\ell_1$ minimization and estimating the dictionary via least square estimation. The paper shows a theoretical guarantee for the above alternative minimization algorithm. The paper shows that under a set of conditions of the dictionary matrix $A^*$, coefficient matrix $X^*$ and sample complexity, we can show that the algorithm 1) satisfies local linear convergence, and 2) produces exact recovery of the dictionary matrix $A^*$ up to arbitrarily close. In fact, the paper shows that under the set of specified conditions, we need at most $\mathcal{O}(\log_2 1/\epsilon)$ rounds of alternating minimization to ensure that each dictionary atom vector is approximated within an absolute error of $\pm \epsilon$. In later sections, the paper proved a nice theoretical guarantee for this algorithm. We use $A(i)$ and $X(i)$ to denote the dictionary estimate and coefficient estimate after the $i$-th round of alternating minimization.  \\
 
 Input: Samples $Y$, initial dictionary $A(0)$, accuracy sequence $\epsilon_t$ and sparsity level $s$. (The way to estimate $A(0)$ and the selection of $\epsilon_t$'s will be explained later in the paper.)
@@ -205,12 +207,14 @@ Input: Samples $Y$, initial dictionary $A(0)$, accuracy sequence $\epsilon_t$ an
 The algorithm above is alternating between two procedures: a sparse recovery step for estimating the coefficients given a fixed dictionary via $\ell_1$ minimization, and a step for estimating the dictionary given a fixed coefficient matrix via least squares estimation. Note that the ``Threshold" step in the algorithm serves to guarantee that the coefficient matrix we get is a sparse matrix. The ``Normalize" step in the algorithm serves to normalize each dictionary atom to have $\ell_2$ norm $=1$; we are allowed to assume this because we can always scale the columns of the coefficient matrices accordingly. 
 
 
-\subsection{Lemmas, theorems, and proof}
+\subsubsection{Lemmas, theorems, and proof}
+
 The paper has two main theorems based on two sets of assumptions. Assumptions (A1)-(A7) give local linear convergence (Theorem \ref{thm:thm3-1}), but (A5) requires knowledge of an estimate of $A$ not too far from $A^*$ as initialization. Based on a similar set of assumptions (B1), (B3)-(B5), Theorem \ref{thm:thm3-2} (Specialization of Theorem 2.1 from \cite{ref1} gives an initialization that satisfies (A5), thus shows Algorithm 1 is feasible and will give exact recovery (Corollary \ref{cor:cor3-1}).
 
 We will use the shorthand Supp($v$) and Supp($W$) to denote the set of non-zero entries of $v$ and $W$ respectively. $||w||_p$ denote the $\ell_p$ norm of vector $w$; by default $||w||$ denotes $\ell_2$ norm of $w$. $||W||_2$ denotes the spectral norm of matrix $W$. $||W||_{\inf}$ denotes the largest elements in magnitude of $W$. For a matrix $X$, $X^i, X_i$ and $X_j^i$ denote the $i^{th}$ row, $i^{th}$ column and $(i, j)^{th}$ element of $X$ respectively. 
 
-\subsection{Assumption A, Theorem \ref{thm:thm3-1}}
+\subsubsection{Assumption A, Theorem \ref{thm:thm3-1}}
+
 Without loss of generality, assume that the elements are normalized: $\lVert A_i^* \rVert_2=1,~\forall i\in[r]$.
 Assumptions:
 
@@ -256,7 +260,8 @@ Or, to make sure that the maximum L2 error of columns of $A$ is no greater than 
 
 Another way to understand this theorem is that based on Assumption (A6), the initialization should have error no greater than $\mathcal{O}(1/s^2)$. Thus, we can view this $\mathcal{O}(1/s^2)$ as the size of basin of attraction: as long as $A(0)$ is within this basin, Algorithm 1 will succeed.
 
-\subsection{Assumption B, Theorem \ref{thm:thm3-2}}
+\subsubsection{Assumption B, Theorem \ref{thm:thm3-2}}
+
 Assumptions:
 
 (B1) \textbf{Incoherent Dictionary Elements}: Without loss of generality, assume that all the elements are normalized: $\lVert A_i^*\rVert_2=1$, for $i\in [r]$. We assume pairwise incoherence condition on the dictionary elements, for some constant $\mu_0>0$, $\lvert <A_i^*,A_j^*>\rvert < \frac{\mu_0}{\sqrt{d}}$.
@@ -295,7 +300,8 @@ Thus, Theorem \ref{thm:thm3-2} refers to an algorithm that gives an $A(0)$ that 
 
 Notice that the set of Assumptions A and B are similar (but more strict for some B): (B3) is more strict than (A3) by adding an lower bound on $\lvert X_j^{*i} \rvert$; assumptions (B1) and (B4) implies (A1).
 
-\subsection{Lemmas}
+\subsubsection{Lemmas}
+
 \begin{lemma}
 (Error in sparse recovery) Let $\Delta X:=X(t)-X^*$. Assume that $2\mu_0s/\sqrt{d}\leq 0.1$ and $\sqrt{s\epsilon_t}\leq 0.1$. Then we have $Supp(\Delta X) \subset Supp(\Delta X^*)$ and the error bound $\lVert \Delta X \rVert_{\infty} \leq 9s\epsilon_t$.
 \label{lemma:l1}
@@ -337,7 +343,9 @@ dist(Z,W):=\sup_{p\in[r]} dist(Z_p,W_p)
 \end{equation*}
 \label{def:def2}
 \end{definition}
-\subsection{Proof of Theorem \ref{thm:thm3-1} (by induction)}
+
+\subsubsection{Proof of Theorem \ref{thm:thm3-1} (by induction)}
+
 The idea of proof is to use the distance function defined in Definition \ref{def:def1} and \ref{def:def2} and Lemma \ref{lemma:l4} to provide an upper bound for $\min_{z\in \{-1,+1\}}\lVert zA_i(t)-A_i^*\rVert,~\forall i \in [r]$.
 The key observation is that for each update for $A$, we have
 \begin{equation*}
@@ -391,6 +399,7 @@ So we have
 
 
 \subsection{Experiments}
+
 The paper shows three experimental results that validate the proved theoretical guarantees: a) advantage of alternating minimization over one-shot initialization, b) linear convergence of alternating minimization, c) sample complexity of alternating minimization. \\
 
 Data generation: Each entry of the dictionary matrix $A$ is chosen i.i.d. from $\mathcal{N}(0, 1/\sqrt{d})$. The support of each column of $X$ was chosen independently and uniformly from the set of all $s$-subsets of $[r]$. Each non-zero element of $X$ was chosen randomly and uniformly from $[-2, -1] \cup [1, 2]$. We measure error in the recovery of dictionary by $error(A) = \max_i \sqrt{1-\frac{\langle A_i, A_i^* \rangle ^2}{||A_i||_2^2 ||A_i^*||_2^2}}$. Observe that the data generated satisfies the conditions $A$ and $B$'s.\\
@@ -406,6 +415,7 @@ Experiment results:
 \end{enumerate}
 
 \subsection{Future Directions}
+
 \begin{enumerate}
 \item[(1)] The current sparse recovery step in the alternating minimization algorithm decodes the coefficients individually for each sample. There may be better algorithms that decode the coefficients for all samples at the same time. Such algorithms will enable control over properties across samples, such as controlling the number of samples per dictionary element. 
 
