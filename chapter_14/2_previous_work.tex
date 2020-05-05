@@ -1,0 +1,24 @@
+% Contributors: Luis Lopez, Robby Costales, Daniel Jaroslawicz, Colin Brown
+\section{Previous Work}
+
+\subsection{Maximum Likelihood Estimation (MLE )}
+First, we will start by noting that there are many classes of generative models. For the purposes of clarity and simplicity, we will focus on models that make use of maximum likelihood estimation, or if they don't normally implement MLE, the version of these models that do. Therefore any comparisons between the models with regard to either how they calculate MLE or their gradient will be commensurate. \\ \\
+MLE is a method of estimating the parameters $\theta$ of a distribution which make the observed data $x$ most probable. Thus MLE reduces to solving the following equation:
+$$\theta^* = \text{arg}\max_\theta\prod_{i=1}^mp_{model}(x^{(i)};\theta)$$
+Where $x_i$ is the $i^{th}$ data point and $\theta^*$ are the set of parameters which make $x$ most probable. In calculating the MLE, there is a potential of underflow if many small probabilities are multiplied with each other. Thus we solve a variant of this problem which also has its optimum at $\theta^*$.
+$$\theta^* = \text{arg}\max_\theta\sum_{i=1}^m\log(p_{model}(x^{(i)};\theta))$$
+In calculating the MLE, we are attempting to discover the underlying distribution $p_{data}$ of the data . However, since generally speaking we can only sample the data, our MLE calculation is approximating the empirical distribution $\hat{p}_{data}$. Therefore, calculating the MLE over the observed data is tantamount to calculating the KL divergence below: \cite{goodfellow2016nips}
+$$\theta^* = \text{arg}\min_\theta D_{KL}(\hat{p}_{data} || p_{model}(x; \theta ))$$
+
+\subsection{Generative Models}
+One of three most commonly used generative models alongside GANs and variational autoencoders are fully visible belief networks (FVBNs). These models are able to explicitly define a tractable density function over the sampled data by making use of the chain rule in probability to decompose an otherwise intractable probability.
+
+$$p_{model}(x) = \prod_i^np_{model}(x_i|x_1,...,x_{i-1})$$
+
+The biggest issues with this type of generative model is that each sample must be generated one by one, such that the cost of generating a single sample is on the order of $O(n)$, where $n$ is the dimension of the sample; GANs on the other hand take little time to generate samples as they can be generated in parallel \cite{oord2016wavenet}. \\ \\
+Like FVBNs, variational autoencoders are also able to explicitly define a density function over the sampled data. However, unlike the density function for FVBNs, the density function for autoencoders is not tractable. Therefore, the density function has to be approximated by lower bounding $\log p_{data}(x;\theta)$ by some tractable function $\mathcal{L}(x; \theta)$.
+
+$$\mathcal{L}(x; \theta) \leq \log p_{data}(x;\theta)$$
+
+The biggest issue with variational autoencoders is that $p_{model}$ sometimes models something completely different from $p_{data}$ even if the variational encoder is optimized perfectly and given infinite data \cite{rezende2014stochastic}. This results when either the posterior or prior probability used by the  variational autoencoder is too weak; GANs on the other hand are unbiased and will recover $p_{data}$ if it is perfectly optimized and enough data is given. \\ \\
+Despite the clear advantages that GANs have over other popular models, GANs are not without faults. In section 4 we will discuss the most prominent issues with GANs.
