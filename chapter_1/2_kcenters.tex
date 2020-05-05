@@ -67,3 +67,271 @@ metric spaces.
 spaces. Is k-center problem still hard in these spaces? Can we get
 better than 2-optimality? Is this the better algorithm to solve the
 problem? 
+
+%%%%%% Contributors: Gihyen Eom and Gaozhan Wang
+
+\section{The Asymmetric \emph{k}-centers Problem}
+
+We have thus covered the \emph{symmetric} $k$-centers problem. However, we can further generalize the definition of distance. In this section we discuss the \emph{asymmetric} $k$-centers problem and provide an $O(\log^*k)$ approximation.\cite{Archer2001}
+
+\begin{definition}
+A distance function $\rho$ is a \emph{metric} if for all $u,v,w$
+\begin{enumerate}
+    \item $\rho(u,v)\geq0$
+    \item $\rho(u,v)=0\iff u=v$
+    \item $\rho(u,w)\leq\rho(u,v)+\rho(v,w)$, and
+    \item $\rho(u,v)=\rho(v,u)$
+\end{enumerate}
+If $\rho$ does not satisfy 4., then it is an \emph{asymmetric} metric (distance function).
+\end{definition}
+
+An example of this is the problem of building fire stations. In general, a street may not necessarily be symmetrically distanced. There are some one-way streets and some streets where you may only make left/right turns. Therefore, using the asymmetric $k$-centers problem is a better solution. Consider the following problem.
+
+\begin{enumerate}
+\item \underline{Input}: a set $V$ of $n$ points, an integer $k\in\mathbb{Z}_{>0}$, and a matrix $D$ specifying the distance function $d:V\times V\rightarrow\mathbb{R}_+\bigcup\{\infty\}$, where $d$ follows the first three criteria above
+\item \underline{Output}: $C\subset V$ with $\vert C \vert \leq k$, is a solution to the $k-center$ problem.
+\item \underline{Goal}: minimize the cost of $C$ where: $cost(C):=\max_{v\in V}d(v, C)$ In other words, to find the minimum covering radius $R^\star$ ,such that every point is within $R^\star$ of the set $C$.
+\end{enumerate}
+For $R \geq 0$, we define the graph $G_R=(V,E_R)$, where $E_R = {(u,v):d(u,v)\leq R}.$ The essential connection here is that there exist $k$ center that cover all of $G_R$ iff $R \geq R^\star$. Thus we can binary search for the optimal radius $R^\star$ and work in $G_{R^\star}$. Further, because traversing each edge in the graph corresponds to moving at most $R^\star$ in the original space, finding an $i-cover$ in this graph will yield an $i-approximation$ in the original space.\\\\
+For $y \in \mathbb{R}^S$, we use y(S) to denote $\sum_{v \in S} y_v$, for a function $g$, let $g^{(i)} $denote the function iterated $i$ times. Finally, define $\log^\star x= \min\{i:\log^{(i)}x\leq \frac 32\}$. Then we can describe a polynomial time relaxed decision procedure AKC, which takes as input an asymmetric $k-center$ instance and a guess at the optimal radius $R$, and either outputs a solution of value $O(R\log^\star k)$ or correctly reports that $R < R^\star$. Since $R^\star = d(u,v)$ for some $u,v \in V$, there are only $O(n^2)$ different possible values for $R^\star $. Thus is we binary search on $R$, using at most $O(\log n)$ calls to AKC to yield a solution of value $O(R\log^\star k)$ for some $R\leq R^\star$, and this gives our $O(\log^\star k)-approximation$  algorithm.\\\\
+Here we give the theorem that used to complete the logic of algorithm:
+
+\begin{theorem}
+Given a parameter $ R $ and an asymmetric k-center instance $(V,D,k)$, whose optimum is $R^\star$, $ACK(V,D,k,R) $ runs polynomial time and either proves that $ R<R^\star $ or outputs a set $C$ of at most $k centers$ covering $V$ within $R(3\log^\star k + O(1))$.
+\end{theorem}
+
+Further, we can express our ACK algorithm in two parts and give a specific version. A preprocessing phase called REDUCE, and the heart of the algorithm called AUGMENT. Then use those to part to create a specific version of ACK to solve the LP, and show the LP can be solved in polynomial time. Therefore, it will be clear that the ACK algorithm for REDUCE and AUGMENT run in polynomial time.
+
+\begin{definition}
+With respect to directed graph $G=(V,E)$, we define (for $i\in \mathbb{Z}_+$),
+$$\Gamma_i^+(u)=\{v\in V : G \ contains \ a \ directed\  path\ from\ u\ to\ v\ using\ at\ most\ i\ edges \}.$$
+\end{definition}
+Conversely, $\Gamma_i^-(u)$ is the set of nodes that can be reached by a directed path using at most $i$ edges. Consider the LP:
+
+\begin{enumerate}
+\item \underline{Input}: $G=(V, E)$ and A$\subset$V
+\item \underline{Output}: $\Gamma_i^-(u)$
+\item \underline{Goal}: $\min y(V)$ such that $y(\Gamma_i^-(u) )\geq 1$ for all $v \in A$, $y \geq 0$
+\end{enumerate}
+
+Now We can give the algorithm of out LP here:\\
+\begin{algorithm}
+\caption{LP, with respect to $G=(V,E)$ and $A \subseteq V$}
+ $\min y(V)$ \;
+ s.t. $y(\Gamma_i^-(u))\geq 1$ for all $v \in A$\;
+ $y\geq 0$\;
+\end{algorithm}\\
+In this LP, if we further restrict $y\in \{ 0, 1\}^V$, the resulting integer program asks for the smallest set of centers necessary to cover A. The AUGMENT phase does not require there to exist an integral cover with p centers, nor does it require y to be an optimal fractional cover. It suffices to have any fractional cover with at most p fractional centers. The following two theorems summarize the technical details for those we used fractional centers to guide the AUGMENT procedure in two different ways( EXPANDING or RECURSIVECOVER).
+
+\begin{theorem}
+Given a directed graph $G$, for which there is a cover using k centers, $REDUCE (G)$outputs a set of centers $C$ and an active set $A=V\backslash \Gamma_4^+(C)$, such that there exists a 3-cover of A at most $\frac23(k-\vert C\vert)$ centers.
+\end{theorem}
+The algorithm is given below.
+
+\begin{algorithm}
+\caption{ACK(V,D,k,R)}
+\begin{algorithmic} 
+\STATE $(C,A) \leftarrow REDUCE(G_R)$
+
+\STATE $p \leftarrow \frac23(k- \vert C \vert)$
+
+\STATE $\hat{G}$ $\leftarrow G_{3R}$ plus the edges $\{(u,v):u\in C, v\in  \Gamma_4^+(C)\}$
+
+\STATE ($\Gamma_4^+(C)$ in interpreted in $G_R$)
+
+\STATE solve the linear program(Algorithm 1) defined by $\hat{G}$  and A to get $y$
+
+\IF {$y(V) > p$} 
+
+        \STATE   STOP and conclude $R< R^\star$
+        
+\ELSE
+
+        \STATE$p \leftarrow y(V)$
+        
+        \STATE$AUGMENT(\hat{G},A,C,y,p)$
+        
+\ENDIF
+\STATE output $C$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{theorem}
+Suppose $A=V\backslash \Gamma_4^+(C)$ in $G$, y is a fractional cover of $A$, and $p=y(V)$. When $AUGMENT(G,A,C,y,p)$ is implemented with either EXPANDING or RECURSIVECOVER, it augments C by at most  $\frac32 p$ additional centers to cover $ A $ within $\log^\star p + O(1)$ in $G$.
+\end{theorem}
+
+In conclusion, we are promised that there exist $k$ centers covering a graph $G$. Then AUGMENT finds at  most $\frac 32 k$ centers that cover all of $G$ within $\log^\star k + O(1)$. To obtain a solution that uses only $k$ center, we basically prove that if there are$ k$ centers that cover $V$, then there exist $\frac23k$ centers $3-covering$$ V$. So we can run AUGMENT in $G^3$, the cube of G, to find k centers that cover all of V in G with in $3\log^\star k + O(1)$.
+
+Additionally, we give formal definition of REDUCE and AUGMENT. First of all, we clear that the AUGMENT phase takes as input a directed graph $G$, a set of already chosen centers $C$, an active set $A= V\Gamma^+(C)$ of nodes not already covered by $C$, and a solution $y$ to our LP(algorithm 2), with $p=y(V)$. We wish to select an additional $\frac{3}{2}p$ centers that, along with $C$, cover $A$ within $log^{\star}+O(1)$ in $G$. Here we give two different algorithms to implement AUGMENT phase as we mentioned earlier, EXPANDING and RECURSIVECOVER.
+
+\begin{algorithm}
+\caption{ExpandingFront $(G,A,C,y,p)$}
+for $i=0,1,2...$ do ("phase" $i$)
+
+\ \ for $j=1,2,...\lceil \frac{3}{4}\frac{p}{2^i} \rceil$
+
+\ \ \ \ if $y(A) < 1$ then STOP, output $C$
+
+\ \ \ \ else
+
+\ \ \ \ \ \ find $v \in V_{\geq i+1}$ that maximizes $y(\Gamma^+(v)\cap A)$
+
+\ \ \ \ \ \ $C\leftarrow C+v$
+
+\ \ \ \ \ \ $A\leftarrow A \backslash \Gamma^+_{i+1}(v) $ (equivalently, $A\leftarrow V_{\geq i+2}$)
+
+\ \ $A\leftarrow V_{\geq i+3}$ (expand the front)
+
+\ \ (now $y_A$ is projected onto $V_{i+2}$)
+\end{algorithm}
+
+
+\begin{algorithm}
+\caption{RecursiveCover $(G,A,C,y,p)$}
+(find an initial 2-cover using $plnp$ centers)
+
+$S'_0 \leftarrow \emptyset$, $A' \leftarrow A$
+
+while $y(A') \geq 1$ do
+
+\ \ \ \ \ \ find $v \in V$ that maximizes $y(\Gamma^+(v)\cap A')$
+
+\ \ \ \ \ \ $S'_0 \leftarrow S'_0+v$
+
+\ \ \ \ \ \ $A'\leftarrow A \backslash \Gamma^+(v) $ 
+
+$S'_0 \leftarrow S'_0 \cap A$ 
+
+(recursively cover the centers to reduce their number but increase their covering radius)
+
+for $i= 0,1,2,...$ do 
+
+\ \ \ \ if $\vert S_i \vert \leq \frac{2}{3}p$ then STOP, output $C \cap S_i$
+
+\ \ \ \ else
+
+\ \ \ \ \ \ $S'_{i+1} \leftarrow GREEDYSETCOVER(G, S_i)$
+
+\ \ \ \ \ \ $S_{i+1}\leftarrow S'_{i+1} \cap A$
+\end{algorithm}
+
+The greedy set cover algorithm is well-studied and the following theorem is known.
+\begin{theorem}
+If there exists a fractional set cover for $S$, using $p$ centers, then $GREEDYSETCOVER(G,S)$ outputs a cover of size at most $pH(\frac{\vert S \vert}{p})$. 
+\end{theorem}
+Finally we give our REDUCE algorithm as follows:\\
+\begin{definition}
+In a directed graph $G$, $v$ is a center capturing vertex (CCV) if $\Gamma^-(v) \subset \Gamma^+(v)$.
+\end{definition}
+
+\begin{algorithm}
+\caption{REDUCE $(G)$}
+$A \leftarrow V$, $C \leftarrow \emptyset$
+
+while there is a CCV $v \in A$ do
+
+\ \ \ \ $C \leftarrow C + v$
+
+\ \ \ \ $A \leftarrow A \backslash \Gamma^+_2(v)$
+
+$A \leftarrow A \backslash \Gamma^+_4(C)$
+output $(C,A)$
+\end{algorithm}
+
+\section{The $k$-centers Problem under Perturbation Resilience}
+
+Up to this point, we have discussed the symmetric and asymmetric $k$-centers problem with the object function defined as the maximum distance from the centers to the points. In this section, we introduce \emph{perturbation resilience} as introduced by Bilu and Linial and summarize two important results. First, Balcan and Liang's result for the symmetric problem under $(1+\sqrt2)$-perturbation resilience can be improved upon. Second, the symmetric problem under $(2-\epsilon)$-approximation stability is $NP$-hard.
+
+\begin{definition}
+Let $d$ be a distance function and $\alpha$ some non-negative constant. Then $d'$ is the \emph{$\alpha$-perturbation} of the distance function $d$ if for all $p,q\in X$, $d(p,q)\leq d'(p,q)\leq\alpha d(p,q)$.
+\end{definition}
+
+\begin{remark}
+Informally, perturbation resilience implies that the optimal clustering is numerically stable and does not change due to small perturbations in the distance function.
+\end{remark}
+
+\begin{definition}
+A clustering instance $(X,d)$ satisfies the \emph{$\alpha$-perturbation resilience} for $k$-centers if for any $\alpha$-perturbation $d'$ of $d$, the optimal clustering under both metrics are equal and unique.
+\end{definition}
+
+\begin{definition}
+A clustering instance $(X,d)$ satisfies the $(\alpha,\epsilon)$-perturbation resilience for $k$-centers if for any $\alpha$-perturbation $d'$ of $d$, the optimal clustering under $d'$ is $\epsilon$-close to the true optimal solution, where two clusters $C,C'$ are $\epsilon$-close if only an $\epsilon$ fraction of the input points are clustered differently, ie. $\min_\sigma\sum_{i=1}^k|C_i\setminus C'_{\sigma(i)}|\leq\epsilon n$.
+\end{definition}
+
+\begin{remark}
+Note also that we describe two clusters that are not $\epsilon$-close as $\epsilon$-far.
+\end{remark}
+
+\subsection{2-perturbation resilience}
+
+The following lemma is at the heart of all the analysis in this section.
+
+\begin{lemma}
+For any $\alpha\geq1$, for an $\alpha$-perturbation $d'$ of $d$ such that for any $p,q\in X$, $d(p,q)\geq r^*$ implies that $d'(p,q)\geq\alpha r^*$, and the optimal cost for $d'$ is $\alpha r^*$.
+\end{lemma}
+
+\begin{proof}
+First, note that the optimal cost under $d'$ is at most $\alpha r^*$ by definition. Then, assume that for some set $C'$, the centers under $d'$, the cost is less than $\alpha r^*$. However, this is a contradiction, as the cost under $d$ with $C'$ would be less than $r^*$.
+\end{proof}
+
+Then, the following theorem implies that for any $\alpha$-approximation algorithm, the optimal solution on the clustering instances are $\alpha$-perturbation resilient.
+
+\begin{theorem}
+Suppose we have a clustering instance $(X,d)$ such that it is $\alpha$-perturbation resilient for the asymmetric problem and C, a set of $\alpha$-approximate centers. In other words, for any $x\in X$, $\min d(c,x)\leq\alpha r^*$. Then, the Voronoi partition induced by $C$ is optimal.
+\end{theorem}
+
+\begin{proof}
+Let $x\in X$, $c(x):=\argmin{d(c,x)}$. We have that $d(c(x),x)\leq\alpha r^*$. Suppose each distance is expanded by $\alpha$, but set $d'(c(x),x)=\min(\alpha d(c(x),x),\alpha r^*)$. By construction, all distances were expanded by at most $\alpha$ with no contractions in the distances. Then, by definition $d'$ is an $\alpha$-perturbation with cost $\alpha r^*$ (Lemma), and $C$ is optimal under $d'$.\\\\
+
+Now suppose for $x\in X$ $c(x)$ denotes the closest center under $d$. Then, under $d'$, all the distances from $x$ to any \emph{other} center is expanded by $\alpha$ and $d(x,c(x))$ is expanded by at most $\alpha$. Thus, the set $C$ is identical under $d$ and $d'$.
+\end{proof}
+
+\begin{remark}
+This is actually an algorithm for the symmetric problem under $2$-perturbation resilience and the asymmetric problem under $O(\log^*k)$-perturbation resilience.
+\end{remark}
+
+Conversely, the asymmetric problem poses the issue that while $d(c(x),x)\leq r^*$, the symmetric distance may be arbitrarily large. To overcome this, we can define a set $A:=\{x|\forall y,d(y,x)\leq r^*\Rightarrow d(x,y)\leq r^*\}$.
+
+\begin{definition}
+The set $A$ \emph{respects the structure of the optimal clustering} if $C\subset A$ and for $x\in X\setminus A$, $A(x):=\argmin{d(a,x)}\in C\Rightarrow x\in C$.
+\end{definition}
+
+\begin{lemma}
+The two properties above hold for the asymmetric problem under 2-perturbation resilience.
+\end{lemma}
+
+\begin{proof}
+The sketch is given.\\
+
+The proof of the first statement was shown by Awasthi et al. for the symmetric problem. The proof of the asymmetric problem is the same.\\
+
+Suppose we have $c_i\in C_i$ and $q\in C$ such that $d(q,c_i)\leq r^*$. Then, expand all distances by 2 except for the distances from $q$ to $C_i$ which is expanded to be $2r^*$. By the lemma, the cost is $2r^*$ and since $q$ is $2r^*$ away from $C_i$, it replaces $c_i$ as the optimal center. This leads to a contradiction, as they may not exist in the same cluster. Therefore, both properties must hold for the asymmetric problem under 2-perturbation resilience.
+\end{proof}
+
+\subsection{$NP$-Hardness}
+
+Now let us consider the hardness of the problem under the $(2-\epsilon)$-perturbation stability. Note that this is a stronger approximation than that introduced by Balcan et al.
+
+\begin{definition}
+A clustering instance $(X,d)$ is $(\alpha,\epsilon)$-\emph{approximation stable} if for any partition $C'$ with cost $r'$, $r'\leq\alpha r^*\Rightarrow C'$ is $\epsilon$-close to the optimal cluster.
+\end{definition}
+
+\begin{remark}
+$(\alpha,\epsilon)$-perturbation stability implies $(\alpha,\epsilon)$-perturbation resilience. To briefly demonstrate this, the optimal cost for any $\alpha$-perturbation us at most $\alpha r^*$ under $d$, and if it violates this condition, it is $\epsilon$-far.
+\end{remark}
+
+\begin{theorem}
+The $k$-center problem under $(2-\epsilon)$-approximation stability is $NP$-hard, unless $NP=RP$.
+\end{theorem}
+
+\begin{proof}
+The sketch is given. \cite{bendavid}\\
+
+Recall the Dominating Set problem: for $G=(V,E)$, a simple, undirected graph, a dominating set in $G$ is a subset $S$ of the vertices such that for any $v\in V$, either $v\in S$ or $v$ is adjacent to some element $s\in S$. The Perfect Dominating Set is a special case in which every dominating set containing at most $d$ vertices such that each vertex is hit by exactly one dominator. Recall also that the Dominating Set problem is NP-complete.
+
+First, we show a reduction of the dominating set problem to the $(2-\epsilon)$ stability problem. Suppose every vertex $v\in V$ is a point in the $k$-center instance. Let the distance along any edge $e\in E$ be $\frac12$, and the distance between any disconnected vertices is $1$. Setting $d=k$, observe that the $k$-median cost of $\frac{n-k}{2}$ corresponds to the Perfect Dominating Set with $d$, which is NP-hard. Further, any solution of size at most $d$ is perfect, with distance $\frac12$ for non-center points to its center and $1$ to every other center. This implies that the problem is $(2-\epsilon)$-stable.
+
+Furthermore, we can add two conditions to the Perfect Dominating Set problem. First, each dominator must hit at least $\frac n{2k}$ vertices, the size of the clusters. Otherwise, there is at most 1 dominating set of size at most $k$. Second, there may be at most $1$ dominating set of size at most $k$.
+
+Suppose we have such a dominating set, and for each $v\in V$, let $v\in S$. Define the distance between two vertices as 1 if they are connected, and 2 otherwise. Then, the $k$-center instance exists if and only if a dominating set of size $k$ exists. Furthermore, since each dominating set hits a minimum of $\frac n{2k}$ vertices, the clusters are of size at least one more. Thus, the existence of a dominating set of size $k$ implies that the optimal cost is 1. Every other clustering, by uniqueness of the perfect dominating set, has cost 2. This gives us that the cluster is $(2-\epsilon)$-stable.
+\end{proof}
