@@ -1,0 +1,202 @@
+% Contributors: Jakwanul Safin
+
+\section{Kernel Density Estimation}
+
+%\newcommand{\R}{\mathbb{R}}
+%\renewcommand{\k}{\kappa}
+%\newcommand{\X}{\mathscr{X}}
+
+Given a dataset drawn from a continuous distribution one often wants to learn information about distribution, such as modality, skewness etc. One approach is to assume that the distribution fits a particular parametric model, usually as Gaussian or a mixture model. After a suitable target distribution is chosen the parameters can be learned with a variety of technique, such as regression. These are however very strong conditions to impose on the data, and when they do not hold we need a more generic methodology. This problem is the domain of Non-Parametric Density Estimation. 
+
+The most popular approach is the Kernel Density Estimator. Here we try to estimate the distribution at a given point by applying a kernel transformation against a suitably sized sample. Implicitly, we assume some kind curvature or smoothness property on our distribution, otherwise an optimal estimator may only have support on the sample. In the case where the kernel is a Gaussian we have Gaussian Kernel Density Estimation, which will be the focus of this chapter. In particular we will explore a striking connection between KDE and the problem of analyzing heat kernels in physics.
+
+\subsection{The Kernel Estimator}
+Given a sample $\mathcal{X}_{N} \equiv\left\{X_{1}, \ldots, X_{N}\right\}$ on $\mathscr{X} \subset \R^D$ drawn from a probability density function $f$ the \textit{Kernel Density Estimator} is
+
+\begin{equation}
+\hat{f}(x ; t)=\frac{1}{N} \sum_{i=1}^{N} \kappa\left(x, X_{i} ; t\right), \quad x \in \R
+\end{equation}
+
+where $\kappa$ is the kernel and $t$ is called the $\textit{bandwidth}$. For Gaussian KDE our kernel a Gaussian probability density function 
+
+\[
+\phi\left(x, X_{i} ; t\right)=\frac{1}{\sqrt{2 \pi t}} e^{-\left(x-X_{i}\right)^{2} /(2 t)}
+\]
+
+with mean $X_i$ with bandwidth equal to its standard deviation, $\sqrt{t}$.
+
+The Gaussian Kernel Density Estimator is special in that it is the unique solution to the diffusion partial differential equation
+
+\begin{equation}
+\frac{\partial}{\partial t} \hat{f}(x ; t)=\frac{1}{2} \frac{\partial^{2}}{\partial x^{2}} \hat{f}(x ; t), \quad x \in \R^d, t>0
+\end{equation}
+
+where the initial conditions are $\hat{f}(x ; 0) = \tfrac{1}{N} \sum_{i=1}^N \delta(x - X_i)$, where $\delta$ is the Dirac delta function. This coincides with the heat equations in thermodynamics. Intuitively, one can imagine system that starts off with hot spots concentrated at each sample point location. The heat then radiates out so that hotter regions diffuse into cooler ones. 
+
+Aside from its mathematical elegance, this interpretation of KDE generalizes naturally to certain situations. For example, suppose we know that the underlying has support in a bounded region. We can simply add boundary conditions to (2) to obtain a new estimator. In particular, if $\mathscr{X} = [0, 1]$ then we can add the Neumann boundary conditions
+
+$$
+\left.\frac{\partial}{\partial x} \hat{f}(x ; t)\right|_{x=1}=\left.\frac{\partial}{\partial x} \hat{f}(x ; t)\right|_{x=0}=0
+$$
+
+These conditions can be solved using the $\textit{reflection method}$ from physics yielding the kernel
+
+$$
+\sum_{k=-\infty}^{\infty} \phi\left(x, 2 k+X_{i} ; t\right)+\phi\left(x, 2 k-X_{i} ; t\right), \quad x \in[0,1]
+$$
+
+As one would expect, the estimator from this kernel is more consistent on the boundaries can Gaussian kernel.
+
+Later on in this chapter we will focus on the Diffusion Estimator\cite{botev2010kernel} which will modify (1) to get obtain a new kernel.
+
+\subsection{MISE and Bandwidth Selection}
+
+Kernel estimators are typically evaluated according to the Minimum Integrated Square Error (MISE) criterion. 
+
+$$
+\operatorname{MISE}\{\hat{f}\}(t)=E \left[ \int_{\mathscr{X}}\left[\hat{f}(\boldsymbol{x}; t)-f(\boldsymbol{x})\right]^{2} \mathrm{d} \boldsymbol{x} \right]
+$$
+
+which can be decomposed as 
+
+$$
+\operatorname{MISE}\{\hat{f}\}(t)= \int_{\mathscr{X}} \left[E[\hat{f}(\boldsymbol{x}; t)]-f(\boldsymbol{x})\right]^{2} \mathrm{d} \boldsymbol{x} + \int_{\mathscr{X}} \operatorname{Var}_f\hat{f}(x; t) \mathrm{d} \boldsymbol{x} 
+$$
+
+The first term can be thought of as the point-wise bias or expected error, an the second term is like a regularization term to prefer lower variance distributions. 
+
+Because the choice of bandwidth heavily affects the performance of KDE, MISE is generally used as the criterion for selecting the bandwidth. However the equation does not have a closed form solution so alternative methods are used to approximate the solution.
+
+When the data is drawn from a multivariate Gaussian distribution normal reference rules are generally used. The optimal bandwidth is approximated by
+
+$$
+h_{i}=\sigma_{i}\left\{\frac{4}{(d+2) n}\right\}^{1 /(d+4)}
+$$
+
+for $i \in [k]$, where $k$ is the number of Gaussian in the mixture and $\sigma_i$ is the standard deviation of the $i$th Gaussian, approximated by its sample estimator.
+
+However when the multivariate Gaussian assumption does not hold true these methods often fail. In this case the method of choice is usually some kind of plug-in methods. The idea behind these methods is to minimize the asymptotic MISE (AMISE). Let $t_N$ denote the bandwidth dependent on the sample size $N$, such that $t_N \rightarrow 0$ and $N\sqrt{t_N} \rightarrow \infty$ as $N \rightarrow \infty$. Asymptotically the optimal bandwidth minimizer will be a minimizer for AMISE. 
+
+AMISE has the first order approximation
+$$
+\operatorname{AMISE}\{\hat{f}\}(t)=\frac{1}{4} t^{2}\left\|f^{\prime \prime}\right\|^{2}+\frac{1}{2 N \sqrt{\pi t}}
+$$
+giving an optimal value of
+$$
+t_{*}=\left(\frac{1}{2 N \sqrt{\pi}\left\|f^{\prime \prime}\right\|^{2}}\right)^{2 / 5}.
+$$
+Plug-in methods attempt to estimate the value for the functional $f^{\prime\prime}$.
+
+
+\subsection{Diffusion Estimator}
+The diffusion estimator is given as the solution to the PDE
+
+\begin{equation}
+\frac{\partial}{\partial t} g(x ; t)=L g(x ; t), \quad x \in \mathscr{X}, t>0
+\end{equation}
+
+where $L$ is a linear differential operator of the form $
+\frac{1}{2} \frac{d}{d x}\left(a(x) \frac{d}{d x}\left(\frac{\cdot}{p(x)}\right)\right)
+$. The initial conditions, and boundary conditions if applicable, are the same as (2). When $a = 1$, $p = 1$ the PDE simplifies to (2), so this is a more general estimator.  Additionally, if $p$ is the pdf of some distribution on $\mathscr{X}$ we have that
+
+$$
+\lim _{t \rightarrow \infty} g(x ; t)=p(x), \quad x \in \mathscr{X}
+$$
+
+$p$ can be thought of as a \textit{pilot density estimate} of $f$. These are often used in adaptive kernel methods. These result guarantee's that if $p$ is chosen correctly then it will be the long run distribution. If $p=1$ and $\mathscr{X}$ is bounded this corresponds to the intuition that the distribution will diffuse uniformly over the entire region. 
+
+Intuitively, the image of heat diffusing from hot spots is still applicable. The difference here is that the diffusion rate is no longer uniform at each point and is biased towards certain directions. $a$ and $p$ control this diffusion process.
+
+This intuition is made precise by interpreting diffusion as Brownian motion. (3) describes It$\hat{\text{o}}$ diffusion process $\{X_t, t > 0\}$ which is given instantaneously as a brownian motions with drift,
+$$d X_{t}=\mu\left(X_{t}\right) d t+\sigma\left(X_{t}\right) d B_{t}$$
+Where the drift coefficient $\mu(X_t) = \frac{a^\prime(x)}{2p(x)}$ and diffusion coefficient $\sigma(x) = \sqrt{\tfrac{a(x)}{p(x)}}$. 
+
+The estimator $g(x; t)$ can be reformulated as the kernel density estimator
+
+$$
+g(x ; t)=\frac{1}{N} \sum_{i=1}^{N} \kappa\left(x, X_{i} ; t\right)
+$$
+
+such that for all $y \in \mathscr{X}$ the kernel $\kappa$
+
+\[
+\left\{\begin{array}{ll}
+\frac{\partial}{\partial t} \kappa(x, y ; t)=L \kappa(x, y ; t), & x \in \mathscr{X}, t>0 \\
+\kappa(x, y ; 0)=\delta(x-y), & x \in \mathscr{X}
+\end{array}\right.
+\]
+
+These conditions correspond to the Kolmogorov forward equations of the It$\hat{\text{o}}$ process. And for each $x \in \mathscr{X}$
+
+\[
+\left\{\begin{array}{ll}
+\frac{\partial}{\partial t} \kappa(x, y ; t)=L^{*} \kappa(x, y ; t), & y \in \mathscr{X}, t>0 \\
+\kappa(x, y ; 0)=\delta(x-y), & y \in \mathscr{X}
+\end{array}\right.
+\]
+
+where $L^*$ is the adjoint of $L$. These correspond to the backwards equations.
+
+Additionally we have the following for boundary conditions,
+
+$$
+\left.\frac{\partial}{\partial x}\left(\frac{\kappa(x, y ; t)}{p(x)}\right)\right|_{x \in \partial \mathscr{X}}=0 \quad \forall t>0
+$$
+
+The following theorem ensures the asymptotic correctness of the diffusion estimator.
+
+\begin{theorem}
+Let $t=t_{N}$ be such that $\lim _{N \rightarrow \infty} t_{N}=0, \lim _{N \rightarrow \infty} N \sqrt{t_{N}}=\infty$
+Assume that $f$ is twice continuously differentiable and that the domain $\mathscr{X} \equiv \R$. Then,
+\begin{enumerate}
+    \item The pointwise bias has the asymptotic behavior
+    $$\mathbb{E}_{f}[g(x ; t)]-f(x)=t L f(x)+O\left(t^{2}\right), \quad N \rightarrow \infty$$
+    
+    \item The integrated squared bias has the asymptotic behavior
+    $$\quad\left\|\mathbb{E}_{f}[g(\cdot ; t)]-f\right\|^{2} \sim t^{2}\|L f\|^{2}=\frac{1}{4} t^{2}\left\|\left(a(f / p)^{\prime}\right)^{\prime}\right\|^{2}, \quad N \rightarrow \infty$$
+    
+    \item The pointwise variance has the asymptotic behavior
+    $$ \operatorname{Var}_{f}[g(x ; t)] \sim \frac{f(x)}{2 N \sqrt{\pi t} \sigma(x)}, \quad N \rightarrow \infty$$
+    where $\sigma^{2}(x)=a(x) / p(x)$
+    
+    \item The integrated variance has the asymptotic behavior
+    
+    $$\int \operatorname{Var}_{f}[g(x ; t)] d x \sim \frac{\mathbb{E}_{f}\left[\sigma^{-1}(X)\right]}{2 N \sqrt{\pi t}}, \quad N \rightarrow \infty$$
+    
+    \item  The asymptotic approximation to the MISE is given by
+    
+    $$\operatorname{AMISE}\{g\}(t)=\frac{1}{4} t^{2}\left\|\left(a(f / p)^{\prime}\right)^{\prime}\right\|^{2}+\frac{\mathbb{E}_{f}\left[\sigma^{-1}(X)\right]}{2 N \sqrt{\pi t}}$$
+    
+    \item  Hence, the square of the asymptotically optimal bandwidth is
+    $$t^{*}=\left(\frac{\mathbb{E}_{f}\left[\sigma^{-1}(X)\right]}{2 N \sqrt{\pi}\|L f\|^{2}}\right)^{2 / 5}$$
+    which gives the minimum
+    \[
+    \min _{t} \operatorname{AMISE}\{g\}(t)=N^{-4 / 5} \frac{5\left[\mathbb{E}_{f} \sigma^{-1}(X)\right]^{4 / 5}\|L f\|^{2 / 5}}{2^{14 / 5} \pi^{2 / 5}}
+    \]
+\end{enumerate}
+\end{theorem}
+
+When $p \neq f$ the rate of converge is $O(N^{-4/5})$ which is the same as the Gaussian kernel estimator. However a good choice of $p$ will improve convergence, in particular if $p = f$ then the bias term disappears.
+
+Not only is this method a generalization of Gaussian kernels, but for particular choices of $a$ and $p$ it is equivalent to variable bandwidth and data sharpening technique. Variable bandwidth involves setting the standard deviation of the Gaussian to a function. The Abramson Variable bandwidth is given by giving kernels a bandwidth of $\sqrt{\frac{t}{f_p(y)}}$, where $f_p$ is the clipped pilot density estimate given in \cite{abramson1982bandwidth}. This is obtain by setting $a=1$ and $p = f_p$. Data sharpening is a technique in which sample points are shifted prior to density estimation, which is attained by setting $a = p = f_p$.
+
+The only conditions required on $a$ and $p$ are that the diffusion process does not explode at any point and has a well defined limiting distribution. The following conditions are sufficient for this to be the case. 
+
+\begin{theorem}
+Given $a(x)$ and $p(x)$, the diffusion process explodes if and only if there exists $z \in \R$ such that either one of the following two conditions holds:
+
+$$
+\int_{-\infty}^{z} \int_{x}^{z} \frac{p(y)}{a(x)} d y d x<\infty
+$$
+
+$$
+\int_{z}^{\infty} \int_{z}^{x} \frac{p(y)}{a(x)} d y d x<\infty
+$$
+
+\end{theorem}  
+
+\subsection{Performance}
+Numerical solutions to (3) can be obtained using finite difference or spectral methods. The bandwidth is selected using a novel plug-in algorithm. $\alpha = 1$ and an unclipped pilot estimate given by the bandwidth selection algorithm was used in a number of simulations.
+
+The diffusion estimator was compared against the Gaussian Kernel Estimator and a higher order kernel estimator, that is used in practice. The criterion used for evaluating the model was the ratio between the integrated square error(ISE) to the other models. The diffusion estimator consistently outperformed either kernel estimators in a number of test suites. Notably for log normal distributions with $\mu = 0$ and $\sigma = 1$, the ratios were $0.12$ and $0.51$ for $N = 10^5$. A test of the boundary constraints was also done where test distributions were truncated to the interval $(-\infty, -1]$. This tests showed competitive results to leading boundary correction methods.
+
